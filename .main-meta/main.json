@@ -1,0 +1,55 @@
+{
+    "metaDataVersion": "1.0.0",
+    "category": "com.microchip.ide.project",
+    "content": {
+        "metaDataVersion": "1.1.0",
+        "name": "com.microchip.mcu8.mplabx.project.avr128db48-mlx90392-mplab-mcc",
+        "version": " ",
+        "displayName": "",
+        "projectName": "avr128db48-mlx90392-mplab-mcc",
+        "shortDescription": "Create a magnetic security alarm with a 1 8V MLX90392 sensor using the MVIO on the AVR DB family of MCUs",
+        "ide": {
+            "name": "MPLAB X",
+            "semverRange": ">=5.50.0"
+        },
+        "compiler": [
+            {
+                "name": "XC8",
+                "semverRange": "^2.31.0"
+            }
+        ],
+        "dfp": {
+            "name": "",
+            "semverRange": ""
+        },
+        "configurator": {
+            "name": "",
+            "semverRange": ""
+        },
+        "device": {
+            "metaDataVersion": "1.0.0",
+            "category": "com.microchip.portal.contentRef",
+            "content": {
+                "metaDataVersion": "1.0.0",
+                "category": "com.microchip.device",
+                "name": "AVR128DB48",
+                "versionRange": "*"
+            }
+        },
+        "author": "Robert Perkel",
+        "subcategories": [],
+        "peripherals": [],
+        "keywords": [],
+        "additionalData": {
+            "longDescription": {
+                "metaDataVersion": "1.0.0",
+                "category": "com.microchip.portal.fileRef",
+                "content": {
+                    "metaDataVersion": "1.0.0",
+                    "fileName": "./README.md",
+                    "mimeType": "text/markdown"
+                }
+            }
+        }
+    }
+}
