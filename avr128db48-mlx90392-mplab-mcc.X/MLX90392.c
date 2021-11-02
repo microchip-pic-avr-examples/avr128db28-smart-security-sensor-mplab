@@ -1,6 +1,7 @@
 #include "MLX90392.h"
 #include "mcc_generated_files/i2c_host/twi0.h"
 #include "mcc_generated_files/timer/delay.h"
+#include "mcc_generated_files/mvio/mvio.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -11,6 +12,10 @@
 
 bool MLX90392_reset(void)
 {
+    //If MVIO is not ready, then exit.
+    if (!MVIO_isOK())
+        return false;
+    
     //Reset MLX90392 Device
     uint8_t initSEQ[2] = {(uint8_t) RST, 0x06};
     
@@ -29,6 +34,10 @@ bool MLX90392_reset(void)
 
 bool MLX90392_isDataReady(void)
 {
+    //If MVIO is not ready, then exit.
+    if (!MVIO_isOK())
+        return false;
+    
     uint8_t status = 0x00;
     
     //I2C Error
@@ -44,7 +53,7 @@ bool MLX90392_isDataReady(void)
     return (status & 0x01);
 }
 
-bool MLX90392_getSingleMeasurement(MLX90393_Result* result)
+bool MLX90392_getSingleMeasurement(MLX90392_Result* result)
 {
     //Set the Sensor into Single Measurement Mode
     if (!MLX90392_setOperatingMode(SINGLE))
@@ -79,7 +88,7 @@ bool MLX90392_selfTest(void)
     } while (!MLX90392_isDataReady());
     
     //Read measurement data
-    MLX90393_Result result;
+    MLX90392_Result result;
     
     //Get results
     if (!MLX90392_getResult(&result))
@@ -118,6 +127,10 @@ bool MLX90392_selfTest(void)
 
 bool MLX90392_setOperatingMode(MLX90392_Mode mode)
 {
+    //If MVIO is not ready, then exit.
+    if (!MVIO_isOK())
+        return false;
+    
     uint8_t setMode[] = { CTRL, mode};
     
     //Set the operating mode
@@ -135,8 +148,12 @@ bool MLX90392_setOperatingMode(MLX90392_Mode mode)
     return false;
 }
 
-bool MLX90392_getResult(MLX90393_Result* result)
+bool MLX90392_getResult(MLX90392_Result* result)
 {    
+    //If MVIO is not ready, then exit.
+    if (!MVIO_isOK())
+        return false;
+    
     //Read from 0x00 to 0x07    
     if (I2C0_Read(MLX90392_ADDR, &result->data[0], 8))
     {

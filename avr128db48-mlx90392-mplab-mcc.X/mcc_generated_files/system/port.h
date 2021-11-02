@@ -7,7 +7,7 @@
  * 
  * @brief This Source file provides APIs. 
  *
- * @version Driver Version  1.0.0
+ * @version Driver Version  1.0.1
 */
 
 /*

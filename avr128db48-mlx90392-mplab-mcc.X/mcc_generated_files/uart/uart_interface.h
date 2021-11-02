@@ -16,6 +16,9 @@
         Product Revision  :   - 
         Device            :  
         Driver Version    :  1.0.0
+    The generated drivers are tested against the following:
+        Compiler          :  XC8 v2.20 and above
+        MPLAB             :  MPLABX v5.40  and above
 */
 
 /*
@@ -71,5 +74,4 @@ struct UART_INTERFACE
     bool (*IsTxDone)(void);
 };
 
-#endif
-// end of UART_INTERFACE_H
+#endif // end of UART_INTERFACE_H
