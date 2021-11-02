@@ -89,14 +89,14 @@ typedef struct
  *    transmitData[2] = 0xAA;  // load data
  *    writeLength = 3; // 2 bytes of location address + 1 byte data
  *
- *    if ( i2c0_host_interface.Write(eepromAddr, transmitData, writeLength))
+ *    if ( i2c1_host_interface.Write(eepromAddr, transmitData, writeLength))
  *    {
- *        while ( i2c0_host_interface.IsBusy())
+ *        while ( i2c1_host_interface.IsBusy())
  *        {
- *            i2c0_host_interface.Tasks();
+ *            i2c1_host_interface.Tasks();
  *        }
  *
- *        if (  i2c0_host_interface.ErrorGet() == I2C_ERROR_NONE)
+ *        if (  i2c1_host_interface.ErrorGet() == I2C_ERROR_NONE)
  *        {
  *            // Write operation is successful
  *        }
@@ -108,14 +108,14 @@ typedef struct
  *
  *    writeLength = 2; // 2 bytes of location address
  *    readLength = 1; // 1 byte read
- *    if (i2c0_host_interface.WriteRead(eepromAddr, transmitData, writeLength, readData , readLength))
+ *    if (i2c1_host_interface.WriteRead(eepromAddr, transmitData, writeLength, readData , readLength))
  *    {
- *        while ( i2c0_host_interface.IsBusy())
+ *        while ( i2c1_host_interface.IsBusy())
  *        {
- *            i2c0_host_interface.Tasks();
+ *            i2c1_host_interface.Tasks();
  *        }
  *
- *        if (  i2c0_host_interface.ErrorGet() == I2C_ERROR_NONE)
+ *        if (  i2c1_host_interface.ErrorGet() == I2C_ERROR_NONE)
  *        {
  *            // WriteRead operation is successful
  *        }
@@ -130,14 +130,14 @@ typedef struct
  *    transmitData[1] = 0x20;  // load LSB of EEPROM location
  *    transmitData[2] = 0x55;  // load data
  *    writeLength = 3; // 2 bytes of location address + 1 byte data
- *    if (i2c0_host_interface.Write(eepromAddr, transmitData, writeLength))
+ *    if (i2c1_host_interface.Write(eepromAddr, transmitData, writeLength))
  *    {
- *        while (i2c0_host_interface.IsBusy())
+ *        while (i2c1_host_interface.IsBusy())
  *        {
- *            i2c0_host_interface.Tasks();
+ *            i2c1_host_interface.Tasks();
  *        }
  *
- *        if ( i2c0_host_interface.ErrorGet() == I2C_ERROR_NONE)
+ *        if ( i2c1_host_interface.ErrorGet() == I2C_ERROR_NONE)
  *        {
  *            // Write operation is successful
  *        }
@@ -148,14 +148,14 @@ typedef struct
  *    }
  *
  *    writeLength = 2; // 2 bytes of location address
- *    if (i2c0_host_interface.Write(eepromAddr, transmitData, writeLength))
+ *    if (i2c1_host_interface.Write(eepromAddr, transmitData, writeLength))
  *    {
- *        while (i2c0_host_interface.IsBusy())
+ *        while (i2c1_host_interface.IsBusy())
  *        {
- *            i2c0_host_interface.Tasks();
+ *            i2c1_host_interface.Tasks();
  *        }
  *
- *        if ( i2c0_host_interface.ErrorGet() == I2C_ERROR_NONE)
+ *        if ( i2c1_host_interface.ErrorGet() == I2C_ERROR_NONE)
  *        {
  *            // Write operation is successful
  *        }
@@ -166,14 +166,14 @@ typedef struct
  *    }
  *
  *    readLength = 1; // 1 byte read
- *    if (i2c0_host_interface.Read(eepromAddr, readData, readLength))
+ *    if (i2c1_host_interface.Read(eepromAddr, readData, readLength))
  *    {
- *        while (i2c0_host_interface.IsBusy())
+ *        while (i2c1_host_interface.IsBusy())
  *        {
- *            i2c0_host_interface.Tasks();
+ *            i2c1_host_interface.Tasks();
  *        }
  *
- *        if ( i2c0_host_interface.ErrorGet() == I2C_ERROR_NONE)
+ *        if ( i2c1_host_interface.ErrorGet() == I2C_ERROR_NONE)
  *        {
  *            // Read operation is successful
  *        }

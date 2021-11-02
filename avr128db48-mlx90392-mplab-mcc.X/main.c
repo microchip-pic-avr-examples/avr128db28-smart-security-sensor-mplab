@@ -1,4 +1,16 @@
 /*
+ * MAIN Generated Driver File
+ * 
+ * @file main.c
+ * 
+ * @defgroup main MAIN
+ * 
+ * @brief This is the generated driver implementation file for the MAIN driver.
+ *
+ * @version MAIN Driver Version 1.0.0
+*/
+
+/*
 © [2021] Microchip Technology Inc. and its subsidiaries.
 
     Subject to your compliance with these terms, you may use Microchip 
@@ -20,54 +32,79 @@
 */
 #include "mcc_generated_files/system/system.h"
 #include "MLX90392.h"
+#include "MLX90632.h"
 #include "mcc_generated_files/timer/delay.h"
+#include "RN4020.h"
+
+void sensorFailure(void)
+{
+    while (1)
+    {
+        LED0_Toggle();
+        DELAY_milliseconds(500);
+    }
+}
 
 int main(void)
 {
     SYSTEM_Initialize();
-    
+        
     //Enable TWI in Debug
     TWI0.DBGCTRL = 1;
+    TWI1.DBGCTRL = 1;
     
     //Bug Fix for IO Assignment
     PORTMUX.TWIROUTEA = 0x2;
     
-    //Leave enough time to ensure device is ready
-    DELAY_milliseconds(1000);
+    DELAY_milliseconds(10);
     
-    //Soft Reset the Sensor
-    MLX90392_reset();
+    //Init RN4020 BLE Module
+    //RN4020_initDevice();
     
-    //TODO: Verify +400 in self-test!!!
-    if (!MLX90392_selfTest())
-    {
-        //If Sensor is Bad...
+    MLX90632_initDevice();
         
-        //TODO: Change Behavior
-        while (1) { 
-            LED0_Toggle();
-            DELAY_milliseconds(500);
-        }
-    }
+    uint8_t tries = 10;
     
-    MLX90393_Result result;
+    //Init Magnetometer
+//    do
+//    {
+//        //Soft Reset the Sensor
+//        tries--;
+//        
+//        if (tries == 0)
+//        {
+//            //Unable to reset sensor
+//            
+//            sensorFailure();
+//        }
+//        
+//    } while (MLX90392_reset());
+    
+    
+    
+    //Only perform Magnetometer self test if sensor is -010 version 
+//    if (!MLX90392_selfTest())
+//    {
+//        //If Sensor is Bad...
+//        
+//        sensorFailure();
+//    }
+    
+    MLX90392_Result result;
+    bool success;
+    volatile float temp;
+    
+    sei();
     
     while(1)
     {
         //Get a single measurement
-        MLX90392_getSingleMeasurement(&result);
+        //MLX90392_getSingleMeasurement(&result);
         
-        //Testing Code
-        if (result.Z_Meas > 0)
-        {
-            LED0_SetHigh();
-        }
-        else
-        {
-            LED0_SetLow();
-        }
+        temp = MLX90632_computeTemperature();
         
         //Sleep
+        LED0_Toggle();
         asm("SLEEP");
     }    
 }

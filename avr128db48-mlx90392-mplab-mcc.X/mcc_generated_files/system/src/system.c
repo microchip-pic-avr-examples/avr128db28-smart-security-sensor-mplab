@@ -41,13 +41,13 @@ void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
-    DAC0_Initialize();
     I2C0_Initialize();
+    I2C1_Initialize();
     MVIO_Initialize();
-    OPAMP_Initialize();
+    NVM_Initialize();
     RTC_Initialize();
     SLPCTRL_Initialize();
-    USART3_Initialize();
+    USART2_Initialize();
     VREF_Initialize();
     CPUINT_Initialize();
 }

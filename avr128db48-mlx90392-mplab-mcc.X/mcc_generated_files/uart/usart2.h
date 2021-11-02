@@ -28,8 +28,8 @@
     THIS SOFTWARE.
 */
 
-#ifndef USART3_H
-#define USART3_H
+#ifndef USART2_H
+#define USART2_H
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -39,9 +39,9 @@
 #include "uart_interface.h"
 
 /* Normal Mode, Baud register value */
-#define USART3_BAUD_RATE(BAUD_RATE) (((float)4000000 * 64 / (16 * (float)BAUD_RATE)) + 0.5)
+#define USART2_BAUD_RATE(BAUD_RATE) (((float)4000000 * 64 / (16 * (float)BAUD_RATE)) + 0.5)
 
-extern const struct UART_INTERFACE USART3_Interface;
+extern const struct UART_INTERFACE USART2_Interface;
 
 /**
  * \brief Initialize USART interface
@@ -52,50 +52,50 @@ extern const struct UART_INTERFACE USART3_Interface;
  * \retval 0 the USART init was successful
  * \retval 1 the USART init was not successful
  */
-void USART3_Initialize(void);
+void USART2_Initialize(void);
 
 /**
- * \brief Enable RX and TX in USART3
+ * \brief Enable RX and TX in USART2
  * 1. If supported by the clock system, enables the clock to the USART
  * 2. Enables the USART module by setting the RX and TX enable-bits in the USART control register
  *
  * \return Nothing
  */
-void USART3_Enable(void);
+void USART2_Enable(void);
 
 /**
- * \brief Enable RX in USART3
+ * \brief Enable RX in USART2
  * 1. If supported by the clock system, enables the clock to the USART
  * 2. Enables the USART module by setting the RX enable-bit in the USART control register
  *
  * \return Nothing
  */
-void USART3_EnableRx(void);
+void USART2_EnableRx(void);
 
 /**
- * \brief Enable TX in USART3
+ * \brief Enable TX in USART2
  * 1. If supported by the clock system, enables the clock to the USART
  * 2. Enables the USART module by setting the TX enable-bit in the USART control register
  *
  * \return Nothing
  */
-void USART3_EnableTx(void);
+void USART2_EnableTx(void);
 
 /**
- * \brief Disable USART3
+ * \brief Disable USART2
  * 1. Disables the USART module by clearing the enable-bit(s) in the USART control register
  * 2. If supported by the clock system, disables the clock to the USART
  *
  * \return Nothing
  */
-void USART3_Disable(void);
+void USART2_Disable(void);
 
 /**
- * \brief Get recieved data from USART3
+ * \brief Get recieved data from USART2
  *
- * \return Data register from USART3 module
+ * \return Data register from USART2 module
  */
-uint8_t USART3_GetData(void);
+uint8_t USART2_GetData(void);
 
 /**
  * \brief Check if the usart can accept data to be transmitted
@@ -104,7 +104,7 @@ uint8_t USART3_GetData(void);
  * \retval false The USART can not receive data to be transmitted
  * \retval true The USART can receive data to be transmitted
  */
-bool USART3_IsTxReady(void);
+bool USART2_IsTxReady(void);
 
 /**
  * \brief Check if the USART has received data
@@ -113,28 +113,30 @@ bool USART3_IsTxReady(void);
  * \retval true The USART has received data
  * \retval false The USART has not received data
  */
-bool USART3_IsRxReady(void);
+bool USART2_IsRxReady(void);
 
 /**
- * \brief Check if USART3 data is transmitted
+ * \brief Check if USART2 data is transmitted
  *
  * \return Receiver ready status
  * \retval true  Data is not completely shifted out of the shift register
  * \retval false Data completely shifted out if the USART shift register
  */
-bool USART3_IsTxDone(void);
+bool USART2_IsTxBusy(void);
 
+
+bool USART2_IsTxDone(void);
 /**
- * \brief Read one character from USART3
+ * \brief Read one character from USART2
  *
  * Function will block if a character is not available.
  *
- * \return Data read from the USART3 module
+ * \return Data read from the USART2 module
  */
-uint8_t USART3_Read(void);
+uint8_t USART2_Read(void);
 
 /**
- * \brief Write one character to USART3
+ * \brief Write one character to USART2
  *
  * Function will block until a character can be accepted.
  *
@@ -142,7 +144,7 @@ uint8_t USART3_Read(void);
  *
  * \return Nothing
  */
-void USART3_Write(const uint8_t data);
+void USART2_Write(const uint8_t data);
 
 /**
  * \brief ErrorCheck USART interface
@@ -151,12 +153,12 @@ void USART3_Write(const uint8_t data);
  *
  * No Return and Arguments associated
  */
-void USART3_ErrorCheck(void);
+void USART2_ErrorCheck(void);
 
-void USART3_FramingErrorCallbackRegister(void* callbackHandler);
+void USART2_FramingErrorCallbackRegister(void* callbackHandler);
 
-void USART3_OverrunErrorCallbackRegister(void* callbackHandler);
+void USART2_OverrunErrorCallbackRegister(void* callbackHandler);
 
-void USART3_ParityErrorCallbackRegister(void* callbackHandler);
+void USART2_ParityErrorCallbackRegister(void* callbackHandler);
 
-#endif /* USART3_H */
+#endif /* USART2_H */

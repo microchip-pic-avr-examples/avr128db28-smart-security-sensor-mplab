@@ -12,7 +12,7 @@ extern "C" {
         STAT1 = 0x00, XRES_L, XRES_H, YRES_L, YRES_H, ZRES_L, ZRES_H, STAT2, TEMP_L, TEMP_H, CID, DID, 
                 CTRL = 0x10, RST, 
                 OSC_DIG_FILT = 0x14, T_EN_DIG_FILT_Z
-    } MLX90392_Registers;
+    } MLX90392_Register;
     
     typedef enum {
         IDLE = 0, SINGLE, CONT_10HZ, CONT_20HZ, CONT_50HZ, CONT_100HZ, SELF_TEST, 
@@ -54,7 +54,7 @@ extern "C" {
         
         //Bytes to allocate - easier to load into memory this way
         uint8_t data[8];
-    } MLX90393_Result;        
+    } MLX90392_Result;        
     
 //Self-Test Ranges
 #define MLX90392_X_LOW_PASS -150
@@ -63,7 +63,7 @@ extern "C" {
     
 #define MLX90392_X_HIGH_PASS 150
 #define MLX90392_Y_HIGH_PASS 150
-#define MLX90392_Z_HIGH_PASS 400
+#define MLX90392_Z_HIGH_PASS -400
     
     bool MLX90392_reset(void);   //Returns false if failed to init
     bool MLX90392_isDataReady(void);    //Returns true if data is ready
@@ -71,9 +71,9 @@ extern "C" {
     
     bool MLX90392_setOperatingMode(MLX90392_Mode mode);
     
-    bool MLX90392_getSingleMeasurement(MLX90393_Result* result);
+    bool MLX90392_getSingleMeasurement(MLX90392_Result* result);
     
-    bool MLX90392_getResult(MLX90393_Result* result);
+    bool MLX90392_getResult(MLX90392_Result* result);
     bool MLX90392_getTemp(uint16_t* temp);
     
 #ifdef	__cplusplus

@@ -72,8 +72,8 @@ int8_t RTC_Initialize(void)
     // PI enabled; 
 	RTC.PITINTCTRL = 0x1;
 
-    // PERIOD RTC Clock Cycles 1024; PITEN enabled; 
-    RTC.PITCTRLA = 0x49;
+    // PERIOD RTC Clock Cycles 4096; PITEN enabled; 
+    RTC.PITCTRLA = 0x59;
 
     return 0;
 }
