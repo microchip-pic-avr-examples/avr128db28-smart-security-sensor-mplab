@@ -1,19 +1,22 @@
 #include "MLX90632.h"
 #include "MLX90632_Defines.h"
-#include "MLX90632_EEPROM_Defines.h"
+#include "EEPROM_Locations.h"
 
 #include <xc.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
 
-#include "mcc_generated_files/nvm/nvm.h"
 #include "MLX90392.h"
+#include "EEPROM_Utility.h"
+
+#include "mcc_generated_files/nvm/nvm.h"
 #include "mcc_generated_files/i2c_host/twi1.h"
 #include "mcc_generated_files/timer/delay.h"
 
 //I2C Address to Communicate at. Can be changed later
 static uint8_t _MLX90632_address = MLX90632_I2C_ADDR_BASE;
+static bool EEPROM_valid = false;
 
 //Calibration Constants
 static float_hex P_R, P_G, P_T, P_O, Ea, Eb, Fa, Fb, Ga, Gb, Ka, Ha, Hb;
@@ -34,70 +37,10 @@ static uint16_t deviceID[3];
 static volatile uint8_t cyclePos = 0; //Position of valid data
 static uint8_t i2cBuffer[4];
 
+static float ToDUT = 25.0, TaDUT = 25.0;
+
 //Process I2C Tasks
 #define PROCESS_I2C() do { while (I2C1_IsBusy()) { I2C1_Tasks(); }} while (0)
-
-//Convert 2 uint8_t to uint16_t
-#define CREATE_16BIT(MSB, LSB) ((int16_t)(((uint16_t) MSB << 8) | LSB))
-
-//Convert 4 uint8_t to uint32_t
-#define CREATE_32BIT(B4, B3, B2, B1) ((int32_t)(((uint32_t) B4 << 24) | ((uint32_t) B3 << 16) | ((uint16_t) B2 << 8) | (uint32_t) B1))
-
-//Read 2 addresses from EEPROM and return a single uint16_t
-#define GET_16B_FROM_EEPROM(address) (CREATE_16BIT(EEPROM_Read(address), EEPROM_Read(address + 1)))
-
-//Saves a 16-bit number to EEPROM, starting at addr
-void _save16BToEEPROM(uint16_t addr, uint16_t data)
-{
-    EEPROM_Write(addr, ((data & 0xFF00) >> 8));
-    EEPROM_Write(addr + 1, (data & 0xFF));
-}
-
-//Saves a 32-bit number to EEPROM, starting at addr
-void _save32BToEEPROM(uint16_t addr, uint32_t data)
-{
-    EEPROM_Write(addr, ((data & 0xFF000000) >> 24));
-    EEPROM_Write(addr + 1, ((data & 0xFF0000) >> 16));
-    EEPROM_Write(addr + 2, ((data & 0xFF00) >> 8));
-    EEPROM_Write(addr + 3, (data & 0xFF));
-}
-
-int32_t _get32BFromEEPROM(uint16_t address)
-{
-    int32_t value = 0x00000000;
-    
-    uint8_t counter = 4;
-    
-    while (counter != 0)
-    {
-        //Shift Value 1 byte
-        value <<= 8;
-        
-        //Load Byte
-        value |= EEPROM_Read(address);
-        
-        counter--;
-    }
-    
-    return value;
-}
-
-int16_t _get16BFromEEPROM(uint16_t address)
-{
-    int16_t value = 0x0000;
-    
-    //Load Byte
-    value |= EEPROM_Read(address);
-    
-    //Shift Value 1 byte
-    value <<= 8;
-
-    //Load Byte
-    value |= EEPROM_Read(address + 1);
-    
-    return value;
-}
-
 
 bool _readWriteMLX90632(MLX90632_Register reg, uint8_t* memory, uint8_t size)
 {
@@ -125,40 +68,40 @@ bool _readWriteMLX90632(MLX90632_Register reg, uint8_t* memory, uint8_t size)
 void _saveConstantsToEEPROM(void)
 {
     //Save Device ID
-    _save16BToEEPROM(MEM_DEVICE_ID1, deviceID[0]);
-    _save16BToEEPROM(MEM_DEVICE_ID2, deviceID[1]);
-    _save16BToEEPROM(MEM_DEVICE_ID3, deviceID[2]);
+    save16BToEEPROM(MEM_DEVICE_ID1, deviceID[0]);
+    save16BToEEPROM(MEM_DEVICE_ID2, deviceID[1]);
+    save16BToEEPROM(MEM_DEVICE_ID3, deviceID[2]);
         
     //Store Constants
-    _save32BToEEPROM(MEM_P_R, P_R.hexCode);
+    save32BToEEPROM(MEM_P_R, P_R.hexCode);
     
-    _save32BToEEPROM(MEM_P_G, P_G.hexCode);
-    _save32BToEEPROM(MEM_P_T, P_T.hexCode);
-    _save32BToEEPROM(MEM_P_O, P_O.hexCode);
+    save32BToEEPROM(MEM_P_G, P_G.hexCode);
+    save32BToEEPROM(MEM_P_T, P_T.hexCode);
+    save32BToEEPROM(MEM_P_O, P_O.hexCode);
     
-    _save32BToEEPROM(MEM_EA, Ea.hexCode);
-    _save32BToEEPROM(MEM_EB, Eb.hexCode);
+    save32BToEEPROM(MEM_EA, Ea.hexCode);
+    save32BToEEPROM(MEM_EB, Eb.hexCode);
     
-    _save32BToEEPROM(MEM_FA, Fa.hexCode);
-    _save32BToEEPROM(MEM_FB, Fb.hexCode);
+    save32BToEEPROM(MEM_FA, Fa.hexCode);
+    save32BToEEPROM(MEM_FB, Fb.hexCode);
     
-    _save32BToEEPROM(MEM_GA, Ga.hexCode);
-    _save32BToEEPROM(MEM_GB, Gb.hexCode);
+    save32BToEEPROM(MEM_GA, Ga.hexCode);
+    save32BToEEPROM(MEM_GB, Gb.hexCode);
     
-    _save32BToEEPROM(MEM_KA, Ka.hexCode);
+    save32BToEEPROM(MEM_KA, Ka.hexCode);
     
-    _save32BToEEPROM(MEM_HA, Ha.hexCode);
-    _save32BToEEPROM(MEM_HB, Hb.hexCode);
+    save32BToEEPROM(MEM_HA, Ha.hexCode);
+    save32BToEEPROM(MEM_HB, Hb.hexCode);
     
     //Store end-of-block marker
-    _save16BToEEPROM(MEM_VALIDATE, deviceID[0] ^ deviceID[1] ^ deviceID[2]);
+    save16BToEEPROM(MEM_VALIDATE, deviceID[0] ^ deviceID[1] ^ deviceID[2]);
 }
 
 
 //Initializes the sensor and the internal constants for calculations
-bool MLX90632_initDevice(void)
+bool MLX90632_initDevice(bool bypass)
 {
-    if (!_MLX90632_loadConstantsFromEEPROM())
+    if (bypass || (!_MLX90632_loadConstantsFromEEPROM()))
     {
         if (!_MLX90632_loadConstantsFromDevice())
         {
@@ -174,11 +117,10 @@ bool MLX90632_initDevice(void)
         //Currently doesn't handle write failures
         _saveConstantsToEEPROM();
     }
-    
-    
-    
-    //Perform a single measurement (results are invalid)
-    MLX90632_computeTemperature();
+    else
+    {
+        EEPROM_valid = true;
+    }
     
     return true;
 }
@@ -198,14 +140,14 @@ bool _MLX90632_loadConstantsFromEEPROM(void)
         return false;
     
     //Next, get the device ID from MCU EEPROM    
-    EEPROM_id[0] = GET_16B_FROM_EEPROM(MEM_DEVICE_ID1);
-    EEPROM_id[1] = GET_16B_FROM_EEPROM(MEM_DEVICE_ID2);
-    EEPROM_id[2] = GET_16B_FROM_EEPROM(MEM_DEVICE_ID3);
+    EEPROM_id[0] = get16BFromEEPROM(MEM_DEVICE_ID1);
+    EEPROM_id[1] = get16BFromEEPROM(MEM_DEVICE_ID2);
+    EEPROM_id[2] = get16BFromEEPROM(MEM_DEVICE_ID3);
     
     //Compute XOR of device ID
     XORcheck = EEPROM_id[0] ^ EEPROM_id[1] ^ EEPROM_id[2];
     
-    volatile uint16_t mValidate = GET_16B_FROM_EEPROM(MEM_VALIDATE);
+    volatile uint16_t mValidate = get16BFromEEPROM(MEM_VALIDATE);
     
     //Verify end-of-block memory marker
     if (XORcheck != mValidate)
@@ -222,24 +164,24 @@ bool _MLX90632_loadConstantsFromEEPROM(void)
         
     //Load Constants from MCU EEPROM
     
-    P_R.hexCode = (_get32BFromEEPROM(MEM_P_R));
-    P_G.hexCode = (_get32BFromEEPROM(MEM_P_G)); 
-    P_T.hexCode = (_get32BFromEEPROM(MEM_P_T)); 
-    P_O.hexCode = (_get32BFromEEPROM(MEM_P_O)); 
+    P_R.hexCode = (get32BFromEEPROM(MEM_P_R));
+    P_G.hexCode = (get32BFromEEPROM(MEM_P_G)); 
+    P_T.hexCode = (get32BFromEEPROM(MEM_P_T)); 
+    P_O.hexCode = (get32BFromEEPROM(MEM_P_O)); 
     
-    Ea.hexCode = (_get32BFromEEPROM(MEM_EA)); 
-    Eb.hexCode = (_get32BFromEEPROM(MEM_EB)); 
+    Ea.hexCode = (get32BFromEEPROM(MEM_EA)); 
+    Eb.hexCode = (get32BFromEEPROM(MEM_EB)); 
     
-    Fa.hexCode = (_get32BFromEEPROM(MEM_FA)); 
-    Fb.hexCode = (_get32BFromEEPROM(MEM_FB)); 
+    Fa.hexCode = (get32BFromEEPROM(MEM_FA)); 
+    Fb.hexCode = (get32BFromEEPROM(MEM_FB)); 
     
-    Ga.hexCode = (_get32BFromEEPROM(MEM_GA)); 
-    Gb.hexCode = (_get32BFromEEPROM(MEM_GB)); 
+    Ga.hexCode = (get32BFromEEPROM(MEM_GA)); 
+    Gb.hexCode = (get32BFromEEPROM(MEM_GB)); 
     
-    Ka.hexCode = (_get32BFromEEPROM(MEM_KA)); 
+    Ka.hexCode = (get32BFromEEPROM(MEM_KA)); 
     
-    Ha.hexCode = (_get32BFromEEPROM(MEM_HA)); 
-    Hb.hexCode = (_get32BFromEEPROM(MEM_HB)); 
+    Ha.hexCode = (get32BFromEEPROM(MEM_HA)); 
+    Hb.hexCode = (get32BFromEEPROM(MEM_HB)); 
     
     return true;
 #endif
@@ -250,16 +192,20 @@ bool _MLX90632_loadConstantsFromEEPROM(void)
 //If CACHE_CONSTANTS is defined, constants are also stored in EEPROM.
 bool _MLX90632_loadConstantsFromDevice(void)
 {
+    //Load the device ID
+    if (!MLX90632_getDeviceID(&deviceID[0]))
+        return false;
+    
+    //Pool of memory for reading constants
     uint8_t dataPool[24];
     
-    //Queue I2C
+    //Queue I2C Operation
     bool success = _readWriteMLX90632(EE_P_R_LOW, &dataPool[0], 16);
     
     if (!success)
         return false;
 
     //Decode Constants
-    
     P_R.value = CREATE_32BIT(dataPool[2], dataPool[3], dataPool[0], dataPool[1]) * P_R_MULT;
     P_G.value = CREATE_32BIT(dataPool[6], dataPool[7], dataPool[4], dataPool[5]) * P_G_MULT;
     P_T.value = CREATE_32BIT(dataPool[10], dataPool[11], dataPool[8], dataPool[9]) * P_T_MULT;
@@ -286,7 +232,6 @@ bool _MLX90632_loadConstantsFromDevice(void)
     Ka.value  = CREATE_16BIT(dataPool[22], dataPool[23]) * KA_MULT;
     
     //Skip to Ha   
-    
     success = _readWriteMLX90632(EE_HA_LOW, &dataPool[0], 4);
     
     if (!success)
@@ -351,6 +296,12 @@ void _MLX90632_loadTestData(void)
     }
 }
 
+//Returns true if constants were loaded from EEPROM
+bool MLX90632_cacheOK(void)
+{
+    return EEPROM_valid;
+}
+
 //Returns the 48-bit device ID. ID must be at least 3 16-bit numbers or greater
 bool MLX90632_getDeviceID(uint16_t* id)
 {  
@@ -402,6 +353,12 @@ bool MLX90632_getRegister(MLX90632_Register reg, uint16_t* result)
 //Refresh cached measurements and cycle position indicators
 bool MLX90632_getResults(void)
 {
+#ifdef TEST_MLX90632
+    //Load Test Pattern
+    _MLX90632_loadTestData();
+    return true;
+#endif
+
     uint8_t statusBytes[2];
     
     bool success = _readWriteMLX90632(MLX90632_REG_STATUS, &statusBytes[0], 2);
@@ -430,6 +387,27 @@ bool MLX90632_getResults(void)
     return true;
 }
 
+bool MLX90632_isDataReady(void)
+{
+    MLX90632_Status status;
+    bool success;
+    
+    success = MLX90632_getStatus(&status);
+    
+    //If in test mode - data test pattern can be used as a fallback
+    if (!success)
+    {
+#ifndef TEST_MLX90632
+        return false;
+#else
+        return true;
+#endif
+
+    }
+    
+    return (status.regValue & MLX90632_STATUS_NEW_DATA_bm);
+}
+
 bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data)
 {
     i2cBuffer[0] = (reg & 0xFF00) >> 8;
@@ -456,51 +434,27 @@ bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data)
 //Starts a single conversion
 bool MLX90632_startSingleConversion(void)
 {
-    return MLX90632_setRegister(MLX90632_REG_CONTROL, (MLX90632_CONTROL_MEAS_SELECT_MEDICAL << MLX90632_CONTROL_MEAS_SELECT_gp) | 
+    bool success = MLX90632_setRegister(MLX90632_REG_CONTROL, (MLX90632_CONTROL_MEAS_SELECT_MEDICAL << MLX90632_CONTROL_MEAS_SELECT_gp) | 
             MLX90632_CONTROL_SOB_bm | 
             (MLX90632_CONTROL_MODE_SLEEPING_STEP << MLX90632_CONTROL_MODE_gp));
+    
+    //If in test mode, then use hard-coded patterns if sensor fails
+#ifdef TEST_MLX90632
+    if (!success)
+    {
+        return true;
+    }
+#endif
+
+    return success;
 }
 
 //Computes the temperature of an object. Returns the result in Celsius
-float MLX90632_computeTemperature(void)
-{    
-    bool success = MLX90632_startSingleConversion();
-    MLX90632_Status status;
-    
-    if (!success)
-    {
-#ifndef TEST_MLX90632
-        return 0.0;
-#else
-        _MLX90632_loadTestData();
-#endif
-    }
-    else
-    {
-        //Wait for conversion to finish
-        do
-        {
-            success = MLX90632_getStatus(&status);
-            
-            //Failed to read status
-            if (!success)
-            {
-                return 0.0;
-            }
-            
-            //Wait...
-            DELAY_milliseconds(100);
-            
-        } while (!(status.regValue & MLX90632_STATUS_NEW_DATA_bm));
-        
-        //Load measurements
-        if (!MLX90632_getResults())
-            return 0.0;
-    }
-    
+bool MLX90632_computeTemperature(void)
+{        
     //Cycle Position Invalid
     if ((cyclePos != 2) && (cyclePos != 1))
-        return 0.0;
+        return false;
     
     //Measurements are loaded - calculate results
     //From Section 11.1.1.1 in the DS
@@ -521,10 +475,10 @@ float MLX90632_computeTemperature(void)
     float VRto = RAM_9 + Ka.value * (RAM_6 / 12.0F);
     float Sto = (S / 12.0F) / VRto * EXP_2_P19;
     
-    float TaDUT = P_O.value + ((AMB - P_R.value) / P_G.value) + P_T.value * ((AMB - P_R.value) * (AMB - P_R.value));
+    TaDUT = P_O.value + ((AMB - P_R.value) / P_G.value) + P_T.value * ((AMB - P_R.value) * (AMB - P_R.value));
     float TaK = TaDUT + 273.15; //Ta in Kelvin
     
-    float ToDUT = 25.0;
+    ToDUT = 25.0;
     float _temp;
     
     for (uint8_t i = 0; i < CALCULATION_LOOPS; ++i)
@@ -543,6 +497,17 @@ float MLX90632_computeTemperature(void)
         ToDUT = sqrtf(sqrtf(_temp)) - 273.15 - Hb.value;
     }
     
-    return ToDUT;
+    return true;
 }
 
+//Returns the Temperature of the Sensor
+float MLX90632_getSensorTemp(void)
+{
+    return TaDUT;
+}
+
+//Returns the Temperature of the Object
+float MLX90632_getObjectTemp(void)
+{
+    return ToDUT;
+}

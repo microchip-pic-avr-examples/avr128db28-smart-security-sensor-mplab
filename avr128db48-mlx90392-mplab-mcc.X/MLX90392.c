@@ -9,27 +9,78 @@
 #define MLX90392_ADDR 0x0C
 #define PROCESS_I2C() do { while (I2C0_IsBusy()) { I2C0_Tasks(); }} while (0)
 
-
-bool MLX90392_reset(void)
+//Init the Sensor
+bool MLX90392_init(void)
 {
-    //If MVIO is not ready, then exit.
+    bool success;
+    
+    //Reset device
+    success = MLX90392_reset();
+    
+    if (!success)
+        return false;
+    
+    //Setup Temperature Correction + Z-Axis Filtering
+    success = MLX90392_setRegister(MLX90392_CUST_CTRL, MLX90392_CUST_CTRL_DNC | MLX90392_CUST_CTRL_T_COMP_EN_bm |
+            (5 << MLX90392_CUST_CTRL_DIG_FILT_HALL_Z_gp));
+
+    if (!success)
+        return false;
+    
+    //Setup Digital Filtering for XY + Temp Measurements
+    success = MLX90392_setRegister(MLX90392_OSC_DIG_FILT, (5 << MLX90392_OSR_DIG_FILT_OSR_HALL_XY_gp) | (5 << MLX90392_OSR_DIG_FILT_OSR_TEMP_MP_gp));
+    
+    return success;
+}
+
+//Returns the register specified from the device
+bool MLX90392_getRegister(MLX90392_Register reg, uint8_t* data)
+{
+    //If MVIO is not powered, exit
     if (!MVIO_isOK())
         return false;
     
-    //Reset MLX90392 Device
-    uint8_t initSEQ[2] = {(uint8_t) RST, 0x06};
-    
-    if (I2C0_Write(MLX90392_ADDR, &initSEQ[0], 2))
+    //Start Read / Write Operation
+    if (I2C0_WriteRead(MLX90392_ADDR, &reg, 1, data, 1))
     {
         PROCESS_I2C();
-        
+
+        //If an error occurred...
         if (I2C0_ErrorGet())
             return false;
-        
+
         return true;
     }
-    
+        
     return false;
+
+}
+
+//Sets the register specified on the device
+bool MLX90392_setRegister(MLX90392_Register reg, uint8_t data)
+{
+    if (!MVIO_isOK())
+        return false;
+
+    uint8_t writeBuffer[] = {reg, data};
+    
+    if (I2C0_Write(MLX90392_ADDR, &writeBuffer[0], 2))
+    {
+        PROCESS_I2C();
+
+        //If an error occurred...
+        if (I2C0_ErrorGet())
+            return false;
+
+        return true;
+    }
+        
+    return false;
+}
+
+bool MLX90392_reset(void)
+{
+    return MLX90392_setRegister(MLX90392_RST, 0x06);
 }
 
 bool MLX90392_isDataReady(void)
@@ -53,7 +104,7 @@ bool MLX90392_isDataReady(void)
     return (status & 0x01);
 }
 
-bool MLX90392_getSingleMeasurement(MLX90392_Result* result)
+bool MLX90392_getSingleMeasurementBlocking(MLX90392_Result* result)
 {
     //Set the Sensor into Single Measurement Mode
     if (!MLX90392_setOperatingMode(SINGLE))
@@ -127,25 +178,7 @@ bool MLX90392_selfTest(void)
 
 bool MLX90392_setOperatingMode(MLX90392_Mode mode)
 {
-    //If MVIO is not ready, then exit.
-    if (!MVIO_isOK())
-        return false;
-    
-    uint8_t setMode[] = { CTRL, mode};
-    
-    //Set the operating mode
-    if (I2C0_Write(MLX90392_ADDR, &setMode[0], 2))
-    {
-        PROCESS_I2C();
-        
-        //If an error occurred...
-        if (I2C0_ErrorGet())
-            return false;
-        
-        return true;
-    }
-        
-    return false;
+    return MLX90392_setRegister(MLX90392_CTRL, mode);
 }
 
 bool MLX90392_getResult(MLX90392_Result* result)

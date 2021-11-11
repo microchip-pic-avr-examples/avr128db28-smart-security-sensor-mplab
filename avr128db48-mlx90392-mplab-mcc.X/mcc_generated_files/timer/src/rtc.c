@@ -49,22 +49,22 @@ int8_t RTC_Initialize(void)
     while (RTC.STATUS > 0) { /* Wait for all register to be synchronized */
     }
     //Compare 
-    RTC.CMP = 0x7FFF;
+    RTC.CMP = 0xFF;
 
     //Count
     RTC.CNT = 0x0;
 
     //Period
-    RTC.PER = 0xFFFF;
+    RTC.PER = 0xEFF;
 
     //Clock selection
     RTC.CLKSEL = 0x0;
 
-    // CMP disabled; OVF disabled; 
-    RTC.INTCTRL = 0x0;
+    // CMP disabled; OVF enabled; 
+    RTC.INTCTRL = 0x1;
 
-    // CORREN disabled; PRESCALER RTC Clock / 1; RTCEN enabled; RUNSTDBY disabled; 
-    RTC.CTRLA = 0x1;
+    // CORREN disabled; PRESCALER RTC Clock / 128; RTCEN enabled; RUNSTDBY disabled; 
+    RTC.CTRLA = 0x39 | RTC_RUNSTDBY_bm;
 
 
         while (RTC.PITSTATUS > 0) { /* Wait for all register to be synchronized */
@@ -72,8 +72,8 @@ int8_t RTC_Initialize(void)
     // PI enabled; 
 	RTC.PITINTCTRL = 0x1;
 
-    // PERIOD RTC Clock Cycles 4096; PITEN enabled; 
-    RTC.PITCTRLA = 0x59;
+    // PERIOD RTC Clock Cycles 8192; PITEN enabled; 
+    RTC.PITCTRLA = 0x61;
 
     return 0;
 }

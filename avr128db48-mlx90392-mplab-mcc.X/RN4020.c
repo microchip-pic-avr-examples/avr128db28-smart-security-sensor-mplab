@@ -1,6 +1,6 @@
 #include "RN4020.h"
 #include "mcc_generated_files/system/pins.h"
-#include "mcc_generated_files/uart/usart2.h"
+#include "mcc_generated_files/uart/usart3.h"
 #include "mcc_generated_files/timer/delay.h"
 #include <xc.h>
 
@@ -34,16 +34,16 @@ void RN4020_sendUART(const char* str, uint8_t len)
     while (index < len)
     {
         //Wait for Ready
-        while (!USART2_IsTxReady());
+        while (!USART3_IsTxReady());
         
         //Write the Byte
-        USART2_Write(str[index]);
+        USART3_Write(str[index]);
         
         index++;
     }
     
-    while (!USART2_IsTxDone());
-        USART2.STATUS = USART_TXCIF_bm;
+    while (!USART3_IsTxDone());
+        USART3.STATUS = USART_TXCIF_bm;
 }
 
 void RN4020_sendStringUART(const char* str)
@@ -53,14 +53,14 @@ void RN4020_sendStringUART(const char* str)
     while (str[index] != '\0')
     {
         
-        while (!USART2_IsTxReady());
+        while (!USART3_IsTxReady());
         
         //Write the Byte
-        USART2_Write(str[index]);
+        USART3_Write(str[index]);
         
         index++;
     }
     
-    while (!USART2_IsTxDone());
-        USART2.STATUS = USART_TXCIF_bm;
+    while (!USART3_IsTxDone());
+        USART3.STATUS = USART_TXCIF_bm;
 }

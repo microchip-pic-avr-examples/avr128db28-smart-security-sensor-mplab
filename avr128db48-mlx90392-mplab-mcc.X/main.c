@@ -34,16 +34,8 @@
 #include "MLX90392.h"
 #include "MLX90632.h"
 #include "mcc_generated_files/timer/delay.h"
-#include "RN4020.h"
-
-void sensorFailure(void)
-{
-    while (1)
-    {
-        LED0_Toggle();
-        DELAY_milliseconds(500);
-    }
-}
+#include "windowAlarm.h"
+#include "tempMonitor.h"
 
 int main(void)
 {
@@ -53,58 +45,56 @@ int main(void)
     TWI0.DBGCTRL = 1;
     TWI1.DBGCTRL = 1;
     
+    //Enable USART Debug
+    USART3.DBGCTRL = 1;
+    
     //Bug Fix for IO Assignment
     PORTMUX.TWIROUTEA = 0x2;
     
-    DELAY_milliseconds(10);
+    //Setup ISR Callback for RTC
+    RTC_SetOVFIsrCallback(&tempMonitor_requestConversion);
+    
+    //Setup MVIO ISR
+    MVIO_setCallback(&_windowAlarm_onMVIOChange);
+    
+    //Setup ISR Callback for the Calibration Button
+    LUT4_OUT_SetInterruptHandler(&_windowAlarm_buttonPressed);
+            
+    //This boolean is used to determine if reset to defaults is required
+    bool safeStart = SW0_GetValue();
     
     //Init RN4020 BLE Module
     //RN4020_initDevice();
+            
+    windowAlarm_init(safeStart);
+    tempMonitor_init(safeStart);
     
-    MLX90632_initDevice();
-        
-    uint8_t tries = 10;
-    
-    //Init Magnetometer
-//    do
-//    {
-//        //Soft Reset the Sensor
-//        tries--;
-//        
-//        if (tries == 0)
-//        {
-//            //Unable to reset sensor
-//            
-//            sensorFailure();
-//        }
-//        
-//    } while (MLX90392_reset());
-    
-    
-    
-    //Only perform Magnetometer self test if sensor is -010 version 
-//    if (!MLX90392_selfTest())
-//    {
-//        //If Sensor is Bad...
-//        
-//        sensorFailure();
-//    }
-    
-    MLX90392_Result result;
-    bool success;
-    volatile float temp;
-    
+    //Start Interrupts
     sei();
     
     while(1)
-    {
-        //Get a single measurement
-        //MLX90392_getSingleMeasurement(&result);
+    {        
+        //Clear the Watchdog Timer
+        asm("WDR");
         
-        temp = MLX90632_computeTemperature();
-        
-        //Sleep
         LED0_Toggle();
+        
+        //Run the magnetometer state machine
+        windowAlarm_FSM();
+        
+        //Run the thermometer state machine
+        tempMonitor_FSM();
+                
+        //If UART has data queued, then wait for it to send before SLEEP
+        if (!USART3_IsTxReady())
+        {
+            //Clear Flag
+            USART3.STATUS = USART_TXCIF_bm;
+            
+            //Wait...
+            while (USART3_IsTxBusy());
+        }
+        
         asm("SLEEP");
     }    
 }

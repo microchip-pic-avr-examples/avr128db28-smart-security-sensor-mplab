@@ -25,7 +25,7 @@ extern "C" {
 #define CALCULATION_LOOPS 3
     
     //Initializes the sensor and the internal constants for calculations
-    bool MLX90632_initDevice(void);
+    bool MLX90632_initDevice(bool bypass);
     
     //Attempts to load pre-computed sensor constants from internal EEPROM. 
     //If CACHE_CONSTANTS is not defined, this function fails. 
@@ -41,6 +41,9 @@ extern "C" {
     //Loads EXAMPLE sensor data from datasheet.
     void _MLX90632_loadTestData(void);
     
+    //Returns true if the MCU's EEPROM cache was loaded
+    bool MLX90632_cacheOK(void);
+    
     //Returns the 48-bit device ID. ID must be at least 3 16-bit numbers or greater
     bool MLX90632_getDeviceID(uint16_t* id);
     
@@ -53,6 +56,9 @@ extern "C" {
     //Refresh cached measurements and cycle position indicators
     bool MLX90632_getResults(void);
     
+    //Returns true if data is ready, and false if not ready (or if an error occurs)
+    bool MLX90632_isDataReady(void);
+    
     //Set a register on the sensor
     bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data);
     
@@ -60,8 +66,13 @@ extern "C" {
     bool MLX90632_startSingleConversion(void);
     
     //Computes the temperature of an object. Returns the result in Celsius
-    float MLX90632_computeTemperature(void);
+    bool MLX90632_computeTemperature(void);
     
+    //Returns the Temperature of the Sensor
+    float MLX90632_getSensorTemp(void);
+    
+    //Returns the Temperature of the Object
+    float MLX90632_getObjectTemp(void);
     
 #ifdef	__cplusplus
 }

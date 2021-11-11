@@ -306,6 +306,39 @@ static void I2C0_Close(void)
 
 static void I2C0_EventHandler(void)
 {
+//    switch (I2C0_Status.state)
+//    {
+//        case I2C_STATE_IDLE:
+//            I2C0_Status.state = I2C_EVENT_IDLE();
+//            break;
+//        case I2C_STATE_SEND_RD_ADDR:
+//            I2C0_Status.state = I2C_EVENT_SEND_RD_ADDR();
+//            break;
+//        case I2C_STATE_SEND_WR_ADDR:
+//            I2C0_Status.state = I2C_EVENT_SEND_WR_ADDR();
+//            break;
+//        case I2C_STATE_TX:
+//            I2C0_Status.state = I2C_EVENT_TX();
+//            break;
+//        case I2C_STATE_RX:
+//            I2C0_Status.state = I2C_EVENT_RX();
+//            break;
+//        case I2C_STATE_NACK:
+//            I2C0_Status.state = I2C_EVENT_NACK();
+//            break;
+//        case I2C_STATE_ERROR:
+//            I2C0_Status.state = I2C_EVENT_ERROR();
+//            break;
+//        case I2C_STATE_STOP:
+//            I2C0_Status.state = I2C_EVENT_STOP();
+//            break;
+//        case I2C_STATE_RESET:
+//            I2C0_Status.state = I2C_EVENT_RESET();
+//            break;
+//    }
+//    
+//    volatile i2c0eventHandler f_ptr = i2c0_eventTable[I2C0_Status.state];
+//    volatile i2c0eventHandler ref_ptr = &I2C_EVENT_TX;
     I2C0_Status.state = i2c0_eventTable[I2C0_Status.state]();
 }
 

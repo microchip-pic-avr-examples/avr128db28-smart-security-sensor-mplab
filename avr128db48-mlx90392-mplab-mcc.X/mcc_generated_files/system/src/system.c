@@ -40,6 +40,7 @@ int8_t SLPCTRL_Initialize();
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
+    CCL_Initialize();
     CLOCK_Initialize();
     I2C0_Initialize();
     I2C1_Initialize();
@@ -47,7 +48,7 @@ void SYSTEM_Initialize(void)
     NVM_Initialize();
     RTC_Initialize();
     SLPCTRL_Initialize();
-    USART2_Initialize();
+    USART3_Initialize();
     VREF_Initialize();
     CPUINT_Initialize();
 }
