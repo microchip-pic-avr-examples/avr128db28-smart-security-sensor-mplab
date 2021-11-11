@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<project>                                  
+  <executable name="dist/free/debug/avr128db48-mlx90392-mplab-mcc.X.debug.elf">                 
+    <memory name="program">              
+      <units>bytes</units>                 
+      <length>131072</length>                 
+      <used>14341</used>                     
+      <free>116731</free>                     
+    </memory>                              
+    <memory name="data">                 
+      <units>bytes</units>                 
+      <length>16384</length>                 
+      <used>599</used>                     
+      <free>15785</free>                     
+    </memory>                              
+  </executable>                            
+</project>                                 

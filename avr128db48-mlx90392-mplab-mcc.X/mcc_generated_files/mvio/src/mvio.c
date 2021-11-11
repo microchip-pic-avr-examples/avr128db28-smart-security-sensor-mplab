@@ -42,15 +42,23 @@
 
 #include "../mvio.h"
 
+static void (* onMVIOChange)(void);
+
 /**
  * \brief Initialize mvio interface
  */
 int8_t MVIO_Initialize(void) 
 {
-    //VDDIO2IE disabled; 
-    MVIO.INTCTRL = 0x0;
+    //VDDIO2IE enabled; 
+    MVIO.INTCTRL = 0x1;
+    onMVIOChange = 0;
 
     return 0;
+}
+
+void MVIO_setCallback(void (*callback)())
+{
+    onMVIOChange = callback;
 }
 
 /**
@@ -71,5 +79,11 @@ bool MVIO_isOK(void)
 
 ISR(MVIO_MVIO_vect)
 {
-    /* Insert your MVIO interrupt handling code here */
+    if (onMVIOChange)
+    {
+        onMVIOChange();
+    }
+    
+    //Clear MVIO Flag
+    MVIO.INTFLAGS = 1;
 }

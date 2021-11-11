@@ -53,6 +53,7 @@ extern "C" {
 * \return Status                                                                                                     \
 */
 int8_t MVIO_Initialize(void);
+void MVIO_setCallback(void (*callback)());
 
 bool MVIO_isOK(void);
 

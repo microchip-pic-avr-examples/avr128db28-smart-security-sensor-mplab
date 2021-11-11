@@ -306,7 +306,38 @@ static void I2C1_Close(void)
 
 static void I2C1_EventHandler(void)
 {
-    I2C1_Status.state = i2c1_eventTable[I2C1_Status.state]();
+    switch (I2C1_Status.state)
+    {
+        case I2C_STATE_IDLE:
+            I2C1_Status.state = I2C_EVENT_IDLE();
+            break;
+        case I2C_STATE_SEND_RD_ADDR:
+            I2C1_Status.state = I2C_EVENT_SEND_RD_ADDR();
+            break;
+        case I2C_STATE_SEND_WR_ADDR:
+            I2C1_Status.state = I2C_EVENT_SEND_WR_ADDR();
+            break;
+        case I2C_STATE_TX:
+            I2C1_Status.state = I2C_EVENT_TX();
+            break;
+        case I2C_STATE_RX:
+            I2C1_Status.state = I2C_EVENT_RX();
+            break;
+        case I2C_STATE_NACK:
+            I2C1_Status.state = I2C_EVENT_NACK();
+            break;
+        case I2C_STATE_ERROR:
+            I2C1_Status.state = I2C_EVENT_ERROR();
+            break;
+        case I2C_STATE_STOP:
+            I2C1_Status.state = I2C_EVENT_STOP();
+            break;
+        case I2C_STATE_RESET:
+            I2C1_Status.state = I2C_EVENT_RESET();
+            break;
+    }
+
+    //I2C1_Status.state = i2c1_eventTable[I2C1_Status.state]();
 }
 
 static void I2C1_ErrorEventHandler(void)

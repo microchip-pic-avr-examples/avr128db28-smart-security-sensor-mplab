@@ -34,11 +34,13 @@ extern "C" {
 #define HA_MULT     EXP_2_N14
 #define HB_MULT     EXP_2_N10
     
+    //Special Data Type for Storing / Loading Floats
     typedef union {
         float value;
         uint32_t hexCode;
     } float_hex;
-    
+        
+    //Register Addresses
     typedef enum {
         MLX90632_ID0 = 0x2405, MLX90632_ID1, MLX90632_ID2, MLX90632_ID_CRC16, MLX90632_EE_PRODUCT_CODE,
         MLX90632_EE_VERSION = 0x240B, EE_P_R_LOW, EE_P_R_HIGH, EE_P_G_LOW, EE_P_G_HIGH,
