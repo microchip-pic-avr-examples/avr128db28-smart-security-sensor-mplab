@@ -58,7 +58,7 @@ extern "C" {
         
         //Bytes to allocate - easier to load into memory this way
         uint8_t data[8];
-    } MLX90392_Result;        
+    } MLX90392_RawResult;        
     
 //STAT1
 #define MLX90392_STAT1_RT_bp 3
@@ -125,10 +125,10 @@ extern "C" {
     bool MLX90392_setOperatingMode(MLX90392_Mode mode);
     
     //Sets the operating mode of the sensor, waits, then returns a result
-    bool MLX90392_getSingleMeasurementBlocking(MLX90392_Result* result);
+    bool MLX90392_getSingleMeasurementBlocking(MLX90392_RawResult* result);
     
     //Reads the result registers on the sensor
-    bool MLX90392_getResult(MLX90392_Result* result);
+    bool MLX90392_getResult(MLX90392_RawResult* result);
     
     //Returns the temperature of the sensor
     bool MLX90392_getTemp(uint16_t* temp);

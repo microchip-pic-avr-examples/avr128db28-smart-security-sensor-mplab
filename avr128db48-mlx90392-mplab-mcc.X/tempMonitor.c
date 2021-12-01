@@ -9,6 +9,7 @@
 #include "EEPROM_Utility.h"
 #include "EEPROM_Locations.h"
 #include "mcc_generated_files/timer/delay.h"
+#include "printUtility.h"
 
 //State Machine for the main program
 typedef enum  {
@@ -22,7 +23,7 @@ void tempMonitor_init(bool safeStart)
 {
     bool success;
     
-    printf("Initializing MLX90632 Temperature Sensor...");
+    printConstantString("Initializing MLX90632 Temperature Sensor...");
     if (safeStart)
     {
         //Button is Held - Safe Mode
@@ -39,7 +40,7 @@ void tempMonitor_init(bool safeStart)
     if (MLX90632_cacheOK())
     {
         //Load EEPROM Value for RTC Period
-        printf("\r\nLoaded cached constants and settings...");
+        printConstantString("\r\nLoaded cached constants and settings...");
         
         //Update RTC Timer
         RTC_WritePeroid(get16BFromEEPROM(TEMP_UPDATE_PERIOD));
@@ -47,7 +48,7 @@ void tempMonitor_init(bool safeStart)
     else
     {
         //Write the default RTC Period to EEPROM
-        printf("\r\nLoaded constants from sensor and reset to defaults...");
+        printConstantString("\r\nLoaded constants from sensor and reset to defaults...");
         
         //Write default RTC period to EEPROM
         save16BToEEPROM(TEMP_UPDATE_PERIOD, RTC_ReadPeriod());
@@ -56,11 +57,11 @@ void tempMonitor_init(bool safeStart)
     //Print Result
     if (success)
     {
-        printf("OK\r\n");
+        printConstantString("OK\r\n");
     }
     else
     {
-        printf("FAILED\r\n");
+        printConstantString("FAILED\r\n");
         tempState = TEMP_ERROR;
     }
 }
@@ -122,11 +123,11 @@ void tempMonitor_FSM(void)
             //Update State
             if (success)
             {
-                printf("Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
+                sprintf(getCharBuffer(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
                         MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
+                printBufferedString();
                 tempState = TEMP_SLEEP;
             }
-
             else
             {
                 tempState = TEMP_ERROR;
@@ -138,7 +139,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            printf("Temperature Sensor Error - Reboot Device\r\n");
+            printConstantString("Temperature Sensor Error - Reboot Device\r\n");
         }
     }
 }

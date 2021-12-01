@@ -38,9 +38,9 @@ static void (*PB1_InterruptHandler)(void);
 static void (*PB0_InterruptHandler)(void);
 static void (*PF3_InterruptHandler)(void);
 static void (*PF2_InterruptHandler)(void);
-static void (*PB2_InterruptHandler)(void);
 static void (*PC3_InterruptHandler)(void);
 static void (*PC2_InterruptHandler)(void);
+static void (*PB2_InterruptHandler)(void);
 static void (*PD4_InterruptHandler)(void);
 static void (*PB3_InterruptHandler)(void);
 static void (*PD0_InterruptHandler)(void);
@@ -132,9 +132,9 @@ void PIN_MANAGER_Initialize()
     PB0_SetInterruptHandler(PB0_DefaultInterruptHandler);
     PF3_SetInterruptHandler(PF3_DefaultInterruptHandler);
     PF2_SetInterruptHandler(PF2_DefaultInterruptHandler);
-    PB2_SetInterruptHandler(PB2_DefaultInterruptHandler);
     PC3_SetInterruptHandler(PC3_DefaultInterruptHandler);
     PC2_SetInterruptHandler(PC2_DefaultInterruptHandler);
+    PB2_SetInterruptHandler(PB2_DefaultInterruptHandler);
     PD4_SetInterruptHandler(PD4_DefaultInterruptHandler);
     PB3_SetInterruptHandler(PB3_DefaultInterruptHandler);
     PD0_SetInterruptHandler(PD0_DefaultInterruptHandler);
@@ -194,19 +194,6 @@ void PF2_DefaultInterruptHandler(void)
     // or set custom function using PF2_SetInterruptHandler()
 }
 /**
-  Allows selecting an interrupt handler for PB2 at application runtime
-*/
-void PB2_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PB2_InterruptHandler = interruptHandler;
-}
-
-void PB2_DefaultInterruptHandler(void)
-{
-    // add your PB2 interrupt custom code
-    // or set custom function using PB2_SetInterruptHandler()
-}
-/**
   Allows selecting an interrupt handler for PC3 at application runtime
 */
 void PC3_SetInterruptHandler(void (* interruptHandler)(void)) 
@@ -231,6 +218,19 @@ void PC2_DefaultInterruptHandler(void)
 {
     // add your PC2 interrupt custom code
     // or set custom function using PC2_SetInterruptHandler()
+}
+/**
+  Allows selecting an interrupt handler for PB2 at application runtime
+*/
+void PB2_SetInterruptHandler(void (* interruptHandler)(void)) 
+{
+    PB2_InterruptHandler = interruptHandler;
+}
+
+void PB2_DefaultInterruptHandler(void)
+{
+    // add your PB2 interrupt custom code
+    // or set custom function using PB2_SetInterruptHandler()
 }
 /**
   Allows selecting an interrupt handler for PD4 at application runtime

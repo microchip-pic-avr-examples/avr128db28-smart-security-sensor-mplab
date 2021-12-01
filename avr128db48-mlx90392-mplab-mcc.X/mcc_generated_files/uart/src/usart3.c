@@ -32,25 +32,6 @@
 #include "../usart3.h"
 #define RECEIVE_ERROR_MASK 0x46
 
-#if defined(__GNUC__)
-
-int USART3_printCHAR(char character, FILE *stream)
-{
-    while(!(USART3_IsTxReady()));
-    USART3_Write(character);
-    return 0;
-}
-
-FILE USART3_stream = FDEV_SETUP_STREAM(USART3_printCHAR, NULL, _FDEV_SETUP_WRITE);
-
-#elif defined(__ICCAVR__)
-
-int putchar(int outChar)
-{
-    USART3_Write(outChar);
-    return outChar;
-}
-#endif
 
 static void DefaultFramingErrorCallback(void);
 static void DefaultOverrunErrorCallback(void);
@@ -101,10 +82,6 @@ void USART3_Initialize(void)
     //TXPLCTRL_TXPL
     USART3.TXPLCTRL = 0x0;
 	
-
-#if defined(__GNUC__)
-    stdout = &USART3_stream;
-#endif
 
 }
 

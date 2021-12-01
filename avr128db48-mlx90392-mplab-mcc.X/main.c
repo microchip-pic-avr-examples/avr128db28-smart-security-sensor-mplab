@@ -30,6 +30,8 @@
     EXCEED AMOUNT OF FEES, IF ANY, YOU PAID DIRECTLY TO MICROCHIP FOR 
     THIS SOFTWARE.
 */
+#include <xc.h>
+
 #include "mcc_generated_files/system/system.h"
 #include "MLX90392.h"
 #include "MLX90632.h"
@@ -45,6 +47,9 @@ int main(void)
     TWI0.DBGCTRL = 1;
     TWI1.DBGCTRL = 1;
     
+    //Enable USART in Debug
+    USART3.DBGCTRL = 1;
+    
     //Enable USART Debug
     USART3.DBGCTRL = 1;
     
@@ -56,9 +61,6 @@ int main(void)
     
     //Setup MVIO ISR
     MVIO_setCallback(&_windowAlarm_onMVIOChange);
-    
-    //Setup ISR Callback for the Calibration Button
-    LUT4_OUT_SetInterruptHandler(&_windowAlarm_buttonPressed);
             
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
@@ -76,25 +78,13 @@ int main(void)
     {        
         //Clear the Watchdog Timer
         asm("WDR");
-        
-        LED0_Toggle();
-        
+                        
         //Run the magnetometer state machine
         windowAlarm_FSM();
         
         //Run the thermometer state machine
-        tempMonitor_FSM();
-                
-        //If UART has data queued, then wait for it to send before SLEEP
-        if (!USART3_IsTxReady())
-        {
-            //Clear Flag
-            USART3.STATUS = USART_TXCIF_bm;
-            
-            //Wait...
-            while (USART3_IsTxBusy());
-        }
-        
+        //tempMonitor_FSM();
+                        
         asm("SLEEP");
     }    
 }
