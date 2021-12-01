@@ -7,9 +7,6 @@
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
-        <logicalFolder name="ccl" displayName="ccl" projectFiles="true">
-          <itemPath>mcc_generated_files/ccl/ccl.h</itemPath>
-        </logicalFolder>
         <logicalFolder name="i2c_host" displayName="i2c_host" projectFiles="true">
           <itemPath>mcc_generated_files/i2c_host/twi0.h</itemPath>
           <itemPath>mcc_generated_files/i2c_host/i2c_host_event_types.h</itemPath>
@@ -64,6 +61,7 @@
       <itemPath>windowAlarm.h</itemPath>
       <itemPath>tempMonitor.h</itemPath>
       <itemPath>EEPROM_Utility.h</itemPath>
+      <itemPath>printUtility.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -75,11 +73,6 @@
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
-        <logicalFolder name="ccl" displayName="ccl" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/ccl/src/ccl.c</itemPath>
-          </logicalFolder>
-        </logicalFolder>
         <logicalFolder name="docs" displayName="docs" projectFiles="true">
           <itemPath>mcc_generated_files/docs/delay.dox</itemPath>
         </logicalFolder>
@@ -133,6 +126,7 @@
       <itemPath>windowAlarm.c</itemPath>
       <itemPath>tempMonitor.c</itemPath>
       <itemPath>EEPROM_Utility.c</itemPath>
+      <itemPath>printUtility.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

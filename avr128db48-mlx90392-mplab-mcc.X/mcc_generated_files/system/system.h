@@ -39,7 +39,6 @@ extern "C" {
 #include "../system/utils/compiler.h"
 #include "../system/clock.h"
 #include "../system/pins.h"
-#include "../ccl/ccl.h"
 #include "../system/clock.h"
 #include "../i2c_host/twi0.h"
 #include "../i2c_host/twi1.h"
