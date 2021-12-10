@@ -62,6 +62,7 @@
       <itemPath>tempMonitor.h</itemPath>
       <itemPath>EEPROM_Utility.h</itemPath>
       <itemPath>printUtility.h</itemPath>
+      <itemPath>windowAlarm_config.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -148,11 +149,11 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>nEdbgTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>2.32</languageToolchainVersion>
+        <languageToolchainVersion>2.31</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.9.119"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.10.124"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -356,8 +357,6 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
-        <property key="programmerToGoFilePath"
-                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/free/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
@@ -591,8 +590,6 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
-        <property key="programmerToGoFilePath"
-                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/pro/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"

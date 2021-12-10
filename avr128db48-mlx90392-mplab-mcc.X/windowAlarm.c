@@ -1,8 +1,4 @@
-#include "windowAlarm.h"
 #include "mcc_generated_files/system/system.h"
-#include "MLX90392.h"
-#include "EEPROM_Locations.h"
-#include "EEPROM_Utility.h"
 #include "mcc_generated_files/timer/delay.h"
 
 #include <xc.h>
@@ -12,6 +8,12 @@
 #include <stdio.h>
 
 #include "printUtility.h"
+#include "windowAlarm.h"
+#include "windowAlarm_config.h"
+#include "MLX90392.h"
+#include "EEPROM_Locations.h"
+#include "EEPROM_Utility.h"
+
 
 //Enumeration for the Measurement State Machine
 typedef enum {
@@ -21,7 +23,8 @@ MAGNETOMETER_START = 0, MAGNETOMETER_WAIT, MAGNETOMETER_ERROR,
 
 //Enumeration for Calibration State Machine
 typedef enum{
-    CAL_BAD = 0, CAL_CLOSED_WAIT, CAL_CLOSED, CAL_CRACKED_WAIT, CAL_CRACKED, CAL_OPEN_WAIT, CAL_OPEN, CAL_GOOD
+    CAL_BAD = 0, CAL_OPEN_WAIT, CAL_OPEN, CAL_CLOSED_WAIT, CAL_CLOSED, 
+            CAL_CRACKED_WAIT, CAL_CRACKED_ERR, CAL_CRACKED, CAL_CLOSED_FINAL_WAIT, CAL_GOOD
 } MagnetometerCalibrationState;
 
 //Enumeration for the Result Printing State Machine
@@ -37,37 +40,32 @@ static MagnetometerResultState prevResultState = INVALID;
 static volatile MagentometerMeasState magState = MAGNETOMETER_START;
 static volatile uint16_t magCounter = MAGNETOMETER_ERROR_DELAY;
 
-static uint32_t crackedV;
+//Alarm Parameters
+static uint32_t crackedV, maxV;
 static int16_t offsetX = 0, offsetY = 0, offsetZ = 0;
-static int8_t scaleX = 1, scaleY = 1, scaleZ = 1;
-static int8_t minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ;
+static uint8_t scaleX = 1, scaleY = 1, scaleZ = 1;
 
+static bool buttonPressed = false, lastButtonState = false;
 
-//Thresholds
-//static volatile int16_t X_min_closed, X_max_closed, Y_min_closed, Y_max_closed, 
-//                Z_min_closed, Z_max_closed;
-//
-//static volatile int16_t X_min_cracked, X_max_cracked, Y_min_cracked, Y_max_cracked, 
-//                Z_min_cracked, Z_max_cracked;
+//Angle Ranges
+#ifdef MAGNETOMETER_ANGLE_CHECK
+static int16_t minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ;
+#endif
 
+//ID of Magnetometer
 static uint8_t sensorID = 0x00;
 
-//Internal Function to compare the measurement and print the status
-void _windowAlarm_processResult(MLX90392_RawResult* result)
-{
-    
-}
+//Alarm Count
+static uint8_t alarmState = 0;
 
-int8_t _windowAlarm_computeScalingFactor(int16_t result)
+uint8_t _windowAlarm_computeScalingFactor(int16_t result)
 {
-    int8_t scale = 1;
-    bool isNegative = false;
+    uint8_t scale = 1;
     
-    //Invert result - apply correction at the end
+    //Negate Input
     if (result < 0)
     {
         result *= -1;
-        isNegative = true;
     }
  
     //While result doesn't fit in an 7-bit number
@@ -77,29 +75,71 @@ int8_t _windowAlarm_computeScalingFactor(int16_t result)
         scale++;
     }
     
-    //Correct scale if negative
-    if (isNegative)
-        scale *= -1;
-    
-    //Max Scaling Value to convert 16-bit to 8-bit
     return scale;
 }
 
+void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults* normResults)
+{
+#ifdef MAGNETOMETER_ANGLE_CHECK
+    if (minXY > normResults->xyAngle)
+    {
+        minXY = normResults->xyAngle;
+    }
+    else if (normResults->xyAngle > maxXY)
+    {
+        maxXY = normResults->xyAngle;
+    }
+
+    if (minXZ > normResults->xyAngle)
+    {
+        minXZ = normResults->xyAngle;
+    }
+    else if (normResults->xyAngle > maxXZ)
+    {
+        maxXZ = normResults->xyAngle;
+    }
+
+    if (minYZ > normResults->xyAngle)
+    {
+        minYZ = normResults->xyAngle;
+    }
+    else if (normResults->xyAngle > maxYZ)
+    {
+        maxYZ = normResults->xyAngle;
+    }
+#endif
+}
+
 //Internal function for setting the trigger thresholds (calibration)
-void _windowAlarm_runCalibration(MLX90392_RawResult* result)
+void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_NormalizedResults* normResults)
 {
     static uint16_t sampleCount = 0;
+    static uint8_t blinkCount = 0;
+    
+    //Digital Counter to blink the LED
+    if (blinkCount >= MAGNETOMETER_CAL_BLINK_PERIOD)
+    {
+        LED0_Toggle();
+        blinkCount = 0;
+    }
+    else
+    {
+        blinkCount++;
+    }
+    
+    //Update Angle Max and Min
+#ifdef MAGNETOMETER_ANGLE_CHECK
+    windowAlarm_updateAngleMaxMin(normResults);
+#endif
+    
+    //Monitor field strength, record strongest magnitude
+    if (normResults->r2 > maxV)
+    {
+        maxV = normResults->r2;
+    }
     
     //Averages for zeroing
     static int32_t averageX, averageY, averageZ, averageR2;
-
-    MLX90392_NormalizedResults normResults;
-    windowAlarm_createNormalizedResults(result, &normResults);
-    
-    //Vector Result
-    uint32_t vectorResult = ((uint32_t)result->X_Meas * result->X_Meas) +
-                            ((uint32_t)result->Y_Meas * result->Y_Meas) +
-                            ((uint32_t)result->Z_Meas * result->Z_Meas);
     
     switch (calState)
     {
@@ -116,7 +156,7 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
         }
         case CAL_OPEN_WAIT:
         {
-            if (SW0_GetValue())
+            if (buttonPressed)
             {
                 printConstantString("Beginning Open Window Calibration.\r\n");
                 calState = CAL_OPEN;
@@ -129,9 +169,9 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
             sampleCount++;
             
             //Accumulate Results
-            averageX += result->X_Meas;
-            averageY += result->Y_Meas;
-            averageZ += result->Z_Meas;
+            averageX += rawResult->X_Meas;
+            averageY += rawResult->Y_Meas;
+            averageZ += rawResult->Z_Meas;
             
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
@@ -140,7 +180,7 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
                 offsetY = round(averageY / MAGNETOMETER_CALIBRATION_SAMPLES);
                 offsetZ = round(averageZ / MAGNETOMETER_CALIBRATION_SAMPLES);
                 
-                sprintf(getCharBuffer(), "Zeroing Complete. X_off = %d, Y_off = %d, Z_off=%d\r\n", offsetX, offsetY, offsetZ);
+                sprintf(getCharBuffer(), "Zeroing Complete. X_off = %d, Y_off = %d, Z_off= %d\r\n", offsetX, offsetY, offsetZ);
                 printBufferedString();
                 printConstantString("Please close the window and the press the button to continue.\r\n");
                 calState = CAL_CLOSED_WAIT;
@@ -149,8 +189,11 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
         }
         case CAL_CLOSED_WAIT:
         {
-            if (SW0_GetValue())
+            if (buttonPressed)
             {
+                //Reset maximum value
+                maxV = 0;
+                
                 printConstantString("Beginning Closed Window Calibration.\r\n");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
@@ -162,9 +205,9 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
             sampleCount++;
             
             //Accumulate results
-            averageX += (result->X_Meas - offsetX);
-            averageY += (result->Y_Meas - offsetY);
-            averageZ += (result->Z_Meas - offsetZ);
+            averageX += (rawResult->X_Meas - offsetX);
+            averageY += (rawResult->Y_Meas - offsetY);
+            averageZ += (rawResult->Z_Meas - offsetZ);
             
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
@@ -184,57 +227,32 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
                 printConstantString("Please crack the window to set the alarm threshold, then press the button.\r\n");
                 calState = CAL_CRACKED_WAIT;
                 
-                //Compute Normalized
-                windowAlarm_createNormalizedResults(result, &normResults);
+#ifdef MAGNETOMETER_ANGLE_CHECK
+                //Compute Normalized Results Immediately from New Values
+                windowAlarm_createNormalizedResults(rawResult, normResults);
                 
                 //Init Angles
+                minXY = normResults->xyAngle;
+                maxXY = normResults->xyAngle;
                 
-                minXY = normResults.xyAngle;
-                maxXY = normResults.xyAngle;
+                minXZ = normResults->xzAngle;
+                maxXZ = normResults->xzAngle;
                 
-                minXZ = normResults.xzAngle;
-                maxXZ = normResults.xzAngle;
-                
-                minYZ = normResults.yzAngle;
-                maxYZ = normResults.yzAngle;
+                minYZ = normResults->yzAngle;
+                maxYZ = normResults->yzAngle;
+#endif
             }
             break;
         }
         case CAL_CRACKED_WAIT:
-        {            
-            if (minXY > normResults.xyAngle)
+        {                        
+            if (normResults->r2 <= MAGNETOMETER_NOISE_MARGIN)
             {
-                minXY = normResults.xyAngle;
+                printConstantString("[ERR] Sensor value is below noise margin, please close the window and press the button to retry.\r\n");
+                calState = CAL_CRACKED_ERR;
             }
-            else if (normResults.xyAngle > maxXY)
+            else if (buttonPressed)
             {
-                maxXY = normResults.xyAngle;
-            }
-            
-            if (minXZ > normResults.xyAngle)
-            {
-                minXZ = normResults.xyAngle;
-            }
-            else if (normResults.xyAngle > maxXZ)
-            {
-                maxXZ = normResults.xyAngle;
-            }
-            
-            if (minYZ > normResults.xyAngle)
-            {
-                minYZ = normResults.xyAngle;
-            }
-            else if (normResults.xyAngle > maxYZ)
-            {
-                maxYZ = normResults.xyAngle;
-            }
-            
-            if (SW0_GetValue())
-            {
-                sprintf(getCharBuffer(), "Allowed Angles: %d < XY < %d, %d < XZ < %d, %d < YZ < %d\r\n",
-                        minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ);
-                printBufferedString();
-                
                 printConstantString("Beginning Cracked Window Calibration.\r\n");
                 calState = CAL_CRACKED;
                 sampleCount = 0;
@@ -242,21 +260,97 @@ void _windowAlarm_runCalibration(MLX90392_RawResult* result)
             }
             break;
         }
+        case CAL_CRACKED_ERR:
+        {
+            if (buttonPressed)
+            {
+                printConstantString("Please crack the window to set the alarm threshold, then press the button.\r\n");
+                
+#ifdef MAGNETOMETER_ANGLE_CHECK
+                //Init Angles
+                minXY = normResults->xyAngle;
+                maxXY = normResults->xyAngle;
+                
+                minXZ = normResults->xzAngle;
+                maxXZ = normResults->xzAngle;
+                
+                minYZ = normResults->yzAngle;
+                maxYZ = normResults->yzAngle;
+#endif
+                //Update State
+                calState = CAL_CRACKED_WAIT;
+            }
+            break;
+        }
         case CAL_CRACKED:
-        {         
+        {   
+            //Increment Counter
             sampleCount++;
             
-            averageR2 += normResults.r2;
+            //Accumulate Values
+            averageR2 += normResults->r2;
             
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
                 //Set Cracked Threshold
                 crackedV = round(averageR2 / MAGNETOMETER_CALIBRATION_SAMPLES);
+
+                //Warning for Low Noise Margin
+                if (crackedV < MAGNETOMETER_NOISE_MARGIN)
+                {
+                    printConstantString("[WARN] Threshold is below noise margin. Sensor may not operate correctly.\r\n");
+                }
                 
-                sprintf(getCharBuffer(), "Calibration Completed. Threshold: %lu\r\nCrack the window and press the button to continue\r\n", crackedV);
+                //Apply Tolerance, if set
+#ifdef MAGNETOMETER_VECTOR_TOLERANCE
+                crackedV = round(crackedV * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                maxV = round(maxV * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+#endif
+                
+                //Print Threshold
+                sprintf(getCharBuffer(), "Threshold calibration complete. Threshold: %lu\r\n", crackedV);
                 printBufferedString();
                 
+                printConstantString("Please close the window and press the button to finish.\r\n");
+                                
+                //Update Cal State
+                calState = CAL_CLOSED_FINAL_WAIT;
+            }
+            break;
+        }
+        case CAL_CLOSED_FINAL_WAIT:
+        {
+            if (buttonPressed)
+            {
+#ifdef MAGNETOMETER_ANGLE_CHECK
+                
+                //If set, add tolerance to the angles
+#ifdef MAGNETOMETER_ANGLE_TOLERANCE
+                minXY -= MAGNETOMETER_ANGLE_TOLERANCE;
+                maxXY += MAGNETOMETER_ANGLE_TOLERANCE;
+                
+                minXZ -= MAGNETOMETER_ANGLE_TOLERANCE;
+                maxXZ += MAGNETOMETER_ANGLE_TOLERANCE;
+                
+                minYZ -= MAGNETOMETER_ANGLE_TOLERANCE;
+                maxYZ += MAGNETOMETER_ANGLE_TOLERANCE;
+#endif
+                
+                //Print Angle Range
+                sprintf(getCharBuffer(), "Allowed Angles: %d < XY < %d, %d < XZ < %d, %d < YZ < %d\r\n",
+                        minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ);
+                printBufferedString();
+#endif
+                
+                printConstantString("Calibration Completed.\r\n");
                 calState = CAL_GOOD;
+                
+                //Clear the blink counter
+                blinkCount = 0;
+                
+                //Save values to EEPROM
+                windowAlarm_saveThresholds();
+
             }
             break;
         }
@@ -275,6 +369,7 @@ void windowAlarm_init(bool safeStart)
     //Print Welcome
     printConstantString("Initializing MLX90392 Magnetometer Sensor...");
     
+    //Init Sensor
     success = MLX90392_init();
 
     //If unable to init...
@@ -285,49 +380,69 @@ void windowAlarm_init(bool safeStart)
         return;
     }
     
-    uint8_t _verify_sensorID;
-    success = MLX90392_getRegister(MLX90392_DEVICE_ID, &_verify_sensorID);
-    
-    //If unable to get ID
-    if (!success)
+    //If unable to init EEPROM constants
+    if (!windowAlarm_loadFromEEPROM(safeStart))
     {
         printConstantString("FAILED\r\n");
         magState = MAGNETOMETER_ERROR;
         return;
     }
     
+    
+    printConstantString("OK\r\n");
+}
+
+//Tries to load constants from EEPROM - called by windowAlarm_init
+//Returns true if successful, or false if EEPROM is invalid
+bool windowAlarm_loadFromEEPROM(bool safeStart)
+{
+    //Set Calibration Status
+    calState = CAL_BAD;
+    
+    uint8_t _verify_sensorID;
+    bool success = MLX90392_getRegister(MLX90392_DEVICE_ID, &_verify_sensorID);
+    
+    if (!success)
+        return false;
+    
     uint8_t EEPROM_id_test = EEPROM_Read(EEPROM_MLX90392_ID);
     
     if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
     {       
         //EEPROM is valid, load thresholds
-        /*X_max_closed = EEPROM_Read(CLOSED_THRESHOLD_X_MAX);
-        X_min_closed = EEPROM_Read(CLOSED_THRESHOLD_X_MIN);
         
-        Y_max_closed = EEPROM_Read(CLOSED_THRESHOLD_Y_MAX);
-        Y_min_closed = EEPROM_Read(CLOSED_THRESHOLD_Y_MIN);
+        //Window Vector Threshold
+        crackedV = get32BFromEEPROM(CRACKED_THRESHOLD_V);
         
-        Z_max_closed = EEPROM_Read(CLOSED_THRESHOLD_Z_MAX);
-        Z_min_closed = EEPROM_Read(CLOSED_THRESHOLD_Z_MIN);
+        //Max Allowed Vector Strength
+        maxV = get32BFromEEPROM(MAX_VALUE_V);
         
-        X_max_cracked = EEPROM_Read(CRACKED_THRESHOLD_X_MAX);
-        X_min_cracked = EEPROM_Read(CRACKED_THRESHOLD_X_MIN);
+        //Offsets
+        offsetX = get16BFromEEPROM(MAGNETOMETER_OFFSET_X);
+        offsetY = get16BFromEEPROM(MAGNETOMETER_OFFSET_Y);
+        offsetZ = get16BFromEEPROM(MAGNETOMETER_OFFSET_Z);
         
-        Y_max_cracked = EEPROM_Read(CRACKED_THRESHOLD_Y_MAX);
-        Y_min_cracked = EEPROM_Read(CRACKED_THRESHOLD_Y_MIN);
+        //Scaling Values
+        scaleX = EEPROM_Read(MAGNETOMETER_SCALER_X);
+        scaleY = EEPROM_Read(MAGNETOMETER_SCALER_Y);
+        scaleZ = EEPROM_Read(MAGNETOMETER_SCALER_Z);
         
-        Z_max_cracked = EEPROM_Read(CRACKED_THRESHOLD_Z_MAX);
-        Z_min_cracked = EEPROM_Read(CRACKED_THRESHOLD_Z_MIN);*/
+#ifdef MAGNETOMETER_ANGLE_CHECK
         
-        //calState = CAL_GOOD;
+        //Angle Ranges
+        minXY = get16BFromEEPROM(MAGNETOMETER_MIN_XY);
+        maxXY = get16BFromEEPROM(MAGNETOMETER_MAX_XY);
+        minXZ = get16BFromEEPROM(MAGNETOMETER_MIN_XZ);
+        maxXZ = get16BFromEEPROM(MAGNETOMETER_MAX_XZ);
+        minYZ = get16BFromEEPROM(MAGNETOMETER_MIN_YZ);
+        maxYZ = get16BFromEEPROM(MAGNETOMETER_MAX_YZ);
+        
+#endif      
+        calState = CAL_GOOD;
+        
+        return true;
     }
-    else
-    {
-        //EEPROM is not valid
-        calState = CAL_BAD;
-    }
-    
-    printConstantString("OK\r\n");
+    return false;
 }
 
 //Converts raw results into a normalized compressed value
@@ -370,17 +485,22 @@ void windowAlarm_createNormalizedResults(MLX90392_RawResult* raw, MLX90392_Norma
             (uint16_t)(results->y * results->y) + 
             (uint16_t)(results->z * results->z);
     
-    if (MAGNETOMETER_ANGLE_THRESHOLD <= results->r2)
+#ifdef MAGNETOMETER_ANGLE_CHECK
+    
+    if (MAGNETOMETER_NOISE_MARGIN <= results->r2)
     {
         if (results->y != 0)
-            results->xyAngle = round((results->x * MAGNETOMETER_ANGLE_SCALE) / results->y);
+            results->xyAngle = round((/*abs(results->x) * */ results->x * MAGNETOMETER_ANGLE_SCALE) /
+                    (/*abs(results->y) * */ results->y));
         else
             results->xyAngle = 0;
 
         if (results->z != 0)
         {
-            results->xzAngle = round((results->x * MAGNETOMETER_ANGLE_SCALE) / results->z);
-            results->yzAngle = round((results->y * MAGNETOMETER_ANGLE_SCALE) / results->z);
+            results->xzAngle = round((/*abs(results->x) * */ results->x * MAGNETOMETER_ANGLE_SCALE) / 
+                    (/*abs(results->z) * */ results->z));
+            results->yzAngle = round((/*abs(results->y) * */ results->y * MAGNETOMETER_ANGLE_SCALE) / 
+                    (/*abs(results->z) * */ results->z));
         }
         else
         {
@@ -394,42 +514,50 @@ void windowAlarm_createNormalizedResults(MLX90392_RawResult* raw, MLX90392_Norma
         results->xzAngle = 0;
         results->yzAngle = 0;
     }
+#else
+    //Set values to 0
+    results->xyAngle = 0;
+    results->xzAngle = 0;
+    results->yzAngle = 0;
+#endif
+    
 }
 
-void compareVector(MLX90392_RawResult* result)
+void windowAlarm_processResults(MLX90392_NormalizedResults* normResults)
 {
-    MLX90392_NormalizedResults normResults;
-    windowAlarm_createNormalizedResults(result, &normResults);
+    static uint8_t counter = 0;
     bool alarmOK = false;
 
-    if (normResults.r2 >= crackedV)
+    if ((normResults->r2 >= crackedV) && (normResults->r2 <= maxV))
     {
         //Within Expected Intensity
-        
-        
-        /*sprintf(getCharBuffer(), "XY = %d, XZ = %d, YZ = %d\r\n", 
-                normResults.xyAngle, normResults.xzAngle, normResults.yzAngle);
-        printBufferedString();*/
-        
+
+#ifdef MAGNETOMETER_ANGLE_CHECK        
         //Check Angles
-        if ((normResults.xyAngle > maxXY) || (normResults.xyAngle < minXY))
+        if ((normResults->xyAngle > maxXY) || (normResults->xyAngle < minXY))
         {
             alarmOK = false;
 #ifdef MAGNETOMETER_DEBUG_PRINT
+            sprintf(getCharBuffer(), "XY Range: %d < XY < %d, found %d\r\n", minXY, maxXY, normResults->xyAngle);
+            printBufferedString();
             printConstantString("<XY Angle Error> - ");
 #endif 
         }
-        else if ((normResults.xzAngle > maxXZ) || (normResults.xzAngle < minXZ))
+        else if ((normResults->xzAngle > maxXZ) || (normResults->xzAngle < minXZ))
         {
             alarmOK = false;
 #ifdef MAGNETOMETER_DEBUG_PRINT
+            sprintf(getCharBuffer(), "XZ Range: %d < XZ < %d, found %d\r\n", minXZ, maxXZ, normResults->xzAngle);
+            printBufferedString();
             printConstantString("<XZ Angle Error> - ");
 #endif 
         }
-        else if ((normResults.xzAngle > maxXZ) || (normResults.xzAngle < minXZ))
+        else if ((normResults->xzAngle > maxXZ) || (normResults->xzAngle < minXZ))
         {
             alarmOK = false;
 #ifdef MAGNETOMETER_DEBUG_PRINT
+            sprintf(getCharBuffer(), "YZ Range: %d < YZ < %d, found %d\r\n", minYZ, maxYZ, normResults->yzAngle);
+            printBufferedString();
             printConstantString("<YZ Angle Error> - ");
 #endif 
         }
@@ -437,56 +565,106 @@ void compareVector(MLX90392_RawResult* result)
         {
             alarmOK = true;
         }
+#else
+        alarmOK = true;
+#endif
 
     }
     else
     {
 #ifdef MAGNETOMETER_DEBUG_PRINT
+        sprintf(getCharBuffer(), "Max Value: %lu, Cracked: %lu, found %lu\r\n", maxV, crackedV, normResults->r2);
+        printBufferedString();
         printConstantString("<Threshold Exceeded> - ");
 #endif 
     }
     
     if (alarmOK)
     {
-        printConstantString("Alarm Good\r\n");
+        if (alarmState != 0)
+        {
+            alarmState--;
+        }
+        LED0_SetLow();
     }
     else
     {
-        printConstantString("Alarm Bad\r\n");
+        if (alarmState != MAGNETOMETER_ALARM_TRIGGER_MAX)
+        {
+            alarmState++;
+        }
+        LED0_SetHigh();
     }
-}
+        
+    if ((counter == MAGNETOMETER_ALARM_PRINT_RATE) || (alarmState == MAGNETOMETER_ALARM_TRIGGER))
+    {
+        if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
+        {
+            printConstantString("Alarm BAD\r\n");
+        }
+        else
+        {
+            printConstantString("Alarm OK\r\n");
+        }
 
-//Saves current thresholds
+        counter = 0;
+    }
+    else
+    {
+        counter++;
+    }
+ }
+
+//Saves current calibration parameters
 bool windowAlarm_saveThresholds(void)
-{
-    //Remove this line when ready
-    return false;
-    
+{    
     if (!MLX90392_getRegister(MLX90392_DEVICE_ID, &sensorID))
         return false;
         
-    /*save16BToEEPROM(CLOSED_THRESHOLD_X_MAX, (uint16_t) X_max_closed);
-    save16BToEEPROM(CLOSED_THRESHOLD_X_MIN, (uint16_t) X_min_closed);
-    save16BToEEPROM(CLOSED_THRESHOLD_Y_MAX, (uint16_t) Y_max_closed);
-    save16BToEEPROM(CLOSED_THRESHOLD_Y_MIN, (uint16_t) Y_min_closed);
-    save16BToEEPROM(CLOSED_THRESHOLD_Z_MAX, (uint16_t) Z_max_closed);
-    save16BToEEPROM(CLOSED_THRESHOLD_Z_MIN, (uint16_t) Z_min_closed);
+    save32BToEEPROM(CRACKED_THRESHOLD_V, crackedV);
+    save32BToEEPROM(MAX_VALUE_V, maxV);
     
-    save16BToEEPROM(CRACKED_THRESHOLD_X_MAX, (uint16_t) X_max_cracked);
-    save16BToEEPROM(CRACKED_THRESHOLD_X_MIN, (uint16_t) X_min_cracked);
-    save16BToEEPROM(CRACKED_THRESHOLD_Y_MAX, (uint16_t) Y_max_cracked);
-    save16BToEEPROM(CRACKED_THRESHOLD_Y_MIN, (uint16_t) Y_min_cracked);
-    save16BToEEPROM(CRACKED_THRESHOLD_Z_MAX, (uint16_t) Z_max_cracked);
-    save16BToEEPROM(CRACKED_THRESHOLD_Z_MIN, (uint16_t) Z_min_cracked);*/
+    save16BToEEPROM(MAGNETOMETER_OFFSET_X, offsetX);
+    save16BToEEPROM(MAGNETOMETER_OFFSET_Y, offsetY);
+    save16BToEEPROM(MAGNETOMETER_OFFSET_Z, offsetZ);
+    
+    EEPROM_Write(MAGNETOMETER_SCALER_X, scaleX);
+    EEPROM_Write(MAGNETOMETER_SCALER_Y, scaleY);
+    EEPROM_Write(MAGNETOMETER_SCALER_Z, scaleZ);
+    
+#ifdef MAGNETOMETER_ANGLE_CHECK
+    
+    save16BToEEPROM(MAGNETOMETER_MIN_XY, minXY);
+    save16BToEEPROM(MAGNETOMETER_MAX_XY, maxXY);
+    save16BToEEPROM(MAGNETOMETER_MIN_XZ, minXZ);
+    save16BToEEPROM(MAGNETOMETER_MAX_XZ, maxXZ);
+    save16BToEEPROM(MAGNETOMETER_MIN_YZ, minYZ);
+    save16BToEEPROM(MAGNETOMETER_MAX_YZ, maxYZ);
+    
+#endif
     
     //Write the ID of the sensor
-    //EEPROM_Write(EEPROM_MLX90392_ID, sensorID);
+    EEPROM_Write(EEPROM_MLX90392_ID, sensorID);
 
     return true;
 }
 
 void windowAlarm_FSM(void)
 {    
+    //Software button debouncer
+    //Button is cleared at the end of MAGNETOMETER_WAIT
+    if ((!lastButtonState) && (SW0_GetValue()))
+    {
+        //Button is pressed
+        lastButtonState = true;
+        buttonPressed = true;
+    }
+    else if ((lastButtonState) && (!SW0_GetValue()))
+    {
+        //Button released (reset state machine)
+        lastButtonState = false;
+    }
+    
     bool success;
     
     //MLX90392 Magnetometer State Machine
@@ -495,7 +673,7 @@ void windowAlarm_FSM(void)
         case MAGNETOMETER_START:
         {                        
             //Start a single conversion
-            success = MLX90392_setOperatingMode(SINGLE);
+            success = MLX90392_setOperatingMode(CONT_200HZ);
 
             //Move to next state
             if (success)
@@ -518,44 +696,48 @@ void windowAlarm_FSM(void)
             if (success)
             {
                 MLX90392_RawResult magResult;
+                MLX90392_NormalizedResults normResult;
                 success = MLX90392_getResult(&magResult);
                 if (success)
                 {
-                    //If set, print the values of the magnetometer
+                    windowAlarm_createNormalizedResults(&magResult, &normResult);
+                    
+                    //If set, print the raw values of the magnetometer
 #ifdef MAGNETOMETER_PRINT_CSV
                     sprintf(getCharBuffer(), "%d, %d, %d\r\n", magResult.X_Meas, magResult.Y_Meas, magResult.Z_Meas);
                     printBufferedString();
 #elif MAGNETOMETER_RAW_VALUE_PRINT 
-                    uint32_t v_result =  ((uint32_t) magResult.X_Meas * magResult.X_Meas) + 
-                             ((uint32_t) magResult.Y_Meas * magResult.Y_Meas)
-                            + ((uint32_t) magResult.Z_Meas * magResult.Z_Meas);
-                    float xy_angle = (float) magResult.X_Meas / magResult.Y_Meas; //atan(magResult.X_Meas / (float) magResult.Y_Meas);
-                    float yz_angle = (float) magResult.Y_Meas / magResult.Z_Meas; //atan(magResult.Y_Meas / (float) magResult.Z_Meas);
-                    float xz_angle = (float) magResult.X_Meas / magResult.Z_Meas;
-                    sprintf(getCharBuffer(), "X: %d, Y: %d, Z: %d\r\nVector: %lu\r\nAngle XY: %f\r\nAngle YZ: %f\r\nAngle XZ: %f\r\n",
-                        magResult.X_Meas, magResult.Y_Meas, magResult.Z_Meas, v_result, xy_angle, yz_angle, xz_angle);
-                printBufferedString();
+                    sprintf(getCharBuffer(), "<RAW Values>\r\nX: %d, Y: %d, Z: %d\r\n",
+                        magResult.X_Meas, magResult.Y_Meas, magResult.Z_Meas); 
+                    printBufferedString();
+                    
+                    sprintf(getCharBuffer(), "<Normalized Values>\r\nX: %d, Y: %d, Z: %d, R^2: %lu\r\n",
+                        normResult.x, normResult.y, normResult.z, normResult.r2);
+                    printBufferedString();
 #endif
-                    if ((calState == CAL_GOOD) && (!SW0_GetValue()))
+                    if ((calState == CAL_GOOD) && (!buttonPressed))
                     {
                         //Process Result if Cal is valid
-                        //_windowAlarm_processResult(&magResult);
-                        compareVector(&magResult);
+                        windowAlarm_processResults(&normResult);
                     }
                     else
                     {
                         //Calibration Active
-                        _windowAlarm_runCalibration(&magResult);
+                        windowAlarm_runCalibration(&magResult, &normResult);
                         
                     }
-                    magState = MAGNETOMETER_START;
+                    //magState = MAGNETOMETER_START;
                 }
                 else
                 {
                     //Something went wrong
                     magState = MAGNETOMETER_ERROR;
                 }
+                
+                //Clear Button Press
+                buttonPressed = false;
             }
+            
             break;
         }
         case MAGNETOMETER_REINIT_WAIT:
@@ -569,6 +751,11 @@ void windowAlarm_FSM(void)
             if (success)
             {
                 prevResultState = INVALID;
+                
+                //Attempt to load calibration constants from EEPROM
+                windowAlarm_loadFromEEPROM(false);
+                
+                //Update state machine
                 magState = MAGNETOMETER_START;
                 magCounter = MAGNETOMETER_ERROR_DELAY;
             }
@@ -609,10 +796,8 @@ void _windowAlarm_onMVIOChange(void)
     {
         //Loss of Power on MVIO
         magState = MAGNETOMETER_ERROR;
+        
+        //Triggers immediate message print
+        magCounter = MAGNETOMETER_ERROR_DELAY;
     }
-}
-
-void _windowAlarm_buttonPressed(void)
-{
-    LED0_Toggle();
 }
