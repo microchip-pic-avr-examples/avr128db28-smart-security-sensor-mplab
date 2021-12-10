@@ -42,7 +42,10 @@
 int main(void)
 {
     SYSTEM_Initialize();
-        
+      
+    //Clear reset 
+    RSTCTRL.RSTFR = 0xFF;
+    
     //Enable TWI in Debug
     TWI0.DBGCTRL = 1;
     TWI1.DBGCTRL = 1;
