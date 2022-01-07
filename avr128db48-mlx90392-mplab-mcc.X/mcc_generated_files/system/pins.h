@@ -12,7 +12,7 @@
 */
 
 /*
-© [2021] Microchip Technology Inc. and its subsidiaries.
+© [2022] Microchip Technology Inc. and its subsidiaries.
 
     Subject to your compliance with these terms, you may use Microchip 
     software and any derivatives exclusively with Microchip products. 
@@ -73,6 +73,24 @@
 #define IO_PB0_EnableInterruptForFallingEdge() do { PORTB.PIN0CTRL = (PORTB.PIN0CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
 #define IO_PB0_DisableDigitalInputBuffer() do { PORTB.PIN0CTRL = (PORTB.PIN0CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
 #define IO_PB0_EnableInterruptForLowLevelSensing() do { PORTB.PIN0CTRL = (PORTB.PIN0CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
+
+//get/set IO_PF4 aliases
+#define IO_PF4_SetHigh() do { PORTF_OUTSET = 0x10; } while(0)
+#define IO_PF4_SetLow() do { PORTF_OUTCLR = 0x10; } while(0)
+#define IO_PF4_Toggle() do { PORTF_OUTTGL = 0x10; } while(0)
+#define IO_PF4_GetValue() (VPORTF.IN & (0x1 << 4))
+#define IO_PF4_SetDigitalInput() do { PORTF_DIRCLR = 0x10; } while(0)
+#define IO_PF4_SetDigitalOutput() do { PORTF_DIRSET = 0x10; } while(0)
+#define IO_PF4_SetPullUp() do { PORTF_PIN4CTRL  |= PORT_PULLUPEN_bm; } while(0)
+#define IO_PF4_ResetPullUp() do { PORTF_PIN4CTRL  &= ~PORT_PULLUPEN_bm; } while(0)
+#define IO_PF4_SetInverted() do { PORTF_PIN4CTRL  |= PORT_INVEN_bm; } while(0)
+#define IO_PF4_ResetInverted() do { PORTF_PIN4CTRL  &= ~PORT_INVEN_bm; } while(0)
+#define IO_PF4_DisableInterruptOnChange() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x0 ; } while(0)
+#define IO_PF4_EnableInterruptForBothEdges() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x1 ; } while(0)
+#define IO_PF4_EnableInterruptForRisingEdge() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x2 ; } while(0)
+#define IO_PF4_EnableInterruptForFallingEdge() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
+#define IO_PF4_DisableDigitalInputBuffer() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
+#define IO_PF4_EnableInterruptForLowLevelSensing() do { PORTF.PIN4CTRL = (PORTF.PIN4CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
 
 //get/set IO_PF3 aliases
 #define IO_PF3_SetHigh() do { PORTF_OUTSET = 0x8; } while(0)
@@ -164,24 +182,6 @@
 #define SW0_DisableDigitalInputBuffer() do { PORTB.PIN2CTRL = (PORTB.PIN2CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
 #define SW0_EnableInterruptForLowLevelSensing() do { PORTB.PIN2CTRL = (PORTB.PIN2CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
 
-//get/set RN4020_CONN_STATUS aliases
-#define RN4020_CONN_STATUS_SetHigh() do { PORTD_OUTSET = 0x10; } while(0)
-#define RN4020_CONN_STATUS_SetLow() do { PORTD_OUTCLR = 0x10; } while(0)
-#define RN4020_CONN_STATUS_Toggle() do { PORTD_OUTTGL = 0x10; } while(0)
-#define RN4020_CONN_STATUS_GetValue() (VPORTD.IN & (0x1 << 4))
-#define RN4020_CONN_STATUS_SetDigitalInput() do { PORTD_DIRCLR = 0x10; } while(0)
-#define RN4020_CONN_STATUS_SetDigitalOutput() do { PORTD_DIRSET = 0x10; } while(0)
-#define RN4020_CONN_STATUS_SetPullUp() do { PORTD_PIN4CTRL  |= PORT_PULLUPEN_bm; } while(0)
-#define RN4020_CONN_STATUS_ResetPullUp() do { PORTD_PIN4CTRL  &= ~PORT_PULLUPEN_bm; } while(0)
-#define RN4020_CONN_STATUS_SetInverted() do { PORTD_PIN4CTRL  |= PORT_INVEN_bm; } while(0)
-#define RN4020_CONN_STATUS_ResetInverted() do { PORTD_PIN4CTRL  &= ~PORT_INVEN_bm; } while(0)
-#define RN4020_CONN_STATUS_DisableInterruptOnChange() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x0 ; } while(0)
-#define RN4020_CONN_STATUS_EnableInterruptForBothEdges() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x1 ; } while(0)
-#define RN4020_CONN_STATUS_EnableInterruptForRisingEdge() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x2 ; } while(0)
-#define RN4020_CONN_STATUS_EnableInterruptForFallingEdge() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
-#define RN4020_CONN_STATUS_DisableDigitalInputBuffer() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
-#define RN4020_CONN_STATUS_EnableInterruptForLowLevelSensing() do { PORTD.PIN4CTRL = (PORTD.PIN4CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
-
 //get/set LED0 aliases
 #define LED0_SetHigh() do { PORTB_OUTSET = 0x8; } while(0)
 #define LED0_SetLow() do { PORTB_OUTCLR = 0x8; } while(0)
@@ -200,41 +200,23 @@
 #define LED0_DisableDigitalInputBuffer() do { PORTB.PIN3CTRL = (PORTB.PIN3CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
 #define LED0_EnableInterruptForLowLevelSensing() do { PORTB.PIN3CTRL = (PORTB.PIN3CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
 
-//get/set RN4020_CMD aliases
-#define RN4020_CMD_SetHigh() do { PORTD_OUTSET = 0x1; } while(0)
-#define RN4020_CMD_SetLow() do { PORTD_OUTCLR = 0x1; } while(0)
-#define RN4020_CMD_Toggle() do { PORTD_OUTTGL = 0x1; } while(0)
-#define RN4020_CMD_GetValue() (VPORTD.IN & (0x1 << 0))
-#define RN4020_CMD_SetDigitalInput() do { PORTD_DIRCLR = 0x1; } while(0)
-#define RN4020_CMD_SetDigitalOutput() do { PORTD_DIRSET = 0x1; } while(0)
-#define RN4020_CMD_SetPullUp() do { PORTD_PIN0CTRL  |= PORT_PULLUPEN_bm; } while(0)
-#define RN4020_CMD_ResetPullUp() do { PORTD_PIN0CTRL  &= ~PORT_PULLUPEN_bm; } while(0)
-#define RN4020_CMD_SetInverted() do { PORTD_PIN0CTRL  |= PORT_INVEN_bm; } while(0)
-#define RN4020_CMD_ResetInverted() do { PORTD_PIN0CTRL  &= ~PORT_INVEN_bm; } while(0)
-#define RN4020_CMD_DisableInterruptOnChange() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x0 ; } while(0)
-#define RN4020_CMD_EnableInterruptForBothEdges() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x1 ; } while(0)
-#define RN4020_CMD_EnableInterruptForRisingEdge() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x2 ; } while(0)
-#define RN4020_CMD_EnableInterruptForFallingEdge() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
-#define RN4020_CMD_DisableDigitalInputBuffer() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
-#define RN4020_CMD_EnableInterruptForLowLevelSensing() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
-
-//get/set RN4020_WAKE aliases
-#define RN4020_WAKE_SetHigh() do { PORTD_OUTSET = 0x40; } while(0)
-#define RN4020_WAKE_SetLow() do { PORTD_OUTCLR = 0x40; } while(0)
-#define RN4020_WAKE_Toggle() do { PORTD_OUTTGL = 0x40; } while(0)
-#define RN4020_WAKE_GetValue() (VPORTD.IN & (0x1 << 6))
-#define RN4020_WAKE_SetDigitalInput() do { PORTD_DIRCLR = 0x40; } while(0)
-#define RN4020_WAKE_SetDigitalOutput() do { PORTD_DIRSET = 0x40; } while(0)
-#define RN4020_WAKE_SetPullUp() do { PORTD_PIN6CTRL  |= PORT_PULLUPEN_bm; } while(0)
-#define RN4020_WAKE_ResetPullUp() do { PORTD_PIN6CTRL  &= ~PORT_PULLUPEN_bm; } while(0)
-#define RN4020_WAKE_SetInverted() do { PORTD_PIN6CTRL  |= PORT_INVEN_bm; } while(0)
-#define RN4020_WAKE_ResetInverted() do { PORTD_PIN6CTRL  &= ~PORT_INVEN_bm; } while(0)
-#define RN4020_WAKE_DisableInterruptOnChange() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x0 ; } while(0)
-#define RN4020_WAKE_EnableInterruptForBothEdges() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x1 ; } while(0)
-#define RN4020_WAKE_EnableInterruptForRisingEdge() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x2 ; } while(0)
-#define RN4020_WAKE_EnableInterruptForFallingEdge() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
-#define RN4020_WAKE_DisableDigitalInputBuffer() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
-#define RN4020_WAKE_EnableInterruptForLowLevelSensing() do { PORTD.PIN6CTRL = (PORTD.PIN6CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
+//get/set RN4870_MODE aliases
+#define RN4870_MODE_SetHigh() do { PORTD_OUTSET = 0x1; } while(0)
+#define RN4870_MODE_SetLow() do { PORTD_OUTCLR = 0x1; } while(0)
+#define RN4870_MODE_Toggle() do { PORTD_OUTTGL = 0x1; } while(0)
+#define RN4870_MODE_GetValue() (VPORTD.IN & (0x1 << 0))
+#define RN4870_MODE_SetDigitalInput() do { PORTD_DIRCLR = 0x1; } while(0)
+#define RN4870_MODE_SetDigitalOutput() do { PORTD_DIRSET = 0x1; } while(0)
+#define RN4870_MODE_SetPullUp() do { PORTD_PIN0CTRL  |= PORT_PULLUPEN_bm; } while(0)
+#define RN4870_MODE_ResetPullUp() do { PORTD_PIN0CTRL  &= ~PORT_PULLUPEN_bm; } while(0)
+#define RN4870_MODE_SetInverted() do { PORTD_PIN0CTRL  |= PORT_INVEN_bm; } while(0)
+#define RN4870_MODE_ResetInverted() do { PORTD_PIN0CTRL  &= ~PORT_INVEN_bm; } while(0)
+#define RN4870_MODE_DisableInterruptOnChange() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x0 ; } while(0)
+#define RN4870_MODE_EnableInterruptForBothEdges() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x1 ; } while(0)
+#define RN4870_MODE_EnableInterruptForRisingEdge() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x2 ; } while(0)
+#define RN4870_MODE_EnableInterruptForFallingEdge() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x3 ; } while(0)
+#define RN4870_MODE_DisableDigitalInputBuffer() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x4 ; } while(0)
+#define RN4870_MODE_EnableInterruptForLowLevelSensing() do { PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_ISC_gm) | 0x5 ; } while(0)
 
 /**
  * @ingroup  pinsdriver
@@ -285,6 +267,27 @@ void PB0_DefaultInterruptHandler(void);
  * @return none
  */
 void PB0_SetInterruptHandler(void (* interruptHandler)(void)) ; 
+
+/**
+ * @ingroup  pinsdriver
+ * @brief Default Interrupt Handler for PF4 pin. 
+ *        This is a predefined interrupt handler to be used together with the PF4_SetInterruptHandler() method.
+ *        This handler is called every time the PF4 ISR is executed. 
+ * @pre PIN_MANAGER_Initialize() has been called at least once
+ * @param none
+ * @return none
+ */
+void PF4_DefaultInterruptHandler(void);
+
+/**
+ * @ingroup  pinsdriver
+ * @brief Interrupt Handler Setter for PF4 pin input-sense-config functionality.
+ *        Allows selecting an interrupt handler for PF4 at application runtime
+ * @pre PIN_MANAGER_Initialize() has been called at least once
+ * @param InterruptHandler function pointer.
+ * @return none
+ */
+void PF4_SetInterruptHandler(void (* interruptHandler)(void)) ; 
 
 /**
  * @ingroup  pinsdriver
@@ -393,27 +396,6 @@ void PB2_SetInterruptHandler(void (* interruptHandler)(void)) ;
 
 /**
  * @ingroup  pinsdriver
- * @brief Default Interrupt Handler for PD4 pin. 
- *        This is a predefined interrupt handler to be used together with the PD4_SetInterruptHandler() method.
- *        This handler is called every time the PD4 ISR is executed. 
- * @pre PIN_MANAGER_Initialize() has been called at least once
- * @param none
- * @return none
- */
-void PD4_DefaultInterruptHandler(void);
-
-/**
- * @ingroup  pinsdriver
- * @brief Interrupt Handler Setter for PD4 pin input-sense-config functionality.
- *        Allows selecting an interrupt handler for PD4 at application runtime
- * @pre PIN_MANAGER_Initialize() has been called at least once
- * @param InterruptHandler function pointer.
- * @return none
- */
-void PD4_SetInterruptHandler(void (* interruptHandler)(void)) ; 
-
-/**
- * @ingroup  pinsdriver
  * @brief Default Interrupt Handler for PB3 pin. 
  *        This is a predefined interrupt handler to be used together with the PB3_SetInterruptHandler() method.
  *        This handler is called every time the PB3 ISR is executed. 
@@ -453,25 +435,4 @@ void PD0_DefaultInterruptHandler(void);
  * @return none
  */
 void PD0_SetInterruptHandler(void (* interruptHandler)(void)) ; 
-
-/**
- * @ingroup  pinsdriver
- * @brief Default Interrupt Handler for PD6 pin. 
- *        This is a predefined interrupt handler to be used together with the PD6_SetInterruptHandler() method.
- *        This handler is called every time the PD6 ISR is executed. 
- * @pre PIN_MANAGER_Initialize() has been called at least once
- * @param none
- * @return none
- */
-void PD6_DefaultInterruptHandler(void);
-
-/**
- * @ingroup  pinsdriver
- * @brief Interrupt Handler Setter for PD6 pin input-sense-config functionality.
- *        Allows selecting an interrupt handler for PD6 at application runtime
- * @pre PIN_MANAGER_Initialize() has been called at least once
- * @param InterruptHandler function pointer.
- * @return none
- */
-void PD6_SetInterruptHandler(void (* interruptHandler)(void)) ; 
 #endif /* PINS_H_INCLUDED */

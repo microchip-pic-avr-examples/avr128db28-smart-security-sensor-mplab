@@ -23,7 +23,7 @@ void tempMonitor_init(bool safeStart)
 {
     bool success;
     
-    printConstantString("Initializing MLX90632 Temperature Sensor...");
+    printConstantStringUSB("Initializing MLX90632 Temperature Sensor...");
     if (safeStart)
     {
         //Button is Held - Safe Mode
@@ -40,7 +40,7 @@ void tempMonitor_init(bool safeStart)
     if (MLX90632_cacheOK())
     {
         //Load EEPROM Value for RTC Period
-        printConstantString("\r\nLoaded cached constants and settings...");
+        printConstantStringUSB("\r\nLoaded cached constants and settings...");
         
         //Update RTC Timer
         RTC_WritePeroid(get16BFromEEPROM(TEMP_UPDATE_PERIOD));
@@ -48,7 +48,7 @@ void tempMonitor_init(bool safeStart)
     else
     {
         //Write the default RTC Period to EEPROM
-        printConstantString("\r\nLoaded constants from sensor and reset to defaults...");
+        printConstantStringUSB("\r\nLoaded constants from sensor and reset to defaults...");
         
         //Write default RTC period to EEPROM
         save16BToEEPROM(TEMP_UPDATE_PERIOD, RTC_ReadPeriod());
@@ -57,11 +57,11 @@ void tempMonitor_init(bool safeStart)
     //Print Result
     if (success)
     {
-        printConstantString("OK\r\n");
+        printConstantStringUSB("OK\r\n");
     }
     else
     {
-        printConstantString("FAILED\r\n");
+        printConstantStringUSB("FAILED\r\n");
         tempState = TEMP_ERROR;
     }
 }
@@ -123,9 +123,9 @@ void tempMonitor_FSM(void)
             //Update State
             if (success)
             {
-                sprintf(getCharBuffer(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
+                sprintf(getCharBufferUSB(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
                         MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
-                printBufferedString();
+                printBufferedStringUSB();
                 tempState = TEMP_SLEEP;
             }
             else
@@ -139,7 +139,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            printConstantString("Temperature Sensor Error - Reboot Device\r\n");
+            printConstantStringUSB("Temperature Sensor Error - Reboot Device\r\n");
         }
     }
 }
