@@ -8,17 +8,21 @@
                      displayName="MCC Generated Files"
                      projectFiles="true">
         <logicalFolder name="i2c_host" displayName="i2c_host" projectFiles="true">
-          <itemPath>mcc_generated_files/i2c_host/twi0.h</itemPath>
           <itemPath>mcc_generated_files/i2c_host/i2c_host_event_types.h</itemPath>
+          <itemPath>mcc_generated_files/i2c_host/twi0.h</itemPath>
+          <itemPath>mcc_generated_files/i2c_host/twi1.h</itemPath>
           <itemPath>mcc_generated_files/i2c_host/i2c_host_interface.h</itemPath>
           <itemPath>mcc_generated_files/i2c_host/i2c_host_types.h</itemPath>
-          <itemPath>mcc_generated_files/i2c_host/twi1.h</itemPath>
         </logicalFolder>
         <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
           <itemPath>mcc_generated_files/mvio/mvio.h</itemPath>
         </logicalFolder>
         <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
           <itemPath>mcc_generated_files/nvm/nvm.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="peripheral" displayName="peripheral" projectFiles="true">
+          <itemPath>mcc_generated_files/peripheral/wdt.h</itemPath>
+          <itemPath>mcc_generated_files/peripheral/evsys.h</itemPath>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="utils" displayName="utils" projectFiles="true">
@@ -44,17 +48,19 @@
         <logicalFolder name="timer" displayName="timer" projectFiles="true">
           <itemPath>mcc_generated_files/timer/delay.h</itemPath>
           <itemPath>mcc_generated_files/timer/rtc.h</itemPath>
+          <itemPath>mcc_generated_files/timer/timer_interface.h</itemPath>
+          <itemPath>mcc_generated_files/timer/tcb0.h</itemPath>
         </logicalFolder>
         <logicalFolder name="uart" displayName="uart" projectFiles="true">
           <itemPath>mcc_generated_files/uart/uart_interface.h</itemPath>
           <itemPath>mcc_generated_files/uart/usart3.h</itemPath>
+          <itemPath>mcc_generated_files/uart/usart2.h</itemPath>
         </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
           <itemPath>mcc_generated_files/vref/vref.h</itemPath>
         </logicalFolder>
       </logicalFolder>
       <itemPath>MLX90392.h</itemPath>
-      <itemPath>RN4020.h</itemPath>
       <itemPath>MLX90632.h</itemPath>
       <itemPath>MLX90632_Defines.h</itemPath>
       <itemPath>EEPROM_Locations.h</itemPath>
@@ -63,6 +69,8 @@
       <itemPath>EEPROM_Utility.h</itemPath>
       <itemPath>printUtility.h</itemPath>
       <itemPath>windowAlarm_config.h</itemPath>
+      <itemPath>RN4870.h</itemPath>
+      <itemPath>RN4870_RX.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -79,8 +87,8 @@
         </logicalFolder>
         <logicalFolder name="i2c_host" displayName="i2c_host" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/i2c_host/src/twi0.c</itemPath>
             <itemPath>mcc_generated_files/i2c_host/src/twi1.c</itemPath>
+            <itemPath>mcc_generated_files/i2c_host/src/twi0.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
@@ -91,6 +99,12 @@
         <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <itemPath>mcc_generated_files/nvm/src/nvm.c</itemPath>
+          </logicalFolder>
+        </logicalFolder>
+        <logicalFolder name="peripheral" displayName="peripheral" projectFiles="true">
+          <logicalFolder name="src" displayName="src" projectFiles="true">
+            <itemPath>mcc_generated_files/peripheral/src/wdt.c</itemPath>
+            <itemPath>mcc_generated_files/peripheral/src/evsys.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
@@ -107,11 +121,13 @@
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <itemPath>mcc_generated_files/timer/src/delay.c</itemPath>
             <itemPath>mcc_generated_files/timer/src/rtc.c</itemPath>
+            <itemPath>mcc_generated_files/timer/src/tcb0.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="uart" displayName="uart" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <itemPath>mcc_generated_files/uart/src/usart3.c</itemPath>
+            <itemPath>mcc_generated_files/uart/src/usart2.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
@@ -122,12 +138,13 @@
       </logicalFolder>
       <itemPath>main.c</itemPath>
       <itemPath>MLX90392.c</itemPath>
-      <itemPath>RN4020.c</itemPath>
       <itemPath>MLX90632.c</itemPath>
       <itemPath>windowAlarm.c</itemPath>
       <itemPath>tempMonitor.c</itemPath>
       <itemPath>EEPROM_Utility.c</itemPath>
       <itemPath>printUtility.c</itemPath>
+      <itemPath>RN4870.c</itemPath>
+      <itemPath>RN4870_RX.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -149,7 +166,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>nEdbgTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>2.31</languageToolchainVersion>
+        <languageToolchainVersion>2.32</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
@@ -166,7 +183,7 @@
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>true</parseOnProdLoad>
+          <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
         <subordinates>
@@ -357,6 +374,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programmerToGoFilePath"
+                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/free/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
@@ -386,7 +405,7 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.9.119"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.10.124"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -399,7 +418,7 @@
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>true</parseOnProdLoad>
+          <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
         <subordinates>
@@ -590,6 +609,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programmerToGoFilePath"
+                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/pro/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"

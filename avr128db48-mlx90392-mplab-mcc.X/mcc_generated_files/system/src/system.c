@@ -8,7 +8,7 @@
     Driver Version    :   1.0.0
 */
 /*
-© [2021] Microchip Technology Inc. and its subsidiaries.
+© [2022] Microchip Technology Inc. and its subsidiaries.
 
     Subject to your compliance with these terms, you may use Microchip 
     software and any derivatives exclusively with Microchip products. 
@@ -41,14 +41,18 @@ void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
+    EVSYS_Initialize();
     I2C0_Initialize();
     I2C1_Initialize();
     MVIO_Initialize();
     NVM_Initialize();
     RTC_Initialize();
     SLPCTRL_Initialize();
+    TCB0_Initialize();
+    USART2_Initialize();
     USART3_Initialize();
     VREF_Initialize();
+    WDT_Initialize();
     CPUINT_Initialize();
 }
 

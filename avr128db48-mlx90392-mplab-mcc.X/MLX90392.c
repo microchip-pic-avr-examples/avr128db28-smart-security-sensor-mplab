@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #define MLX90392_ADDR 0x0C
-#define PROCESS_I2C() do { while (I2C0_IsBusy()) { I2C0_Tasks(); }} while (0)
+#define PROCESS_I2C() do { while ((I2C0_IsBusy()) && (MVIO_isOK())) { I2C0_Tasks(); }} while (0)
 
 //Init the Sensor
 bool MLX90392_init(void)

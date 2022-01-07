@@ -8,7 +8,7 @@
     Driver Version    :   1.0.0
 */
 /*
-© [2021] Microchip Technology Inc. and its subsidiaries.
+© [2022] Microchip Technology Inc. and its subsidiaries.
 
     Subject to your compliance with these terms, you may use Microchip 
     software and any derivatives exclusively with Microchip products. 
@@ -40,13 +40,17 @@ extern "C" {
 #include "../system/clock.h"
 #include "../system/pins.h"
 #include "../system/clock.h"
+#include "../peripheral/evsys.h"
 #include "../i2c_host/twi0.h"
 #include "../i2c_host/twi1.h"
 #include "../mvio/mvio.h"
 #include "../nvm/nvm.h"
 #include "../timer/rtc.h"
+#include "../timer/tcb0.h"
+#include "../uart/usart2.h"
 #include "../uart/usart3.h"
 #include "../vref/vref.h"
+#include "../peripheral/wdt.h"
 #include "../system/interrupt.h"
 /**
  * Initializes MCU, drivers and middleware in the project

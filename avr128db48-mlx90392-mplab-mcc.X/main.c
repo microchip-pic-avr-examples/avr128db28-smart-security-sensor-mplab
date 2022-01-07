@@ -11,7 +11,7 @@
 */
 
 /*
-© [2021] Microchip Technology Inc. and its subsidiaries.
+© [2022] Microchip Technology Inc. and its subsidiaries.
 
     Subject to your compliance with these terms, you may use Microchip 
     software and any derivatives exclusively with Microchip products. 
@@ -38,11 +38,27 @@
 #include "mcc_generated_files/timer/delay.h"
 #include "windowAlarm.h"
 #include "tempMonitor.h"
+#include "printUtility.h"
+
+#include "RN4870.h"
 
 int main(void)
 {
     SYSTEM_Initialize();
       
+    //Configure RN4870
+    //RN4870_init();
+    
+    //Debug RESET Conditions
+//    sprintf(getCharBufferUSB(), "RSTCTRL = 0x%x\r\n", RSTCTRL.RSTFR);
+//    printBufferedStringUSB();
+//    
+//    sprintf(getCharBufferUSB(), "FUSE.WDT = 0x%x\r\n", FUSE.WDTCFG);
+//    printBufferedStringUSB();
+//    
+//    sprintf(getCharBufferUSB(), "WDT.CTRLA = 0x%x\r\nWDT.STATUS = 0x%x\r\n", WDT.CTRLA, WDT.STATUS);
+//    printBufferedStringUSB();
+    
     //Clear reset 
     RSTCTRL.RSTFR = 0xFF;
     
@@ -67,9 +83,6 @@ int main(void)
             
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
-    
-    //Init RN4020 BLE Module
-    //RN4020_initDevice();
             
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
@@ -88,6 +101,6 @@ int main(void)
         //Run the thermometer state machine
         //tempMonitor_FSM();
                         
-        asm("SLEEP");
+        //asm("SLEEP");
     }    
 }
