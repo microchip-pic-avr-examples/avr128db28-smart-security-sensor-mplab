@@ -47,7 +47,7 @@ int main(void)
     SYSTEM_Initialize();
       
     //Configure RN4870
-    //RN4870_init();
+    RN4870_init();
     
     //Debug RESET Conditions
 //    sprintf(getCharBufferUSB(), "RSTCTRL = 0x%x\r\n", RSTCTRL.RSTFR);
@@ -99,8 +99,8 @@ int main(void)
         windowAlarm_FSM();
         
         //Run the thermometer state machine
-        //tempMonitor_FSM();
+        tempMonitor_FSM();
                         
-        //asm("SLEEP");
+        asm("SLEEP");
     }    
 }
