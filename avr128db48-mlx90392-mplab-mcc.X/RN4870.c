@@ -18,19 +18,14 @@ void RN4870_init(void)
     
     //Init RX Engine
     RN4870RX_init();
-    
-    //Testing!
-    DELAY_milliseconds(1000);
-    
-    printConstantStringBLE("$");
-    
+        
     DELAY_milliseconds(100);
     
     //Enter Command Mode
-    printConstantStringBLE("$$$\r");
+    printConstantStringBLE("$$$");
         
     //Wait for RN4870 to enter command mode
-    bool status = RN4870RX_waitForRX(300, "CMD>");
+    bool status = RN4870RX_waitForCommandRX(100);
     
     if (!status)
     {
@@ -42,7 +37,7 @@ void RN4870_init(void)
     }
     
     //Update BLE Name
-    //printConstantStringBLE("S-,RN4870Test\r");
+    //printConstantStringBLE("S-,MLX-MCHP\r");
         
     //printConstantStringBLE("A\r");
     
