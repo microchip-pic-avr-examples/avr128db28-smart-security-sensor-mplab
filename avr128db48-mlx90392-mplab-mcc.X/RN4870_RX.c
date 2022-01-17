@@ -4,20 +4,21 @@
 #include <xc.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
+//Modified by ISRs
 volatile char RN4870RX_Buffer[RN4870_RX_BUFFER_SIZE];
-volatile uint8_t writeIndex = 0, readIndex = 0;
-volatile bool lastDelim = false, inStatus = false;
+volatile uint8_t writeIndex = 0;
+volatile bool readReady = false, inStatus = false, cmdOccurred = false;
+
+//NOT modified or accessed by ISRs
+char responseBuffer[4];
+uint8_t readIndex = 0;
 
 //Initializes the RX Engine for the RN4870
 void RN4870RX_init(void)
 {
-    
-}
-
-ISR(USART2_RXC_vect)
-{
-    
+    RN4870RX_clearBuffer();
 }
 
 //Insert a character into the buffer
@@ -31,7 +32,6 @@ void RN4870RX_loadCharacter(char input)
         if (input == RN4870_DELIM_STATUS)
         {
             inStatus = false;
-            lastDelim = true;
         }
         
         return;
@@ -48,85 +48,132 @@ void RN4870RX_loadCharacter(char input)
         if (input == RN4870_DELIM_RESP)
         {
             //If this is a deliminator for response messages "AOK", "ERR"
-            lastDelim = true;
-            return;
+            readReady = true;
         }
-        else
-        {
-            //Normal Character
-            lastDelim = false;
-        }
-    }
+    }  
     
+    //If one of the chars from "CMD> " has been detected
+    if (input == RN4870_DELIM_CMD)
+    {
+        cmdOccurred = true;
+    }
     
     RN4870RX_Buffer[writeIndex] = input;
     writeIndex++;
 }
 
+void RN4870RX_clearCMDFlag(void)
+{
+    cmdOccurred = false;
+}
+
 //Returns true if RESP_DELIM was the last character received.
-bool RN4870X_isDataComplete(void)
+bool RN4870RX_isResponseComplete(void)
 {
-    return lastDelim;
+    return readReady;
 }
 
-//Get the number of remaining characters to read
-uint8_t RN4870RX_remaining(void)
+bool RN4870RX_isCMDPresent(void)
 {
-    if (readIndex >= writeIndex)
-    {
-        RN4870RX_clearBuffer();
-        return 0;
-    }
-    
-    return (writeIndex - readIndex);
+    return cmdOccurred;
 }
 
-//Get the next character in the queue
-char RN4870RX_getCharacter(void)
+//Clears the response buffer
+void RN4870RX_clearResponseBuffer(void)
 {
-    if (readIndex >= writeIndex)
+    //Clear Response Buffer
+    responseBuffer[3] = '\0';
+    responseBuffer[2] = '\0';
+    responseBuffer[1] = '\0';
+    responseBuffer[0] = '\0';
+}
+
+//Load response buffer with the last 3 bytes received
+void RN4870RX_loadResponseBuffer(void)
+{
+    //Clear Response Buffer
+    RN4870RX_clearResponseBuffer();
+    
+    while ((RN4870RX_Buffer[readIndex] != RN4870_DELIM_RESP) && (readIndex != writeIndex))
     {
-        RN4870RX_clearBuffer();
-        return '\0';
+        responseBuffer[3] = responseBuffer[2];
+        responseBuffer[2] = responseBuffer[1];
+        responseBuffer[0] = RN4870RX_Buffer[readIndex];
+        readIndex++;
     }
     
-    char c = RN4870RX_Buffer[readIndex];
-    readIndex++;
-    
-    return c;
+    //If we stopped because \r is the current char, clear the \r
+    if (RN4870RX_Buffer[readIndex] == RN4870_DELIM_RESP)
+    {
+        RN4870RX_Buffer[readIndex] = '\0';
+    }
 }
 
 //Discards the buffer
 void RN4870RX_clearBuffer(void)
 {
+    RN4870RX_clearResponseBuffer();
+    
+    for (uint16_t i = 0; i < RN4870_RX_BUFFER_SIZE; i++)
+    {
+        RN4870RX_Buffer[i] = '\0';
+    }
+    
     writeIndex = 0;
     readIndex = 0;
-    lastDelim = false;
+    readReady = false;
     inStatus = false;
+    cmdOccurred = false;
 }
 
 //Waits for a message to be received and checks to see if it matches string.
 //Timeout is specified in milliseconds
-bool RN4870RX_waitForRX(uint16_t timeout, const char* compare)
+bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
 {
     uint16_t timeCycles = 0;
     
     do
     {
-        if (RN4870X_isDataComplete())
+        if (RN4870RX_isResponseComplete())
         {
-            //Check Data
-            uint8_t cIndex = 0;
-            while ((compare[cIndex] != '\0') && (RN4870RX_remaining() != 0))
+            //Load Response Buffer
+            RN4870RX_loadResponseBuffer();
+            
+            //Compare strings
+            if (strcmp(&responseBuffer[0], compare) == 0)
             {
-                //Compare Characters
-                if (compare[cIndex] != RN4870RX_getCharacter())
-                {
-                    //Match Failed
-                    return false;
-                }
-                cIndex++;
+                return true;
             }
+            
+            return false;
+        }
+        
+        if (!(TCB0.STATUS & TCB_RUN_bm))
+        {
+            //Ensures timing requirements
+            asm("NOP");
+            asm("NOP");
+            
+            //Retrigger the Timer
+            EVSYS.SWEVENTA = EVSYS_SWEVENTA_CH0_gc;
+            timeCycles++;
+        }
+        
+    } while (timeout > timeCycles);
+    
+    return false;
+}
+
+bool RN4870RX_waitForCommandRX(uint16_t timeout)
+{
+    uint16_t timeCycles = 0;
+    
+    do
+    {
+        if (RN4870RX_isCMDPresent())
+        {
+            //Load Response Buffer
+            RN4870RX_clearCMDFlag();
             
             return true;
         }
