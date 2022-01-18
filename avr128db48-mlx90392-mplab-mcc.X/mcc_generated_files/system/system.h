@@ -45,7 +45,6 @@ extern "C" {
 #include "../nvm/nvm.h"
 #include "../timer/rtc.h"
 #include "../timer/tcb0.h"
-#include "../uart/usart3.h"
 #include "../vref/vref.h"
 #include "../peripheral/wdt.h"
 #include "../system/interrupt.h"

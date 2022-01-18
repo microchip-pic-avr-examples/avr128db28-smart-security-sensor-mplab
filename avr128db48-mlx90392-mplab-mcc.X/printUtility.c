@@ -5,6 +5,7 @@
 #include "mcc_generated_files/system/system.h"
 
 #include "usart2.h"
+#include "usart3.h"
 
 static char bufferUSB[PRINT_BUFFER_SIZE];
 static volatile char bufferBLE[PRINT_BUFFER_SIZE];
@@ -34,15 +35,15 @@ void printBufferedStringUSB(void)
     
     while ((bufferUSB[index] != '\0') && (index < PRINT_BUFFER_SIZE))
     {
-        while (!USART3_IsTxReady());
+        while (!USART3_canTransmit());
         
-        USART3_Write(bufferUSB[index]);
+        USART3_sendByte(bufferUSB[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART3_IsTxReady());
-    while (USART3_IsTxBusy());
+    while (!USART3_canTransmit());
+    while (USART3_isBusy());
 }
 
 //Prints a constant string to the UART
@@ -51,7 +52,6 @@ void printConstantStringUSB(const char* text)
 #ifdef DISABLE_STRING_MESSAGES
     return;
 #else    
-    
     if (text[0] == '\0')
         return;
     
@@ -62,15 +62,15 @@ void printConstantStringUSB(const char* text)
     
     while ((text[index] != '\0') && (index < 255))
     {
-        while (!USART3_IsTxReady());
+        while (!USART3_canTransmit());
         
-        USART3_Write(text[index]);
+        USART3_sendByte(text[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART3_IsTxReady());
-    while (USART3_IsTxBusy());
+    while (!USART3_canTransmit());
+    while (USART3_isBusy());
 #endif
 }
 

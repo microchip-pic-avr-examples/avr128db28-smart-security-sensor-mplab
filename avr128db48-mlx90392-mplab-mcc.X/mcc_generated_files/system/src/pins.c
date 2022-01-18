@@ -34,8 +34,6 @@
 
 #include "../pins.h"
 
-static void (*PB1_InterruptHandler)(void);
-static void (*PB0_InterruptHandler)(void);
 static void (*PB2_InterruptHandler)(void);
 static void (*PB3_InterruptHandler)(void);
 static void (*PD0_InterruptHandler)(void);
@@ -44,7 +42,7 @@ void PIN_MANAGER_Initialize()
 {
   /* DIR Registers Initialization */
     PORTA.DIR = 0x0;
-    PORTB.DIR = 0x9;
+    PORTB.DIR = 0x8;
     PORTC.DIR = 0x0;
     PORTD.DIR = 0x1;
     PORTE.DIR = 0x0;
@@ -52,7 +50,7 @@ void PIN_MANAGER_Initialize()
 
   /* OUT Registers Initialization */
     PORTA.OUT = 0x0;
-    PORTB.OUT = 0x1;
+    PORTB.OUT = 0x0;
     PORTC.OUT = 0x0;
     PORTD.OUT = 0x1;
     PORTE.OUT = 0x0;
@@ -122,39 +120,11 @@ void PIN_MANAGER_Initialize()
     PORTMUX.ZCDROUTEA = 0x0;
 
   // register default ISC callback functions at runtime; use these methods to register a custom function
-    PB1_SetInterruptHandler(PB1_DefaultInterruptHandler);
-    PB0_SetInterruptHandler(PB0_DefaultInterruptHandler);
     PB2_SetInterruptHandler(PB2_DefaultInterruptHandler);
     PB3_SetInterruptHandler(PB3_DefaultInterruptHandler);
     PD0_SetInterruptHandler(PD0_DefaultInterruptHandler);
 }
 
-/**
-  Allows selecting an interrupt handler for PB1 at application runtime
-*/
-void PB1_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PB1_InterruptHandler = interruptHandler;
-}
-
-void PB1_DefaultInterruptHandler(void)
-{
-    // add your PB1 interrupt custom code
-    // or set custom function using PB1_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PB0 at application runtime
-*/
-void PB0_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PB0_InterruptHandler = interruptHandler;
-}
-
-void PB0_DefaultInterruptHandler(void)
-{
-    // add your PB0 interrupt custom code
-    // or set custom function using PB0_SetInterruptHandler()
-}
 /**
   Allows selecting an interrupt handler for PB2 at application runtime
 */
@@ -203,14 +173,6 @@ ISR(PORTA_PORT_vect)
 ISR(PORTB_PORT_vect)
 { 
     // Call the interrupt handler for the callback registered at runtime
-    if(VPORTB.INTFLAGS & PORT_INT1_bm)
-    {
-       PB1_InterruptHandler(); 
-    }
-    if(VPORTB.INTFLAGS & PORT_INT0_bm)
-    {
-       PB0_InterruptHandler(); 
-    }
     if(VPORTB.INTFLAGS & PORT_INT2_bm)
     {
        PB2_InterruptHandler(); 

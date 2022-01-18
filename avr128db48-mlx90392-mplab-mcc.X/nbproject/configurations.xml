@@ -8,6 +8,7 @@
         <itemPath>usart2.h</itemPath>
         <itemPath>TWI0_host.h</itemPath>
         <itemPath>TWI1_host.h</itemPath>
+        <itemPath>usart3.h</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
@@ -49,10 +50,6 @@
           <itemPath>mcc_generated_files/timer/timer_interface.h</itemPath>
           <itemPath>mcc_generated_files/timer/tcb0.h</itemPath>
         </logicalFolder>
-        <logicalFolder name="uart" displayName="uart" projectFiles="true">
-          <itemPath>mcc_generated_files/uart/uart_interface.h</itemPath>
-          <itemPath>mcc_generated_files/uart/usart3.h</itemPath>
-        </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
           <itemPath>mcc_generated_files/vref/vref.h</itemPath>
         </logicalFolder>
@@ -82,6 +79,7 @@
         <itemPath>usart2.c</itemPath>
         <itemPath>TWI0_host.c</itemPath>
         <itemPath>TWI1_host.c</itemPath>
+        <itemPath>usart3.c</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
@@ -120,11 +118,6 @@
             <itemPath>mcc_generated_files/timer/src/delay.c</itemPath>
             <itemPath>mcc_generated_files/timer/src/rtc.c</itemPath>
             <itemPath>mcc_generated_files/timer/src/tcb0.c</itemPath>
-          </logicalFolder>
-        </logicalFolder>
-        <logicalFolder name="uart" displayName="uart" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/uart/src/usart3.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
