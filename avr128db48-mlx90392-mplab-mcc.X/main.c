@@ -49,9 +49,17 @@
 #include "TWI0_host.h"
 #include "TWI1_host.h"
 
+#include "MVIO.h"
+
 int main(void)
 {
     SYSTEM_Initialize();
+    
+    //Init MVIO
+    MVIO_init();
+    
+    //Setup Callback function
+    MVIO_setCallback(&_windowAlarm_onMVIOChange);
     
     //Configure TWI0 (MVIO) for Magnetometer
     TWI0_initHost();

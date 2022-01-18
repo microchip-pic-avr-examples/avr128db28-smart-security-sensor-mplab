@@ -97,7 +97,7 @@ bool USART3_canTransmit(void)
 //Returns true if the shifter is running
 bool USART3_isBusy(void)
 {
-    return (USART3.STATUS & USART_TXCIF_bm);
+    return (!(USART3.STATUS & USART_TXCIF_bm));
 }
 
 ISR(USART3_RXC_vect)

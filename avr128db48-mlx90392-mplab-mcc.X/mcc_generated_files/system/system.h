@@ -41,7 +41,6 @@ extern "C" {
 #include "../system/pins.h"
 #include "../system/clock.h"
 #include "../peripheral/evsys.h"
-#include "../mvio/mvio.h"
 #include "../nvm/nvm.h"
 #include "../timer/rtc.h"
 #include "../timer/tcb0.h"

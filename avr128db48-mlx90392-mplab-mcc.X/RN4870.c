@@ -30,10 +30,7 @@ void RN4870_init(void)
     printConstantStringUSB("OK\r\n");
             
     //Update BLE Name
-    RN4870_sendCommandAndPrint("S-,Micro-Demo", 255);     
-    
-    //Begin Advertising
-    RN4870_sendCommandAndPrint("A,0050", 10);
+    RN4870_sendCommandAndPrint("S-,MCHP-MLX", 255);     
     
     //Exit CMD Mode
     RN4870_exitCommandMode();
