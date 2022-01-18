@@ -1,13 +1,13 @@
 #include "MLX90392.h"
-#include "mcc_generated_files/i2c_host/twi0.h"
 #include "mcc_generated_files/timer/delay.h"
 #include "mcc_generated_files/mvio/mvio.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "TWI0_host.h"
+
 #define MLX90392_ADDR 0x0C
-#define PROCESS_I2C() do { while ((I2C0_IsBusy()) && (MVIO_isOK())) { I2C0_Tasks(); }} while (0)
 
 //Init the Sensor
 bool MLX90392_init(void)
@@ -41,19 +41,7 @@ bool MLX90392_getRegister(MLX90392_Register reg, uint8_t* data)
         return false;
     
     //Start Read / Write Operation
-    if (I2C0_WriteRead(MLX90392_ADDR, &reg, 1, data, 1))
-    {
-        PROCESS_I2C();
-
-        //If an error occurred...
-        if (I2C0_ErrorGet())
-            return false;
-
-        return true;
-    }
-        
-    return false;
-
+    return TWI0_sendAndReadBytes(MLX90392_ADDR, reg, data, 1);
 }
 
 //Sets the register specified on the device
@@ -63,19 +51,8 @@ bool MLX90392_setRegister(MLX90392_Register reg, uint8_t data)
         return false;
 
     uint8_t writeBuffer[] = {reg, data};
-    
-    if (I2C0_Write(MLX90392_ADDR, &writeBuffer[0], 2))
-    {
-        PROCESS_I2C();
-
-        //If an error occurred...
-        if (I2C0_ErrorGet())
-            return false;
-
-        return true;
-    }
         
-    return false;
+    return TWI0_sendBytes(MLX90392_ADDR, &writeBuffer[0], 2);
 }
 
 bool MLX90392_reset(void)
@@ -92,14 +69,9 @@ bool MLX90392_isDataReady(void)
     uint8_t status = 0x00;
     
     //I2C Error
-    if (!I2C0_Read(MLX90392_ADDR, &status, 1))
+    if (!TWI0_readByte(MLX90392_ADDR, &status))
         return false;
-    
-    PROCESS_I2C();
-    
-    if (I2C0_ErrorGet())
-        return false;
-    
+        
     //DRDY is bit 0 in status
     return (status & 0x01);
 }
@@ -188,16 +160,5 @@ bool MLX90392_getResult(MLX90392_RawResult* result)
         return false;
     
     //Read from 0x00 to 0x07    
-    if (I2C0_Read(MLX90392_ADDR, &result->data[0], 8))
-    {
-        PROCESS_I2C();
-        
-        //If an error occurred...
-        if (I2C0_ErrorGet())
-            return false;
-        
-        return true;
-    }
-
-    return false;
+    return TWI0_readBytes(MLX90392_ADDR, &result->data[0], 8);
 }

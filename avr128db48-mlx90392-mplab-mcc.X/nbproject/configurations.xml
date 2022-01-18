@@ -4,16 +4,14 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f1" displayName="Bare Metal" projectFiles="true">
+        <itemPath>usart2.h</itemPath>
+        <itemPath>TWI0_host.h</itemPath>
+        <itemPath>TWI1_host.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
-        <logicalFolder name="i2c_host" displayName="i2c_host" projectFiles="true">
-          <itemPath>mcc_generated_files/i2c_host/i2c_host_event_types.h</itemPath>
-          <itemPath>mcc_generated_files/i2c_host/twi0.h</itemPath>
-          <itemPath>mcc_generated_files/i2c_host/twi1.h</itemPath>
-          <itemPath>mcc_generated_files/i2c_host/i2c_host_interface.h</itemPath>
-          <itemPath>mcc_generated_files/i2c_host/i2c_host_types.h</itemPath>
-        </logicalFolder>
         <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
           <itemPath>mcc_generated_files/mvio/mvio.h</itemPath>
         </logicalFolder>
@@ -54,15 +52,16 @@
         <logicalFolder name="uart" displayName="uart" projectFiles="true">
           <itemPath>mcc_generated_files/uart/uart_interface.h</itemPath>
           <itemPath>mcc_generated_files/uart/usart3.h</itemPath>
-          <itemPath>mcc_generated_files/uart/usart2.h</itemPath>
         </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
           <itemPath>mcc_generated_files/vref/vref.h</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <itemPath>MLX90392.h</itemPath>
-      <itemPath>MLX90632.h</itemPath>
-      <itemPath>MLX90632_Defines.h</itemPath>
+      <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
+        <itemPath>MLX90392.h</itemPath>
+        <itemPath>MLX90632.h</itemPath>
+        <itemPath>MLX90632_Defines.h</itemPath>
+      </logicalFolder>
       <itemPath>EEPROM_Locations.h</itemPath>
       <itemPath>windowAlarm.h</itemPath>
       <itemPath>tempMonitor.h</itemPath>
@@ -79,17 +78,16 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f1" displayName="Bare Metal" projectFiles="true">
+        <itemPath>usart2.c</itemPath>
+        <itemPath>TWI0_host.c</itemPath>
+        <itemPath>TWI1_host.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
         <logicalFolder name="docs" displayName="docs" projectFiles="true">
           <itemPath>mcc_generated_files/docs/delay.dox</itemPath>
-        </logicalFolder>
-        <logicalFolder name="i2c_host" displayName="i2c_host" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/i2c_host/src/twi1.c</itemPath>
-            <itemPath>mcc_generated_files/i2c_host/src/twi0.c</itemPath>
-          </logicalFolder>
         </logicalFolder>
         <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
@@ -127,7 +125,6 @@
         <logicalFolder name="uart" displayName="uart" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <itemPath>mcc_generated_files/uart/src/usart3.c</itemPath>
-            <itemPath>mcc_generated_files/uart/src/usart2.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="vref" displayName="vref" projectFiles="true">
@@ -136,9 +133,11 @@
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
+      <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
+        <itemPath>MLX90632.c</itemPath>
+        <itemPath>MLX90392.c</itemPath>
+      </logicalFolder>
       <itemPath>main.c</itemPath>
-      <itemPath>MLX90392.c</itemPath>
-      <itemPath>MLX90632.c</itemPath>
       <itemPath>windowAlarm.c</itemPath>
       <itemPath>tempMonitor.c</itemPath>
       <itemPath>EEPROM_Utility.c</itemPath>

@@ -42,14 +42,11 @@ void SYSTEM_Initialize(void)
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
     EVSYS_Initialize();
-    I2C0_Initialize();
-    I2C1_Initialize();
     MVIO_Initialize();
     NVM_Initialize();
     RTC_Initialize();
     SLPCTRL_Initialize();
     TCB0_Initialize();
-    USART2_Initialize();
     USART3_Initialize();
     VREF_Initialize();
     WDT_Initialize();

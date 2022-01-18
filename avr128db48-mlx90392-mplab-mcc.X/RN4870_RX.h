@@ -14,7 +14,7 @@ extern "C" {
 //Delimiters
 #define RN4870_DELIM_STATUS '%'
 #define RN4870_DELIM_RESP '\r'   
-#define RN4870_DELIM_CMD '>'
+#define RN4870_MARKER_CMD '>'
     
     //Initializes the RX Engine for the RN4870
     void RN4870RX_init(void);

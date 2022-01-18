@@ -41,13 +41,34 @@
 #include "printUtility.h"
 
 #include "RN4870.h"
+#include "RN4870_RX.h"
+#include "usart2.h"
+
+#include "TWI0_host.h"
+#include "TWI1_host.h"
 
 int main(void)
 {
     SYSTEM_Initialize();
-      
-    //Configure RN4870
-    RN4870_init();
+    
+    //Configure TWI0
+    TWI0_initHost();
+    TWI0_initPins();
+    
+    //Configure TWI1
+    TWI1_initHost();
+    TWI1_initPins();
+    
+    //Configure USART 2 (Bare Metal Driver)
+    USART2_init();
+    USART2_initIO();
+    
+    //Attach Callback Function for USART2
+    USART2_setRXCallback(&RN4870RX_loadCharacter);
+    
+    //Enable USART
+    USART2_enableRX();
+    USART2_enableTX();
     
     //Debug RESET Conditions
 //    sprintf(getCharBufferUSB(), "RSTCTRL = 0x%x\r\n", RSTCTRL.RSTFR);
@@ -62,19 +83,12 @@ int main(void)
     //Clear reset 
     RSTCTRL.RSTFR = 0xFF;
     
-    //Enable TWI in Debug
-    TWI0.DBGCTRL = 1;
-    TWI1.DBGCTRL = 1;
-    
     //Enable USART in Debug
     USART3.DBGCTRL = 1;
     
     //Enable USART Debug
     USART3.DBGCTRL = 1;
-    
-    //Bug Fix for IO Assignment
-    PORTMUX.TWIROUTEA = 0x2;
-    
+        
     //Setup ISR Callback for RTC
     RTC_SetOVFIsrCallback(&tempMonitor_requestConversion);
     
@@ -90,11 +104,14 @@ int main(void)
     //Start Interrupts
     sei();
     
+    //Configure RN4870
+    RN4870_init();
+    
     while(1)
     {        
         //Clear the Watchdog Timer
         asm("WDR");
-                        
+                                
         //Run the magnetometer state machine
         windowAlarm_FSM();
         

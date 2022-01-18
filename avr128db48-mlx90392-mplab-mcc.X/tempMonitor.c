@@ -13,7 +13,7 @@
 
 //State Machine for the main program
 typedef enum  {
-    TEMP_SLEEP = 0, TEMP_START, TEMP_WAIT, TEMP_RESULTS, TEMP_ERROR
+    TEMP_SLEEP = 0, TEMP_START, TEMP_WAIT, TEMP_RESULTS, TEMP_ERROR_WAIT, TEMP_ERROR
 } TemperatureMeasState;
 
 static volatile TemperatureMeasState tempState = TEMP_SLEEP;
@@ -135,11 +135,16 @@ void tempMonitor_FSM(void)
             
             break;
         }
-        case TEMP_ERROR:
+        case TEMP_ERROR_WAIT:
+        {
+            //Wait...
+            break;
+        }
         default:
         {
             //Sensor Error has Occurred
             printConstantStringUSB("Temperature Sensor Error - Reboot Device\r\n");
+            tempState = TEMP_ERROR_WAIT;
         }
     }
 }
@@ -150,5 +155,9 @@ void tempMonitor_requestConversion(void)
     if (tempState == TEMP_SLEEP)
     {
         tempState = TEMP_START;
+    }
+    if (tempState == TEMP_ERROR_WAIT)
+    {
+        tempState = TEMP_ERROR;
     }
 }

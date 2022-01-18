@@ -11,8 +11,9 @@
 #include "EEPROM_Utility.h"
 
 #include "mcc_generated_files/nvm/nvm.h"
-#include "mcc_generated_files/i2c_host/twi1.h"
 #include "mcc_generated_files/timer/delay.h"
+
+#include "TWI1_host.h"
 
 //I2C Address to Communicate at. Can be changed later
 static uint8_t _MLX90632_address = MLX90632_I2C_ADDR_BASE;
@@ -39,25 +40,15 @@ static uint8_t i2cBuffer[4];
 
 static float ToDUT = 25.0, TaDUT = 25.0;
 
-//Process I2C Tasks
-#define PROCESS_I2C() do { while (I2C1_IsBusy()) { I2C1_Tasks(); }} while (0)
-
 bool _readWriteMLX90632(MLX90632_Register reg, uint8_t* memory, uint8_t size)
 {
     i2cBuffer[0] = (reg & 0xFF00) >> 8;
     i2cBuffer[1] = (reg & 0xFF);
     
     //Queue I2C
-    bool success = I2C1_WriteRead(_MLX90632_address, &i2cBuffer[0], 2, &memory[0], size);
+    bool success = TWI1_sendsAndReadBytes(_MLX90632_address, &i2cBuffer[0], 2, &memory[0], size);
     
     if (!success)
-        return false;
-    
-    //Run I2C
-    PROCESS_I2C();
-    
-    //If an error occurred
-    if (I2C1_ErrorGet() != I2C_ERROR_NONE)
         return false;
     
     return true;
@@ -332,18 +323,11 @@ bool MLX90632_getRegister(MLX90632_Register reg, uint16_t* result)
     i2cBuffer[0] = (reg & 0xFF00) >> 8;
     i2cBuffer[1] = (reg & 0xFF);
     
-    bool success = I2C1_WriteRead(0x3A, &i2cBuffer[0], 2, &i2cBuffer[2] , 2);
+    bool success = TWI1_sendsAndReadBytes(MLX90632_I2C_ADDR_BASE, &i2cBuffer[0], 2, &i2cBuffer[2] , 2);
     
     if (!success)
         return false;
-    
-    //Run I2C
-    PROCESS_I2C();
-    
-    //If an error occurred
-    if (I2C1_ErrorGet() != I2C_ERROR_NONE)
-        return false;
-    
+        
     //Create 16-bit result
     *result = CREATE_16BIT(i2cBuffer[2], i2cBuffer[3]);
     
@@ -416,18 +400,11 @@ bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data)
     i2cBuffer[3] = (data & 0xFF);
     
     //Queue I2C
-    bool success = I2C1_Write(_MLX90632_address, &i2cBuffer[0], 4);
+    bool success = TWI1_sendBytes(_MLX90632_address, &i2cBuffer[0], 4);
     
     if (!success)
         return false;
-    
-    //Run I2C
-    PROCESS_I2C();
-    
-    //If an error occurred
-    if (I2C1_ErrorGet() != I2C_ERROR_NONE)
-        return false;
-    
+        
     return true;
 }
 

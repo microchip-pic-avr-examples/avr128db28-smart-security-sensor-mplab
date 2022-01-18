@@ -36,11 +36,6 @@
 
 static void (*PB1_InterruptHandler)(void);
 static void (*PB0_InterruptHandler)(void);
-static void (*PF4_InterruptHandler)(void);
-static void (*PF3_InterruptHandler)(void);
-static void (*PF2_InterruptHandler)(void);
-static void (*PC3_InterruptHandler)(void);
-static void (*PC2_InterruptHandler)(void);
 static void (*PB2_InterruptHandler)(void);
 static void (*PB3_InterruptHandler)(void);
 static void (*PD0_InterruptHandler)(void);
@@ -53,7 +48,7 @@ void PIN_MANAGER_Initialize()
     PORTC.DIR = 0x0;
     PORTD.DIR = 0x1;
     PORTE.DIR = 0x0;
-    PORTF.DIR = 0x10;
+    PORTF.DIR = 0x0;
 
   /* OUT Registers Initialization */
     PORTA.OUT = 0x0;
@@ -61,7 +56,7 @@ void PIN_MANAGER_Initialize()
     PORTC.OUT = 0x0;
     PORTD.OUT = 0x1;
     PORTE.OUT = 0x0;
-    PORTF.OUT = 0x10;
+    PORTF.OUT = 0x0;
 
   /* PINxCTRL registers Initialization */
     PORTA.PIN0CTRL = 0x0;
@@ -106,8 +101,8 @@ void PIN_MANAGER_Initialize()
     PORTE.PIN7CTRL = 0x0;
     PORTF.PIN0CTRL = 0x0;
     PORTF.PIN1CTRL = 0x0;
-    PORTF.PIN2CTRL = 0x8;
-    PORTF.PIN3CTRL = 0x8;
+    PORTF.PIN2CTRL = 0x0;
+    PORTF.PIN3CTRL = 0x0;
     PORTF.PIN4CTRL = 0x0;
     PORTF.PIN5CTRL = 0x0;
     PORTF.PIN6CTRL = 0x0;
@@ -129,11 +124,6 @@ void PIN_MANAGER_Initialize()
   // register default ISC callback functions at runtime; use these methods to register a custom function
     PB1_SetInterruptHandler(PB1_DefaultInterruptHandler);
     PB0_SetInterruptHandler(PB0_DefaultInterruptHandler);
-    PF4_SetInterruptHandler(PF4_DefaultInterruptHandler);
-    PF3_SetInterruptHandler(PF3_DefaultInterruptHandler);
-    PF2_SetInterruptHandler(PF2_DefaultInterruptHandler);
-    PC3_SetInterruptHandler(PC3_DefaultInterruptHandler);
-    PC2_SetInterruptHandler(PC2_DefaultInterruptHandler);
     PB2_SetInterruptHandler(PB2_DefaultInterruptHandler);
     PB3_SetInterruptHandler(PB3_DefaultInterruptHandler);
     PD0_SetInterruptHandler(PD0_DefaultInterruptHandler);
@@ -164,71 +154,6 @@ void PB0_DefaultInterruptHandler(void)
 {
     // add your PB0 interrupt custom code
     // or set custom function using PB0_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PF4 at application runtime
-*/
-void PF4_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PF4_InterruptHandler = interruptHandler;
-}
-
-void PF4_DefaultInterruptHandler(void)
-{
-    // add your PF4 interrupt custom code
-    // or set custom function using PF4_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PF3 at application runtime
-*/
-void PF3_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PF3_InterruptHandler = interruptHandler;
-}
-
-void PF3_DefaultInterruptHandler(void)
-{
-    // add your PF3 interrupt custom code
-    // or set custom function using PF3_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PF2 at application runtime
-*/
-void PF2_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PF2_InterruptHandler = interruptHandler;
-}
-
-void PF2_DefaultInterruptHandler(void)
-{
-    // add your PF2 interrupt custom code
-    // or set custom function using PF2_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PC3 at application runtime
-*/
-void PC3_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PC3_InterruptHandler = interruptHandler;
-}
-
-void PC3_DefaultInterruptHandler(void)
-{
-    // add your PC3 interrupt custom code
-    // or set custom function using PC3_SetInterruptHandler()
-}
-/**
-  Allows selecting an interrupt handler for PC2 at application runtime
-*/
-void PC2_SetInterruptHandler(void (* interruptHandler)(void)) 
-{
-    PC2_InterruptHandler = interruptHandler;
-}
-
-void PC2_DefaultInterruptHandler(void)
-{
-    // add your PC2 interrupt custom code
-    // or set custom function using PC2_SetInterruptHandler()
 }
 /**
   Allows selecting an interrupt handler for PB2 at application runtime
@@ -300,15 +225,6 @@ ISR(PORTB_PORT_vect)
 
 ISR(PORTC_PORT_vect)
 { 
-    // Call the interrupt handler for the callback registered at runtime
-    if(VPORTC.INTFLAGS & PORT_INT3_bm)
-    {
-       PC3_InterruptHandler(); 
-    }
-    if(VPORTC.INTFLAGS & PORT_INT2_bm)
-    {
-       PC2_InterruptHandler(); 
-    }
     /* Clear interrupt flags */
     VPORTC.INTFLAGS = 0xff;
 }
@@ -332,19 +248,6 @@ ISR(PORTE_PORT_vect)
 
 ISR(PORTF_PORT_vect)
 { 
-    // Call the interrupt handler for the callback registered at runtime
-    if(VPORTF.INTFLAGS & PORT_INT4_bm)
-    {
-       PF4_InterruptHandler(); 
-    }
-    if(VPORTF.INTFLAGS & PORT_INT3_bm)
-    {
-       PF3_InterruptHandler(); 
-    }
-    if(VPORTF.INTFLAGS & PORT_INT2_bm)
-    {
-       PF2_InterruptHandler(); 
-    }
     /* Clear interrupt flags */
     VPORTF.INTFLAGS = 0xff;
 }
