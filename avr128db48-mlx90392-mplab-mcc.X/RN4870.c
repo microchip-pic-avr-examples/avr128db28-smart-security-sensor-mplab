@@ -11,41 +11,90 @@
 
 void RN4870_init(void)
 {
-    printConstantStringUSB("Initializing RN4870...");
+    printConstantStringUSB("Initializing RN4870...\r\n");
+        
+    //Init RX Engine
+    RN4870RX_init();
+            
+    printConstantStringUSB("Entering Command Mode...");
+    
+    bool status = RN4870_enterCommandMode();
+    
+    if (!status)
+    {
+        printConstantStringUSB("FAILED\r\n");
+        RN4870_exitCommandMode();
+        return;
+    }
+    
+    printConstantStringUSB("OK\r\n");
+            
+    //Update BLE Name
+    RN4870_sendCommandAndPrint("S-,Micro-Demo", 255);     
+    
+    //Begin Advertising
+    RN4870_sendCommandAndPrint("A,0050", 10);
+    
+    //Exit CMD Mode
+    RN4870_exitCommandMode();
+}
+
+bool RN4870_enterCommandMode(void)
+{
+    //Clear the Watchdog Timer
+    asm("WDR");
     
     //Set Mode Switch to Low
     RN4870_MODE_SetLow();
-    
-    //Init RX Engine
-    RN4870RX_init();
-        
-    DELAY_milliseconds(100);
     
     //Enter Command Mode
     printConstantStringBLE("$$$");
         
     //Wait for RN4870 to enter command mode
-    bool status = RN4870RX_waitForCommandRX(100);
-    
-    if (!status)
-    {
-        printConstantStringUSB("FAILED\r\n");
-    }
-    else
-    {
-        printConstantStringUSB("OK\r\n");
-    }
-    
-    //Update BLE Name
-    //printConstantStringBLE("S-,MLX-MCHP\r");
-        
-    //printConstantStringBLE("A\r");
-    
+    return RN4870RX_waitForCommandRX(100);
+}
+
+void RN4870_exitCommandMode(void)
+{
     //Exit CMD Mode
-    printConstantStringBLE("---\r");
+    printCommandStringBLE("---", RN4870_DELIM_RESP);
     
     RN4870RX_clearBuffer();
     
     //Move to Data Mode
     RN4870_MODE_SetHigh();
+
+}
+
+bool RN4870_sendCommand(const char* string, uint8_t timeout)
+{
+    //Clear the Watchdog Timer
+    asm("WDR");
+    
+    printConstantStringBLE(string);
+    return RN4870RX_waitForResponseRX(timeout, RN4870_AOK);
+}
+
+void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
+{
+    //Clear the Watchdog Timer
+    asm("WDR");
+    
+    //Debug Print
+    printConstantStringUSB("Executing Command: \"");
+    printConstantStringUSB(string);
+    printConstantStringUSB("\"...");
+    
+    //Print Command to BLE
+    printCommandStringBLE(string, RN4870_DELIM_RESP);
+    bool status = RN4870RX_waitForResponseRX(timeout, RN4870_AOK);
+    
+    if (status)
+    {
+        printConstantStringUSB("OK\r\n");
+    }
+    else
+    {
+        printConstantStringUSB("FAILED\r\n");
+    }
 }

@@ -35,7 +35,9 @@ extern "C" {
     
     //Prints a constant string to the UART
     void printConstantStringBLE(const char* text);
-
+    
+    //Prints a constant string to the UART, then appends DELIM
+    void printCommandStringBLE(const char* text, const char delim);
     
 #ifdef	__cplusplus
 }

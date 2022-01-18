@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "usart2.h"
+
 //Modified by ISRs
 volatile char RN4870RX_Buffer[RN4870_RX_BUFFER_SIZE];
 volatile uint8_t writeIndex = 0;
@@ -53,7 +55,7 @@ void RN4870RX_loadCharacter(char input)
     }  
     
     //If one of the chars from "CMD> " has been detected
-    if (input == RN4870_DELIM_CMD)
+    if (input == RN4870_MARKER_CMD)
     {
         cmdOccurred = true;
     }
@@ -94,10 +96,13 @@ void RN4870RX_loadResponseBuffer(void)
     //Clear Response Buffer
     RN4870RX_clearResponseBuffer();
     
+    //Clear flag
+    readReady = false;
+    
     while ((RN4870RX_Buffer[readIndex] != RN4870_DELIM_RESP) && (readIndex != writeIndex))
     {
-        responseBuffer[3] = responseBuffer[2];
         responseBuffer[2] = responseBuffer[1];
+        responseBuffer[1] = responseBuffer[0];
         responseBuffer[0] = RN4870RX_Buffer[readIndex];
         readIndex++;
     }
@@ -107,6 +112,8 @@ void RN4870RX_loadResponseBuffer(void)
     {
         RN4870RX_Buffer[readIndex] = '\0';
     }
+    
+    
 }
 
 //Discards the buffer
@@ -140,11 +147,13 @@ bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
             RN4870RX_loadResponseBuffer();
             
             //Compare strings
-            if (strcmp(&responseBuffer[0], compare) == 0)
+            if (strstr(&responseBuffer[0], compare) != 0)
             {
+                asm("NOP");
                 return true;
             }
             
+            asm("NOP");
             return false;
         }
         
