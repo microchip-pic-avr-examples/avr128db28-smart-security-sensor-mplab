@@ -1,11 +1,11 @@
 #include "MLX90392.h"
 #include "mcc_generated_files/timer/delay.h"
-#include "mcc_generated_files/mvio/mvio.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "TWI0_host.h"
+#include "MVIO.h"
 
 #define MLX90392_ADDR 0x0C
 

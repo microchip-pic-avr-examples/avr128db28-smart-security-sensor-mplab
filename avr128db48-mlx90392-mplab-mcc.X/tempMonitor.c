@@ -124,9 +124,9 @@ void tempMonitor_FSM(void)
             //Update State
             if (success)
             {
-                sprintf(getCharBufferUSB(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
+                sprintf(getCharBufferBLE(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
                         MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
-                printBufferedStringUSB();
+                printBufferedStringBLE();
                 tempState = TEMP_SLEEP;
             }
             else
@@ -144,7 +144,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            printConstantStringUSB("Temperature Sensor Error - Reboot Device\r\n");
+            printConstantStringBLE("Temperature Sensor Error - Reboot Device\r\n");
             tempState = TEMP_ERROR_WAIT;
         }
     }

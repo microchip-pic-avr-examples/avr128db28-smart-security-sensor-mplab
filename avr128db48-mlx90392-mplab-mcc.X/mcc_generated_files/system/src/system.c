@@ -42,7 +42,6 @@ void SYSTEM_Initialize(void)
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
     EVSYS_Initialize();
-    MVIO_Initialize();
     NVM_Initialize();
     RTC_Initialize();
     SLPCTRL_Initialize();

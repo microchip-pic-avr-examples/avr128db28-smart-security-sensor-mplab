@@ -9,13 +9,11 @@
         <itemPath>TWI0_host.h</itemPath>
         <itemPath>TWI1_host.h</itemPath>
         <itemPath>usart3.h</itemPath>
+        <itemPath>MVIO.h</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
-        <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
-          <itemPath>mcc_generated_files/mvio/mvio.h</itemPath>
-        </logicalFolder>
         <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
           <itemPath>mcc_generated_files/nvm/nvm.h</itemPath>
         </logicalFolder>
@@ -80,17 +78,13 @@
         <itemPath>TWI0_host.c</itemPath>
         <itemPath>TWI1_host.c</itemPath>
         <itemPath>usart3.c</itemPath>
+        <itemPath>MVIO.c</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
         <logicalFolder name="docs" displayName="docs" projectFiles="true">
           <itemPath>mcc_generated_files/docs/delay.dox</itemPath>
-        </logicalFolder>
-        <logicalFolder name="mvio" displayName="mvio" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/mvio/src/mvio.c</itemPath>
-          </logicalFolder>
         </logicalFolder>
         <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
