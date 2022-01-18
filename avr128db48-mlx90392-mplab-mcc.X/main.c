@@ -42,6 +42,8 @@
 
 #include "RN4870.h"
 #include "RN4870_RX.h"
+
+#include "usart3.h"
 #include "usart2.h"
 
 #include "TWI0_host.h"
@@ -51,44 +53,32 @@ int main(void)
 {
     SYSTEM_Initialize();
     
-    //Configure TWI0
+    //Configure TWI0 (MVIO) for Magnetometer
     TWI0_initHost();
     TWI0_initPins();
     
-    //Configure TWI1
+    //Configure TWI1 for Thermometer
     TWI1_initHost();
     TWI1_initPins();
     
-    //Configure USART 2 (Bare Metal Driver)
+    //Configure USART 2 for BLE
     USART2_init();
     USART2_initIO();
+    
+    //Configure USART 3 for USB
+    USART3_init();
+    USART3_initIO();
     
     //Attach Callback Function for USART2
     USART2_setRXCallback(&RN4870RX_loadCharacter);
     
-    //Enable USART
+    //Enable USART for BLE
     USART2_enableRX();
     USART2_enableTX();
     
-    //Debug RESET Conditions
-//    sprintf(getCharBufferUSB(), "RSTCTRL = 0x%x\r\n", RSTCTRL.RSTFR);
-//    printBufferedStringUSB();
-//    
-//    sprintf(getCharBufferUSB(), "FUSE.WDT = 0x%x\r\n", FUSE.WDTCFG);
-//    printBufferedStringUSB();
-//    
-//    sprintf(getCharBufferUSB(), "WDT.CTRLA = 0x%x\r\nWDT.STATUS = 0x%x\r\n", WDT.CTRLA, WDT.STATUS);
-//    printBufferedStringUSB();
+    //Enable USART for USB (TX Only)
+    USART3_enableTX();
     
-    //Clear reset 
-    RSTCTRL.RSTFR = 0xFF;
-    
-    //Enable USART in Debug
-    USART3.DBGCTRL = 1;
-    
-    //Enable USART Debug
-    USART3.DBGCTRL = 1;
-        
     //Setup ISR Callback for RTC
     RTC_SetOVFIsrCallback(&tempMonitor_requestConversion);
     

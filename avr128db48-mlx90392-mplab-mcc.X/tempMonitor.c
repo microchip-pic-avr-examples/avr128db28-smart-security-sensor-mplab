@@ -4,6 +4,7 @@
 #include <xc.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "mcc_generated_files/system/system.h"
 #include "EEPROM_Utility.h"
