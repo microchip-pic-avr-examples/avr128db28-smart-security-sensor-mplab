@@ -41,6 +41,9 @@ extern "C" {
     //Saves current thresholds.
     bool windowAlarm_saveThresholds(void);
     
+    //Returns true if calibration is good
+    bool windowAlarm_isCalGood(void);
+    
     //Run the Finite State Machine for the Magnetometer
     void windowAlarm_FSM(void);
     

@@ -50,45 +50,25 @@
 #include "TWI1_host.h"
 
 #include "MVIO.h"
+#include "system.h"
+#include "TCB0_oneShot.h"
+#include "RTC.h"
 
 int main(void)
 {
     SYSTEM_Initialize();
     
-    //Init MVIO
-    MVIO_init();
+    //Init System / Core Peripherals
+    System_initDevice();
     
-    //Setup Callback function
-    MVIO_setCallback(&_windowAlarm_onMVIOChange);
-    
-    //Configure TWI0 (MVIO) for Magnetometer
-    TWI0_initHost();
-    TWI0_initPins();
-    
-    //Configure TWI1 for Thermometer
-    TWI1_initHost();
-    TWI1_initPins();
-    
-    //Configure USART 2 for BLE
-    USART2_init();
-    USART2_initIO();
-    
-    //Configure USART 3 for USB
-    USART3_init();
-    USART3_initIO();
+    //Init Peripherals and IO
+    System_initPeripherals();
     
     //Attach Callback Function for USART2
     USART2_setRXCallback(&RN4870RX_loadCharacter);
     
-    //Enable USART for BLE
-    USART2_enableRX();
-    USART2_enableTX();
-    
-    //Enable USART for USB (TX Only)
-    USART3_enableTX();
-    
     //Setup ISR Callback for RTC
-    RTC_SetOVFIsrCallback(&tempMonitor_requestConversion);
+    RTC_setOVFCallback(&tempMonitor_requestConversion);
     
     //Setup MVIO ISR
     MVIO_setCallback(&_windowAlarm_onMVIOChange);
@@ -96,6 +76,7 @@ int main(void)
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
             
+    //Init State Machines
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
     
@@ -113,9 +94,13 @@ int main(void)
         //Run the magnetometer state machine
         windowAlarm_FSM();
         
-        //Run the thermometer state machine
-        tempMonitor_FSM();
-                        
+        //If the calibration for the window alarm is OK
+        if (windowAlarm_isCalGood())
+        {
+            //Run the thermometer state machine
+            tempMonitor_FSM();
+        }
+                   
         asm("SLEEP");
     }    
 }

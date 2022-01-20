@@ -40,12 +40,6 @@ extern "C" {
 #include "../system/clock.h"
 #include "../system/pins.h"
 #include "../system/clock.h"
-#include "../peripheral/evsys.h"
-#include "../nvm/nvm.h"
-#include "../timer/rtc.h"
-#include "../timer/tcb0.h"
-#include "../vref/vref.h"
-#include "../peripheral/wdt.h"
 #include "../system/interrupt.h"
 /**
  * Initializes MCU, drivers and middleware in the project

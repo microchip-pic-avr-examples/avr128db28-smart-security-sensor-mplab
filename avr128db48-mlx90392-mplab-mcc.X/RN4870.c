@@ -11,6 +11,8 @@
 
 void RN4870_init(void)
 {
+    RN4870_MODE_SetHigh();
+    
     printConstantStringUSB("Initializing RN4870...\r\n");
         
     //Init RX Engine

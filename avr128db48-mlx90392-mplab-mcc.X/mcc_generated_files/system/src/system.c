@@ -35,35 +35,11 @@
  * Initializes MCU, drivers and middleware in the project
 **/
 
-int8_t SLPCTRL_Initialize();
 
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
     CLOCK_Initialize();
-    EVSYS_Initialize();
-    NVM_Initialize();
-    RTC_Initialize();
-    SLPCTRL_Initialize();
-    TCB0_Initialize();
-    VREF_Initialize();
-    WDT_Initialize();
     CPUINT_Initialize();
 }
-
-/**
- * \brief Initialize SLPCTRL_Initialize interface
- */
-int8_t SLPCTRL_Initialize()
-{
-    //SEN enabled; SMODE STDBY; 
-    ccp_write_io((void*)&(SLPCTRL.CTRLA),0x3);
-    
-    //PMODE AUTO; 
-    ccp_write_io((void*)&(SLPCTRL.VREGCTRL),0x0);
-    
-
-    return 0;
-}
-
 

@@ -1,16 +1,19 @@
 #include "tempMonitor.h"
 #include "MLX90632.h"
 
-#include <xc.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #include "mcc_generated_files/system/system.h"
-#include "EEPROM_Utility.h"
+//#include "EEPROM_Utility.h"
 #include "EEPROM_Locations.h"
 #include "mcc_generated_files/timer/delay.h"
 #include "printUtility.h"
+#include "RTC.h"
+
+#include <avr/io.h>
+#include <avr/eeprom.h>
 
 //State Machine for the main program
 typedef enum  {
@@ -44,7 +47,7 @@ void tempMonitor_init(bool safeStart)
         printConstantStringUSB("\r\nLoaded cached constants and settings...");
         
         //Update RTC Timer
-        RTC_WritePeroid(get16BFromEEPROM(TEMP_UPDATE_PERIOD));
+        RTC_setPeriod(get16BFromEEPROM(TEMP_UPDATE_PERIOD));
     }
     else
     {
@@ -52,7 +55,7 @@ void tempMonitor_init(bool safeStart)
         printConstantStringUSB("\r\nLoaded constants from sensor and reset to defaults...");
         
         //Write default RTC period to EEPROM
-        save16BToEEPROM(TEMP_UPDATE_PERIOD, RTC_ReadPeriod());
+        save16BToEEPROM(TEMP_UPDATE_PERIOD, RTC_getPeriod());
     }
     
     //Print Result
