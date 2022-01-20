@@ -10,7 +10,6 @@
 #include "MLX90392.h"
 #include "EEPROM_Utility.h"
 
-#include "mcc_generated_files/nvm/nvm.h"
 #include "mcc_generated_files/timer/delay.h"
 
 #include "TWI1_host.h"

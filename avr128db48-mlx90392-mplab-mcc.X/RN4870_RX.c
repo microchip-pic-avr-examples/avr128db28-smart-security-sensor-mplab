@@ -1,12 +1,13 @@
 #include "RN4870_RX.h"
-#include "mcc_generated_files/timer/tcb0.h"
 
-#include <xc.h>
+#include <avr/io.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include "usart2.h"
+#include "TCB0_oneShot.h"
 
 //Modified by ISRs
 volatile char RN4870RX_Buffer[RN4870_RX_BUFFER_SIZE];
@@ -157,14 +158,9 @@ bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
             return false;
         }
         
-        if (!(TCB0.STATUS & TCB_RUN_bm))
+        if (!TCB0_isRunning())
         {
-            //Ensures timing requirements
-            asm("NOP");
-            asm("NOP");
-            
-            //Retrigger the Timer
-            EVSYS.SWEVENTA = EVSYS_SWEVENTA_CH0_gc;
+            TCB0_triggerTimer();
             timeCycles++;
         }
         
@@ -187,14 +183,9 @@ bool RN4870RX_waitForCommandRX(uint16_t timeout)
             return true;
         }
         
-        if (!(TCB0.STATUS & TCB_RUN_bm))
+        if (!TCB0_isRunning())
         {
-            //Ensures timing requirements
-            asm("NOP");
-            asm("NOP");
-            
-            //Retrigger the Timer
-            EVSYS.SWEVENTA = EVSYS_SWEVENTA_CH0_gc;
+            TCB0_triggerTimer();
             timeCycles++;
         }
         

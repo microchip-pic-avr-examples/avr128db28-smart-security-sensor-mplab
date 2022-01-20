@@ -14,6 +14,9 @@ extern "C" {
 //Sets the sample rate when running normally
 #define MAGNETOMETER_ACTIVE_SAMPLE_RATE CONT_10HZ
 
+//How often should the instructions be repeated? (Measured in loop iterations)
+#define INSTR_REPEAT_ITERATIONS 800
+    
 //If defined, this will print values in CSV format
 //#define MAGNETOMETER_PRINT_CSV
     
@@ -28,18 +31,15 @@ extern "C" {
 
 //Calibration state machine runs per LED blink
 #define MAGNETOMETER_CAL_BLINK_PERIOD 25
-    
-//How many results to trigger an alarm
-#define MAGNTOMETER_RESULTS_FOR_ALARM 100
 
 //How many samples to use for MAX / MIN comparisons
 #define MAGNETOMETER_CALIBRATION_SAMPLES 1000
         
 //Defines the number of events to trigger the alarm
-#define MAGNETOMETER_ALARM_TRIGGER 100
+#define MAGNETOMETER_ALARM_TRIGGER 10
     
 //Defines the highest range for the alarm
-#define MAGNETOMETER_ALARM_TRIGGER_MAX 150
+#define MAGNETOMETER_ALARM_TRIGGER_MAX 100
 
 //Defines the number of cycles to run between printing alarm status. Ignored at trigger thrshold
 #define MAGNETOMETER_ALARM_PRINT_RATE 20

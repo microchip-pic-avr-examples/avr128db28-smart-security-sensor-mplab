@@ -14,6 +14,7 @@
 #include "EEPROM_Locations.h"
 #include "EEPROM_Utility.h"
 #include "MVIO.h"
+#include "windowAlarm_messages.h"
 
 //Enumeration for the Measurement State Machine
 typedef enum {
@@ -114,7 +115,8 @@ void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults* normResults)
 //Internal function for setting the trigger thresholds (calibration)
 void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_NormalizedResults* normResults)
 {
-    static uint16_t sampleCount = 0;
+    static MagnetometerCalibrationState oldState = CAL_BAD;
+    static uint16_t sampleCount = 0, instructionCount = 0;
     static uint8_t blinkCount = 0;
     
     //Digital Counter to blink the LED
@@ -146,7 +148,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
     {
         case CAL_BAD:
         {
-            printConstantStringBLE("Open the window and press the button to start.\r\n");
+            
+//            printConstantStringBLE("Open the window and press the button to start.\r\n");
+            //Configure Instructions State Machine
+            oldState = CAL_BAD;
+                    
+            //Advance State Machine
             calState = CAL_INIT;
             
             //Clear Averaging Variables
@@ -158,7 +165,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
         case CAL_INIT:
         {
             if (MLX90392_setOperatingMode(MAGNETOMETER_CAL_SAMPLE_RATE))
-            {
+            {                
                 calState = CAL_OPEN_WAIT;
             }
             else
@@ -171,14 +178,9 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
         {
             if (buttonPressed)
             {
-                printConstantStringBLE("Beginning Open Window Calibration.\r\n");
+                printConstantStringBLE("Beginning open window calibration.\r\n");
                 calState = CAL_OPEN;
                 sampleCount = 0;
-            }
-            else if (blinkCount >= MAGNETOMETER_CAL_BLINK_PERIOD)
-            {
-                //Remind users
-                printConstantStringBLE("Open the window and press the button to start.\r\n");
             }
             break;
         }
@@ -198,10 +200,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 offsetY = round(averageY / MAGNETOMETER_CALIBRATION_SAMPLES);
                 offsetZ = round(averageZ / MAGNETOMETER_CALIBRATION_SAMPLES);
                 
+                //Print Debug Info
                 sprintf(getCharBufferUSB(), "Zeroing Complete. X_off = %d, Y_off = %d, Z_off= %d\r\n", offsetX, offsetY, offsetZ);
                 printBufferedStringUSB();
-                printConstantStringBLE("Please close the window and the press the button to continue.\r\n");
-                calState = CAL_CLOSED_WAIT;
+                
+                //Update State
+                calState = CAL_CLOSED_WAIT;            
             }
             break;
         }
@@ -212,7 +216,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 //Reset maximum value
                 maxV = 0;
                 
-                printConstantStringBLE("Beginning Closed Window Calibration.\r\n");
+                printConstantStringBLE("Beginning closed window calibration.\r\n");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
             }
@@ -242,7 +246,8 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 sprintf(getCharBufferUSB(), "Scaling Completed. X_scale  = 2^%d, Y_scale = 2^%d, Z_scale = 2^%d\r\n",
                         scaleX, scaleY, scaleZ);
                 printBufferedStringUSB();
-                printConstantStringBLE("Please crack the window to set the alarm threshold, then press the button.\r\n");
+
+                //Advance State Machine
                 calState = CAL_CRACKED_WAIT;
                 
 #ifdef MAGNETOMETER_ANGLE_CHECK
@@ -267,24 +272,25 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
             if (normResults->r2 <= MAGNETOMETER_NOISE_MARGIN)
             {
                 printConstantStringUSB("[ERR] Sensor value is below noise margin, please close the window and press the button to retry.\r\n");
-                printConstantStringBLE("[ERR] A sensor error has occurred. Please close the window and press the button to retry.\r\n");
                 calState = CAL_CRACKED_ERR;
             }
             else if (buttonPressed)
             {
-                printConstantStringBLE("Beginning Cracked Window Calibration.\r\n");
-                calState = CAL_CRACKED;
+                printConstantStringBLE("Beginning window threshold calibration.\r\n");
+                
+                //Init Variables
                 sampleCount = 0;
                 averageR2 = 0;
+                
+                //Update State
+                calState = CAL_CRACKED;
             }
             break;
         }
         case CAL_CRACKED_ERR:
         {
             if (buttonPressed)
-            {
-                printConstantStringBLE("Please crack the window to set the alarm threshold, then press the button.\r\n");
-                
+            {                
 #ifdef MAGNETOMETER_ANGLE_CHECK
                 //Init Angles
                 minXY = normResults->xyAngle;
@@ -329,9 +335,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 //Print Threshold
                 sprintf(getCharBufferUSB(), "Threshold calibration complete. Threshold: %lu\r\n", crackedV);
                 printBufferedStringUSB();
-                
-                printConstantStringBLE("Please close the window and press the button to finish.\r\n");
-                                
+                                                
                 //Update Cal State
                 calState = CAL_CLOSED_FINAL_WAIT;
             }
@@ -387,9 +391,27 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
         }
         case CAL_GOOD:
         {
+            //Move to bad state
             calState = CAL_BAD;
             break;
         }
+    }
+    
+    //Instruction Printing State Machine
+    if ((oldState != calState) || (instructionCount >= INSTR_REPEAT_ITERATIONS))
+    {
+        //Print Instructions
+        printConstantStringBLE(calInstructions[calState]);
+        
+        //Update old state
+        oldState = calState;
+        
+        //Reset Timer
+        instructionCount = 0;
+    }
+    else
+    {
+        instructionCount++;
     }
 }
 
@@ -435,7 +457,7 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
     if (!success)
         return false;
     
-    uint8_t EEPROM_id_test = EEPROM_Read(EEPROM_MLX90392_ID);
+    uint8_t EEPROM_id_test = get8BFromEEPROM(EEPROM_MLX90392_ID);
     
     if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
     {       
@@ -453,9 +475,9 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
         offsetZ = get16BFromEEPROM(MAGNETOMETER_OFFSET_Z);
         
         //Scaling Values
-        scaleX = EEPROM_Read(MAGNETOMETER_SCALER_X);
-        scaleY = EEPROM_Read(MAGNETOMETER_SCALER_Y);
-        scaleZ = EEPROM_Read(MAGNETOMETER_SCALER_Z);
+        scaleX = get8BFromEEPROM(MAGNETOMETER_SCALER_X);
+        scaleY = get8BFromEEPROM(MAGNETOMETER_SCALER_Y);
+        scaleZ = get8BFromEEPROM(MAGNETOMETER_SCALER_Z);
         
 #ifdef MAGNETOMETER_ANGLE_CHECK
         
@@ -630,11 +652,11 @@ void windowAlarm_processResults(MLX90392_NormalizedResults* normResults)
     {
         if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
         {
-            printConstantStringBLE("Alarm BAD\r\n");
+            printConstantStringBLE("Alarm BAD\n");
         }
         else
         {
-            printConstantStringBLE("Alarm OK\r\n");
+            printConstantStringBLE("Alarm OK\n");
         }
 
         counter = 0;
@@ -658,9 +680,9 @@ bool windowAlarm_saveThresholds(void)
     save16BToEEPROM(MAGNETOMETER_OFFSET_Y, offsetY);
     save16BToEEPROM(MAGNETOMETER_OFFSET_Z, offsetZ);
     
-    EEPROM_Write(MAGNETOMETER_SCALER_X, scaleX);
-    EEPROM_Write(MAGNETOMETER_SCALER_Y, scaleY);
-    EEPROM_Write(MAGNETOMETER_SCALER_Z, scaleZ);
+    save8BToEEPROM(MAGNETOMETER_SCALER_X, scaleX);
+    save8BToEEPROM(MAGNETOMETER_SCALER_Y, scaleY);
+    save8BToEEPROM(MAGNETOMETER_SCALER_Z, scaleZ);
     
 #ifdef MAGNETOMETER_ANGLE_CHECK
     
@@ -674,9 +696,15 @@ bool windowAlarm_saveThresholds(void)
 #endif
     
     //Write the ID of the sensor
-    EEPROM_Write(EEPROM_MLX90392_ID, sensorID);
+    save8BToEEPROM(EEPROM_MLX90392_ID, sensorID);
 
     return true;
+}
+
+//Returns true if calibration is good
+bool windowAlarm_isCalGood(void)
+{
+    return (calState == CAL_GOOD);
 }
 
 void windowAlarm_FSM(void)

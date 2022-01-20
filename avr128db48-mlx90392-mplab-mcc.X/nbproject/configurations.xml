@@ -10,17 +10,13 @@
         <itemPath>TWI1_host.h</itemPath>
         <itemPath>usart3.h</itemPath>
         <itemPath>MVIO.h</itemPath>
+        <itemPath>system.h</itemPath>
+        <itemPath>TCB0_oneShot.h</itemPath>
+        <itemPath>RTC.h</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
-        <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
-          <itemPath>mcc_generated_files/nvm/nvm.h</itemPath>
-        </logicalFolder>
-        <logicalFolder name="peripheral" displayName="peripheral" projectFiles="true">
-          <itemPath>mcc_generated_files/peripheral/wdt.h</itemPath>
-          <itemPath>mcc_generated_files/peripheral/evsys.h</itemPath>
-        </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="utils" displayName="utils" projectFiles="true">
             <logicalFolder name="assembler" displayName="assembler" projectFiles="true">
@@ -44,12 +40,6 @@
         </logicalFolder>
         <logicalFolder name="timer" displayName="timer" projectFiles="true">
           <itemPath>mcc_generated_files/timer/delay.h</itemPath>
-          <itemPath>mcc_generated_files/timer/rtc.h</itemPath>
-          <itemPath>mcc_generated_files/timer/timer_interface.h</itemPath>
-          <itemPath>mcc_generated_files/timer/tcb0.h</itemPath>
-        </logicalFolder>
-        <logicalFolder name="vref" displayName="vref" projectFiles="true">
-          <itemPath>mcc_generated_files/vref/vref.h</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
@@ -65,6 +55,7 @@
       <itemPath>windowAlarm_config.h</itemPath>
       <itemPath>RN4870.h</itemPath>
       <itemPath>RN4870_RX.h</itemPath>
+      <itemPath>windowAlarm_messages.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -79,23 +70,15 @@
         <itemPath>TWI1_host.c</itemPath>
         <itemPath>usart3.c</itemPath>
         <itemPath>MVIO.c</itemPath>
+        <itemPath>system.c</itemPath>
+        <itemPath>TCB0_oneShot.c</itemPath>
+        <itemPath>RTC.c</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
         <logicalFolder name="docs" displayName="docs" projectFiles="true">
           <itemPath>mcc_generated_files/docs/delay.dox</itemPath>
-        </logicalFolder>
-        <logicalFolder name="nvm" displayName="nvm" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/nvm/src/nvm.c</itemPath>
-          </logicalFolder>
-        </logicalFolder>
-        <logicalFolder name="peripheral" displayName="peripheral" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/peripheral/src/wdt.c</itemPath>
-            <itemPath>mcc_generated_files/peripheral/src/evsys.c</itemPath>
-          </logicalFolder>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
@@ -110,13 +93,6 @@
         <logicalFolder name="timer" displayName="timer" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <itemPath>mcc_generated_files/timer/src/delay.c</itemPath>
-            <itemPath>mcc_generated_files/timer/src/rtc.c</itemPath>
-            <itemPath>mcc_generated_files/timer/src/tcb0.c</itemPath>
-          </logicalFolder>
-        </logicalFolder>
-        <logicalFolder name="vref" displayName="vref" projectFiles="true">
-          <logicalFolder name="src" displayName="src" projectFiles="true">
-            <itemPath>mcc_generated_files/vref/src/vref.c</itemPath>
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
