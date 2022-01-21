@@ -1,11 +1,11 @@
 #include "MLX90392.h"
-#include "mcc_generated_files/timer/delay.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "TWI0_host.h"
 #include "MVIO.h"
+#include "TCB0_oneShot.h"
 
 #define MLX90392_ADDR 0x0C
 
@@ -84,8 +84,9 @@ bool MLX90392_getSingleMeasurementBlocking(MLX90392_RawResult* result)
     
     do
     {
-        //Wait...
-        DELAY_milliseconds(1);
+        //Wait for 1 ms
+        TCB0_triggerTimer();
+        while (TCB0_isRunning()) { ; }
         
     } while (!MLX90392_isDataReady());
     
@@ -105,8 +106,9 @@ bool MLX90392_selfTest(void)
     
     do
     {
-        //Wait...
-        DELAY_milliseconds(1);
+        //Wait for 1 ms
+        TCB0_triggerTimer();
+        while (TCB0_isRunning()) { ; }
         
     } while (!MLX90392_isDataReady());
     

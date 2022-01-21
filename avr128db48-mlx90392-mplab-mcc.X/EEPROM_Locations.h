@@ -4,8 +4,6 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-
-#define EEPROM_START_ADDR 0x1400
     
 /*
  * Important! These locations are for the MCU's EEPROM ONLY
@@ -14,7 +12,7 @@ extern "C" {
 
 //MLX90632 Temp Sensor Fields
     
-#define MEM_DEVICE_ID1 (0 + EEPROM_START_ADDR)  //0x1400
+#define MEM_DEVICE_ID1 (0x00)                   //0x1400
 #define MEM_DEVICE_ID2 (2 + MEM_DEVICE_ID1)     //0x1402
 #define MEM_DEVICE_ID3 (2 + MEM_DEVICE_ID2)     //0x1404
 
