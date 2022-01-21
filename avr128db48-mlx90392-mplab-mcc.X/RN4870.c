@@ -1,12 +1,11 @@
 #include "RN4870.h"
 
-#include "mcc_generated_files/system/system.h"
+#include "GPIO.h"
 
-#include <xc.h>
+#include <avr/io.h>
 #include <stdint.h>
 
 #include "printUtility.h"
-#include "mcc_generated_files/timer/delay.h"
 #include "RN4870_RX.h"
 
 void RN4870_init(void)

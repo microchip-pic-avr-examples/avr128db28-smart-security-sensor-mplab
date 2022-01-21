@@ -17,11 +17,15 @@
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>free</name>
+                    <name>XC8_free</name>
                     <type>2</type>
                 </confElem>
                 <confElem>
-                    <name>pro</name>
+                    <name>XC8_pro</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>AVR_GCC</name>
                     <type>2</type>
                 </confElem>
             </confList>

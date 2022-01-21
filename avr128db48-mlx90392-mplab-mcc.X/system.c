@@ -1,8 +1,8 @@
 #include "system.h"
-#include "mcc_generated_files/system/ccp.h"
 
 #include <avr/io.h>
 
+#include "GPIO.h"
 #include "MVIO.h"
 #include "TCB0_oneShot.h"
 #include "TWI0_host.h"
@@ -10,6 +10,17 @@
 #include "usart2.h"
 #include "usart3.h"
 #include "RTC.h"
+
+FUSES = 
+{
+  .BODCFG = ACTIVE_DISABLE_gc | LVL_BODLEVEL0_gc | SAMPFREQ_128Hz_gc | SLEEP_DISABLE_gc,
+  .BOOTSIZE = 0x0,
+  .CODESIZE = 0x0,
+  .OSCCFG = CLKSEL_OSCHF_gc,
+  .SYSCFG0 = CRCSEL_CRC16_gc | CRCSRC_NOCRC_gc | RSTPINCFG_GPIO_gc,
+  .SYSCFG1 = MVSYSCFG_DUAL_gc | SUT_16MS_gc,
+  .WDTCFG = PERIOD_1KCLK_gc | WINDOW_OFF_gc,
+};
 
 //Inits CLKCTRL, EVSYS, WDT, and SLPCTRL
 void System_initDevice(void)
@@ -33,6 +44,9 @@ void System_initPeripherals(void)
     
     //TCB0 uses channel 0
     EVSYS.USERTCB0CAPT = EVSYS_USER_CHANNEL0_gc;
+    
+    //Init GPIO
+    GPIO_init();
     
     //Init MVIO
     MVIO_init();

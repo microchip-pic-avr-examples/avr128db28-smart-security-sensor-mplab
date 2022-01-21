@@ -1,18 +1,16 @@
-#include "mcc_generated_files/system/system.h"
-#include "mcc_generated_files/timer/delay.h"
+#include "GPIO.h"
 
-#include <xc.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
+#include <avr/eeprom.h>
 
 #include "printUtility.h"
 #include "windowAlarm.h"
 #include "windowAlarm_config.h"
 #include "MLX90392.h"
 #include "EEPROM_Locations.h"
-#include "EEPROM_Utility.h"
 #include "MVIO.h"
 #include "windowAlarm_messages.h"
 
@@ -457,37 +455,37 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
     if (!success)
         return false;
     
-    uint8_t EEPROM_id_test = get8BFromEEPROM(EEPROM_MLX90392_ID);
+    uint8_t EEPROM_id_test = eeprom_read_byte((uint8_t*) EEPROM_MLX90392_ID);
     
     if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
     {       
         //EEPROM is valid, load thresholds
         
         //Window Vector Threshold
-        crackedV = get32BFromEEPROM(CRACKED_THRESHOLD_V);
+        crackedV = eeprom_read_dword((uint32_t*) CRACKED_THRESHOLD_V);
         
         //Max Allowed Vector Strength
-        maxV = get32BFromEEPROM(MAX_VALUE_V);
+        maxV = eeprom_read_dword((uint32_t*) MAX_VALUE_V);
         
         //Offsets
-        offsetX = get16BFromEEPROM(MAGNETOMETER_OFFSET_X);
-        offsetY = get16BFromEEPROM(MAGNETOMETER_OFFSET_Y);
-        offsetZ = get16BFromEEPROM(MAGNETOMETER_OFFSET_Z);
+        offsetX = eeprom_read_word((uint16_t*) MAGNETOMETER_OFFSET_X);
+        offsetY = eeprom_read_word((uint16_t*) MAGNETOMETER_OFFSET_Y);
+        offsetZ = eeprom_read_word((uint16_t*) MAGNETOMETER_OFFSET_Z);
         
         //Scaling Values
-        scaleX = get8BFromEEPROM(MAGNETOMETER_SCALER_X);
-        scaleY = get8BFromEEPROM(MAGNETOMETER_SCALER_Y);
-        scaleZ = get8BFromEEPROM(MAGNETOMETER_SCALER_Z);
+        scaleX = eeprom_read_byte((uint8_t*) MAGNETOMETER_SCALER_X);
+        scaleY = eeprom_read_byte((uint8_t*) MAGNETOMETER_SCALER_Y);
+        scaleZ = eeprom_read_byte((uint8_t*) MAGNETOMETER_SCALER_Z);
         
 #ifdef MAGNETOMETER_ANGLE_CHECK
         
         //Angle Ranges
-        minXY = get16BFromEEPROM(MAGNETOMETER_MIN_XY);
-        maxXY = get16BFromEEPROM(MAGNETOMETER_MAX_XY);
-        minXZ = get16BFromEEPROM(MAGNETOMETER_MIN_XZ);
-        maxXZ = get16BFromEEPROM(MAGNETOMETER_MAX_XZ);
-        minYZ = get16BFromEEPROM(MAGNETOMETER_MIN_YZ);
-        maxYZ = get16BFromEEPROM(MAGNETOMETER_MAX_YZ);
+        minXY = eeprom_read_word((uint16_t*) MAGNETOMETER_MIN_XY);
+        maxXY = eeprom_read_word((uint16_t*) MAGNETOMETER_MAX_XY);
+        minXZ = eeprom_read_word((uint16_t*) MAGNETOMETER_MIN_XZ);
+        maxXZ = eeprom_read_word((uint16_t*) MAGNETOMETER_MAX_XZ);
+        minYZ = eeprom_read_word((uint16_t*) MAGNETOMETER_MIN_YZ);
+        maxYZ = eeprom_read_word((uint16_t*) MAGNETOMETER_MAX_YZ);
         
 #endif      
         calState = CAL_GOOD;
@@ -673,30 +671,30 @@ bool windowAlarm_saveThresholds(void)
     if (!MLX90392_getRegister(MLX90392_DEVICE_ID, &sensorID))
         return false;
         
-    save32BToEEPROM(CRACKED_THRESHOLD_V, crackedV);
-    save32BToEEPROM(MAX_VALUE_V, maxV);
+    eeprom_write_dword((uint32_t*) CRACKED_THRESHOLD_V, crackedV);
+    eeprom_write_dword((uint32_t*) MAX_VALUE_V, maxV);
     
-    save16BToEEPROM(MAGNETOMETER_OFFSET_X, offsetX);
-    save16BToEEPROM(MAGNETOMETER_OFFSET_Y, offsetY);
-    save16BToEEPROM(MAGNETOMETER_OFFSET_Z, offsetZ);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_OFFSET_X, offsetX);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_OFFSET_Y, offsetY);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_OFFSET_Z, offsetZ);
     
-    save8BToEEPROM(MAGNETOMETER_SCALER_X, scaleX);
-    save8BToEEPROM(MAGNETOMETER_SCALER_Y, scaleY);
-    save8BToEEPROM(MAGNETOMETER_SCALER_Z, scaleZ);
+    eeprom_write_byte((uint8_t*) MAGNETOMETER_SCALER_X, scaleX);
+    eeprom_write_byte((uint8_t*) MAGNETOMETER_SCALER_Y, scaleY);
+    eeprom_write_byte((uint8_t*) MAGNETOMETER_SCALER_Z, scaleZ);
     
 #ifdef MAGNETOMETER_ANGLE_CHECK
     
-    save16BToEEPROM(MAGNETOMETER_MIN_XY, minXY);
-    save16BToEEPROM(MAGNETOMETER_MAX_XY, maxXY);
-    save16BToEEPROM(MAGNETOMETER_MIN_XZ, minXZ);
-    save16BToEEPROM(MAGNETOMETER_MAX_XZ, maxXZ);
-    save16BToEEPROM(MAGNETOMETER_MIN_YZ, minYZ);
-    save16BToEEPROM(MAGNETOMETER_MAX_YZ, maxYZ);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MIN_XY, minXY);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MAX_XY, maxXY);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MIN_XZ, minXZ);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MAX_XZ, maxXZ);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MIN_YZ, minYZ);
+    eeprom_write_word((uint16_t*) MAGNETOMETER_MAX_YZ, maxYZ);
     
 #endif
     
     //Write the ID of the sensor
-    save8BToEEPROM(EEPROM_MLX90392_ID, sensorID);
+    eeprom_write_byte((uint8_t*) EEPROM_MLX90392_ID, sensorID);
 
     return true;
 }

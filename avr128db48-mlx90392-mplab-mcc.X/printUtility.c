@@ -1,8 +1,7 @@
-#include <xc.h>
+#include <avr/io.h>
 #include <stdint.h>
 
 #include "printUtility.h"
-#include "mcc_generated_files/system/system.h"
 
 #include "usart2.h"
 #include "usart3.h"

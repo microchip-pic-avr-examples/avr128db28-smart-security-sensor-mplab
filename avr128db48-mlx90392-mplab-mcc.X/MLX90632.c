@@ -2,15 +2,13 @@
 #include "MLX90632_Defines.h"
 #include "EEPROM_Locations.h"
 
-#include <xc.h>
+#include <avr/io.h>
+#include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
 
 #include "MLX90392.h"
-#include "EEPROM_Utility.h"
-
-#include "mcc_generated_files/timer/delay.h"
 
 #include "TWI1_host.h"
 
@@ -31,6 +29,11 @@ static int16_t RAM_results[6];
 #define RAM_7 RAM_results[3]
 #define RAM_8 RAM_results[4]
 #define RAM_9 RAM_results[5]
+
+#define CREATE_16BIT(MSB, LSB) ((int16_t)(((uint16_t) MSB << 8) | LSB))
+
+//Convert 4 uint8_t to uint32_t
+#define CREATE_32BIT(B4, B3, B2, B1) ((int32_t)(((uint32_t) B4 << 24) | ((uint32_t) B3 << 16) | ((uint16_t) B2 << 8) | (uint32_t) B1))
 
 static uint16_t deviceID[3];
 
@@ -58,33 +61,33 @@ bool _readWriteMLX90632(MLX90632_Register reg, uint8_t* memory, uint8_t size)
 void _saveConstantsToEEPROM(void)
 {
     //Save Device ID
-    save16BToEEPROM(MEM_DEVICE_ID1, deviceID[0]);
-    save16BToEEPROM(MEM_DEVICE_ID2, deviceID[1]);
-    save16BToEEPROM(MEM_DEVICE_ID3, deviceID[2]);
+    eeprom_write_word((uint16_t*) MEM_DEVICE_ID1, deviceID[0]);
+    eeprom_write_word((uint16_t*) MEM_DEVICE_ID2, deviceID[1]);
+    eeprom_write_word((uint16_t*) MEM_DEVICE_ID3, deviceID[2]);
         
     //Store Constants
-    save32BToEEPROM(MEM_P_R, P_R.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_P_R, P_R.hexCode);
     
-    save32BToEEPROM(MEM_P_G, P_G.hexCode);
-    save32BToEEPROM(MEM_P_T, P_T.hexCode);
-    save32BToEEPROM(MEM_P_O, P_O.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_P_G, P_G.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_P_T, P_T.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_P_O, P_O.hexCode);
     
-    save32BToEEPROM(MEM_EA, Ea.hexCode);
-    save32BToEEPROM(MEM_EB, Eb.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_EA, Ea.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_EB, Eb.hexCode);
     
-    save32BToEEPROM(MEM_FA, Fa.hexCode);
-    save32BToEEPROM(MEM_FB, Fb.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_FA, Fa.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_FB, Fb.hexCode);
     
-    save32BToEEPROM(MEM_GA, Ga.hexCode);
-    save32BToEEPROM(MEM_GB, Gb.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_GA, Ga.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_GB, Gb.hexCode);
     
-    save32BToEEPROM(MEM_KA, Ka.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_KA, Ka.hexCode);
     
-    save32BToEEPROM(MEM_HA, Ha.hexCode);
-    save32BToEEPROM(MEM_HB, Hb.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_HA, Ha.hexCode);
+    eeprom_write_dword((uint32_t*) MEM_HB, Hb.hexCode);
     
     //Store end-of-block marker
-    save16BToEEPROM(MEM_VALIDATE, deviceID[0] ^ deviceID[1] ^ deviceID[2]);
+    eeprom_write_word((uint16_t*) MEM_VALIDATE, deviceID[0] ^ deviceID[1] ^ deviceID[2]);
 }
 
 
@@ -130,14 +133,14 @@ bool _MLX90632_loadConstantsFromEEPROM(void)
         return false;
     
     //Next, get the device ID from MCU EEPROM    
-    EEPROM_id[0] = get16BFromEEPROM(MEM_DEVICE_ID1);
-    EEPROM_id[1] = get16BFromEEPROM(MEM_DEVICE_ID2);
-    EEPROM_id[2] = get16BFromEEPROM(MEM_DEVICE_ID3);
+    EEPROM_id[0] = eeprom_read_word((uint16_t*) MEM_DEVICE_ID1);
+    EEPROM_id[1] = eeprom_read_word((uint16_t*) MEM_DEVICE_ID2);
+    EEPROM_id[2] = eeprom_read_word((uint16_t*) MEM_DEVICE_ID3);
     
     //Compute XOR of device ID
     XORcheck = EEPROM_id[0] ^ EEPROM_id[1] ^ EEPROM_id[2];
     
-    volatile uint16_t mValidate = get16BFromEEPROM(MEM_VALIDATE);
+    volatile uint16_t mValidate = eeprom_read_word((uint16_t*) MEM_VALIDATE);
     
     //Verify end-of-block memory marker
     if (XORcheck != mValidate)
@@ -154,24 +157,24 @@ bool _MLX90632_loadConstantsFromEEPROM(void)
         
     //Load Constants from MCU EEPROM
     
-    P_R.hexCode = (get32BFromEEPROM(MEM_P_R));
-    P_G.hexCode = (get32BFromEEPROM(MEM_P_G)); 
-    P_T.hexCode = (get32BFromEEPROM(MEM_P_T)); 
-    P_O.hexCode = (get32BFromEEPROM(MEM_P_O)); 
+    P_R.hexCode = (eeprom_read_dword((uint32_t*) MEM_P_R));
+    P_G.hexCode = (eeprom_read_dword((uint32_t*) MEM_P_G)); 
+    P_T.hexCode = (eeprom_read_dword((uint32_t*) MEM_P_T)); 
+    P_O.hexCode = (eeprom_read_dword((uint32_t*) MEM_P_O)); 
     
-    Ea.hexCode = (get32BFromEEPROM(MEM_EA)); 
-    Eb.hexCode = (get32BFromEEPROM(MEM_EB)); 
+    Ea.hexCode = (eeprom_read_dword((uint32_t*) MEM_EA)); 
+    Eb.hexCode = (eeprom_read_dword((uint32_t*) MEM_EB)); 
     
-    Fa.hexCode = (get32BFromEEPROM(MEM_FA)); 
-    Fb.hexCode = (get32BFromEEPROM(MEM_FB)); 
+    Fa.hexCode = (eeprom_read_dword((uint32_t*) MEM_FA)); 
+    Fb.hexCode = (eeprom_read_dword((uint32_t*) MEM_FB)); 
     
-    Ga.hexCode = (get32BFromEEPROM(MEM_GA)); 
-    Gb.hexCode = (get32BFromEEPROM(MEM_GB)); 
+    Ga.hexCode = (eeprom_read_dword((uint32_t*) MEM_GA)); 
+    Gb.hexCode = (eeprom_read_dword((uint32_t*) MEM_GB)); 
     
-    Ka.hexCode = (get32BFromEEPROM(MEM_KA)); 
+    Ka.hexCode = (eeprom_read_dword((uint32_t*) MEM_KA)); 
     
-    Ha.hexCode = (get32BFromEEPROM(MEM_HA)); 
-    Hb.hexCode = (get32BFromEEPROM(MEM_HB)); 
+    Ha.hexCode = (eeprom_read_dword((uint32_t*) MEM_HA)); 
+    Hb.hexCode = (eeprom_read_dword((uint32_t*) MEM_HB)); 
     
     return true;
 #endif

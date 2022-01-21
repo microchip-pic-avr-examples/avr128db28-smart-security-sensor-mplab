@@ -30,15 +30,14 @@
     EXCEED AMOUNT OF FEES, IF ANY, YOU PAID DIRECTLY TO MICROCHIP FOR 
     THIS SOFTWARE.
 */
-#include <xc.h>
 
-#include "mcc_generated_files/system/system.h"
-#include "MLX90392.h"
-#include "MLX90632.h"
-#include "mcc_generated_files/timer/delay.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+#include "GPIO.h"
+
 #include "windowAlarm.h"
 #include "tempMonitor.h"
-#include "printUtility.h"
 
 #include "RN4870.h"
 #include "RN4870_RX.h"
@@ -56,8 +55,6 @@
 
 int main(void)
 {
-    SYSTEM_Initialize();
-    
     //Init System / Core Peripherals
     System_initDevice();
     

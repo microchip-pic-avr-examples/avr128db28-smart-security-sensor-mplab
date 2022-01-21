@@ -1,6 +1,6 @@
 #include "TWI0_host.h"
 
-#include <xc.h>
+#include <avr/io.h>
 #include <stdbool.h>
 
 #define TWI_READ true
