@@ -35,6 +35,12 @@ extern "C" {
     //Process Data from Magnetometer and trigger alarm, if needed
     void windowAlarm_processResults(MLX90392_NormalizedResults* results);
     
+    //Returns true if the alarm is ready to print a message
+    bool windowAlarm_getResultStatus(void);
+    
+    //Prints the state of the alarm
+    void windowAlarm_printResults(void);
+    
     //Converts raw results into a normalized compressed value
     void windowAlarm_createNormalizedResults(MLX90392_RawResult* raw, MLX90392_NormalizedResults* results);
     

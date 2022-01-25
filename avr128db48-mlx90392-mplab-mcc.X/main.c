@@ -88,6 +88,9 @@ int main(void)
         //Clear the Watchdog Timer
         asm("WDR");
                                 
+        //Check for Events
+        RN4870_checkForEvents();
+        
         //Run the magnetometer state machine
         windowAlarm_FSM();
         
@@ -97,7 +100,23 @@ int main(void)
             //Run the thermometer state machine
             tempMonitor_FSM();
         }
-                   
+        
+        //If Transmitter is Ready
+        if (RN4870_isReady())
+        {
+            //Print Alarm Status
+            if (windowAlarm_getResultStatus())
+            {
+                windowAlarm_printResults();
+            }
+
+            //Print Temperature
+            if (tempMonitor_getResultStatus())
+            {
+                tempMonitor_printResults();
+            }
+        }
+        
         asm("SLEEP");
     }    
 }

@@ -9,6 +9,7 @@
 #include "EEPROM_Locations.h"
 #include "printUtility.h"
 #include "RTC.h"
+#include "RN4870.h"
 
 #include <avr/io.h>
 #include <avr/eeprom.h>
@@ -19,13 +20,14 @@ typedef enum  {
 } TemperatureMeasState;
 
 static volatile TemperatureMeasState tempState = TEMP_SLEEP;
+static volatile bool temperatureResultsReady = false;
 
 //Init the Temp Monitor
 void tempMonitor_init(bool safeStart)
 {
     bool success;
     
-    printConstantStringUSB("Initializing MLX90632 Temperature Sensor...");
+    USB_sendString("Initializing MLX90632 Temperature Sensor...");
     if (safeStart)
     {
         //Button is Held - Safe Mode
@@ -42,7 +44,7 @@ void tempMonitor_init(bool safeStart)
     if (MLX90632_cacheOK())
     {
         //Load EEPROM Value for RTC Period
-        printConstantStringUSB("\r\nLoaded cached constants and settings...");
+        USB_sendString("\r\nLoaded cached constants and settings...");
         
         //Update RTC Timer
         RTC_setPeriod(eeprom_read_word((uint16_t*) TEMP_UPDATE_PERIOD));
@@ -50,7 +52,7 @@ void tempMonitor_init(bool safeStart)
     else
     {
         //Write the default RTC Period to EEPROM
-        printConstantStringUSB("\r\nLoaded constants from sensor and reset to defaults...");
+        USB_sendString("\r\nLoaded constants from sensor and reset to defaults...");
         
         //Write default RTC period to EEPROM
         eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, RTC_getPeriod());
@@ -59,11 +61,11 @@ void tempMonitor_init(bool safeStart)
     //Print Result
     if (success)
     {
-        printConstantStringUSB("OK\r\n");
+        USB_sendString("OK\r\n");
     }
     else
     {
-        printConstantStringUSB("FAILED\r\n");
+        USB_sendString("FAILED\r\n");
         tempState = TEMP_ERROR;
     }
 }
@@ -125,9 +127,7 @@ void tempMonitor_FSM(void)
             //Update State
             if (success)
             {
-                sprintf(getCharBufferBLE(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
-                        MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
-                printBufferedStringBLE();
+                temperatureResultsReady = true;
                 tempState = TEMP_SLEEP;
             }
             else
@@ -145,7 +145,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            printConstantStringBLE("Temperature Sensor Error - Reboot Device\r\n");
+            RN4870_sendStringToUser("Temperature Sensor Error - Reboot Device\r\n");
             tempState = TEMP_ERROR_WAIT;
         }
     }
@@ -162,4 +162,23 @@ void tempMonitor_requestConversion(void)
     {
         tempState = TEMP_ERROR;
     }
+}
+
+//Returns true if results are ready
+bool tempMonitor_getResultStatus(void)
+{
+    return temperatureResultsReady;
+}
+
+void tempMonitor_printResults(void)
+{
+    //Clear Flag
+    temperatureResultsReady = false;
+    
+    //Queue Data to Send
+    sprintf(RN4870_getCharBuffer(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
+        MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
+    
+    //Print String
+    RN4870_printBufferedString();
 }
