@@ -10,12 +10,13 @@
 #include "TCB0_oneShot.h"
 
 //Modified by ISRs
-volatile char RN4870RX_Buffer[RN4870_RX_BUFFER_SIZE];
-volatile uint8_t writeIndex = 0;
-volatile bool readReady = false, inStatus = false, cmdOccurred = false;
+volatile char RN4870RX_buffer[RN4870_RX_BUFFER_SIZE];
+volatile char RN4870RX_statusBuffer[RN4870_RX_STATUS_BUFFER_SIZE];
+volatile uint8_t writeIndex = 0, respWriteIndex = 0;
+volatile bool readReady = false, inStatus = false, cmdOccurred = false, respOccurred = false;
 
 //NOT modified or accessed by ISRs
-char responseBuffer[4];
+char RN4870RX_responseBuffer[4];
 uint8_t readIndex = 0;
 
 //Initializes the RX Engine for the RN4870
@@ -30,12 +31,21 @@ void RN4870RX_loadCharacter(char input)
     if (inStatus)
     {
         //Waiting for End of Status Marker
-        //Don't Save Text
         
         if (input == RN4870_DELIM_STATUS)
         {
+            RN4870RX_statusBuffer[respWriteIndex] = '\0';
+            
             inStatus = false;
+            respOccurred = true;
         }
+        else
+        {
+            RN4870RX_statusBuffer[respWriteIndex] = input;
+        }
+        
+        //Increment writeIndex for response
+        respWriteIndex++;
         
         return;
     }
@@ -45,6 +55,7 @@ void RN4870RX_loadCharacter(char input)
         if (input == RN4870_DELIM_STATUS)
         {
             inStatus = true;
+            respWriteIndex = 0;
             return;
         }
         
@@ -61,9 +72,31 @@ void RN4870RX_loadCharacter(char input)
         cmdOccurred = true;
     }
     
-    RN4870RX_Buffer[writeIndex] = input;
+    RN4870RX_buffer[writeIndex] = input;
     writeIndex++;
 }
+
+//Returns true if a status message (%TEXT%) was received
+bool RN4870RX_isStatusRX(void)
+{
+    return respOccurred;
+}
+
+void RN4870RX_clearStatusRX(void)
+{
+    respOccurred = false;
+}
+
+//Returns true if status matches COMP string
+bool RN4870RX_compareStatus(const char* comp)
+{
+    //Compare strings
+    if (strstr(&RN4870RX_statusBuffer[0], comp) != 0)
+        return true;
+    
+    return false;
+}
+
 
 void RN4870RX_clearCMDFlag(void)
 {
@@ -85,10 +118,10 @@ bool RN4870RX_isCMDPresent(void)
 void RN4870RX_clearResponseBuffer(void)
 {
     //Clear Response Buffer
-    responseBuffer[3] = '\0';
-    responseBuffer[2] = '\0';
-    responseBuffer[1] = '\0';
-    responseBuffer[0] = '\0';
+    RN4870RX_responseBuffer[3] = '\0';
+    RN4870RX_responseBuffer[2] = '\0';
+    RN4870RX_responseBuffer[1] = '\0';
+    RN4870RX_responseBuffer[0] = '\0';
 }
 
 //Load response buffer with the last 3 bytes received
@@ -100,18 +133,18 @@ void RN4870RX_loadResponseBuffer(void)
     //Clear flag
     readReady = false;
     
-    while ((RN4870RX_Buffer[readIndex] != RN4870_DELIM_RESP) && (readIndex != writeIndex))
+    while ((RN4870RX_buffer[readIndex] != RN4870_DELIM_RESP) && (readIndex != writeIndex))
     {
-        responseBuffer[2] = responseBuffer[1];
-        responseBuffer[1] = responseBuffer[0];
-        responseBuffer[0] = RN4870RX_Buffer[readIndex];
+        RN4870RX_responseBuffer[2] = RN4870RX_responseBuffer[1];
+        RN4870RX_responseBuffer[1] = RN4870RX_responseBuffer[0];
+        RN4870RX_responseBuffer[0] = RN4870RX_buffer[readIndex];
         readIndex++;
     }
     
     //If we stopped because \r is the current char, clear the \r
-    if (RN4870RX_Buffer[readIndex] == RN4870_DELIM_RESP)
+    if (RN4870RX_buffer[readIndex] == RN4870_DELIM_RESP)
     {
-        RN4870RX_Buffer[readIndex] = '\0';
+        RN4870RX_buffer[readIndex] = '\0';
     }
     
     
@@ -122,16 +155,28 @@ void RN4870RX_clearBuffer(void)
 {
     RN4870RX_clearResponseBuffer();
     
-    for (uint16_t i = 0; i < RN4870_RX_BUFFER_SIZE; i++)
+    //Response Buffer
+    for (uint8_t i = 0; i < RN4870_RX_STATUS_BUFFER_SIZE; i++)
     {
-        RN4870RX_Buffer[i] = '\0';
+        RN4870RX_statusBuffer[i] = '\0';
     }
     
+    //Main Buffer
+    for (uint16_t i = 0; i < RN4870_RX_BUFFER_SIZE; i++)
+    {
+        RN4870RX_buffer[i] = '\0';
+    }
+    
+    //Indexes
+    respWriteIndex = 0;
     writeIndex = 0;
     readIndex = 0;
+    
+    //Statuses
     readReady = false;
     inStatus = false;
     cmdOccurred = false;
+    respOccurred = false;
 }
 
 //Waits for a message to be received and checks to see if it matches string.
@@ -148,7 +193,7 @@ bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
             RN4870RX_loadResponseBuffer();
             
             //Compare strings
-            if (strstr(&responseBuffer[0], compare) != 0)
+            if (strstr(&RN4870RX_responseBuffer[0], compare) != 0)
             {
                 asm("NOP");
                 return true;

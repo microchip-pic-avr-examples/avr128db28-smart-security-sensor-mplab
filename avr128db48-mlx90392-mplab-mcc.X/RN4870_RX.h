@@ -8,8 +8,11 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
     
-//Size of String Buffer
+//Size of String Buffer for General Purpose RX
 #define RN4870_RX_BUFFER_SIZE 256
+    
+//Size of Response Buffer (%TEXT%)
+#define RN4870_RX_STATUS_BUFFER_SIZE 32
     
 //Delimiters
 #define RN4870_DELIM_STATUS '%'
@@ -21,6 +24,15 @@ extern "C" {
     
     //Insert a character into the buffer
     void RN4870RX_loadCharacter(char input);
+    
+    //Returns true if a status message (%TEXT%) was received
+    bool RN4870RX_isStatusRX(void);
+    
+    //Clears status flag
+    void RN4870RX_clearStatusRX(void);
+    
+    //Returns true if status matches COMP string
+    bool RN4870RX_compareStatus(const char* comp);
     
     //Returns true if a deliminater was received.
     bool RN4870RX_isResponseComplete(void);

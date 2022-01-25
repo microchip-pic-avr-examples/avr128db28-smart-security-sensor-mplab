@@ -16,6 +16,12 @@ extern "C" {
     //Call this function, or attach to an ISR, to request a new conversion
     void tempMonitor_requestConversion(void);
     
+    //Returns true if results are ready
+    bool tempMonitor_getResultStatus(void);
+    
+    //Call this function to print the temp results to the Bluetooth UART Interface
+    void tempMonitor_printResults(void);
+    
 #ifdef	__cplusplus
 }
 #endif

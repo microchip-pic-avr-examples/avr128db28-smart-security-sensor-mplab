@@ -13,31 +13,31 @@ extern "C" {
 #define PRINT_BUFFER_SIZE 255
     
     //Returns the Address of the character buffer
-    char* getCharBufferUSB(void);
+    char* USB_getCharBuffer(void);
     
     //Returns the size of the char buffer
-    uint8_t getCharBufferSizeUSB(void);
+    uint8_t USB_getCharBufferSize(void);
     
     //Prints the string on the UART
-    void printBufferedStringUSB(void);
+    void USB_sendBufferedString(void);
     
     //Prints a constant string to the UART
-    void printConstantStringUSB(const char* text);
+    void USB_sendString(const char* text);
     
     //Returns the Address of the character buffer
-    char* getCharBufferBLE(void);
+    char* BLE_getCharBuffer(void);
     
     //Returns the size of the char buffer
-    uint8_t getCharBufferSizeBLE(void);
+    uint8_t BLE_getCharBufferSize(void);
     
     //Prints the string on the UART
-    void printBufferedStringBLE(void);
+    void BLE_sendBufferedString(void);
     
     //Prints a constant string to the UART
-    void printConstantStringBLE(const char* text);
+    void BLE_sendString(const char* text);
     
     //Prints a constant string to the UART, then appends DELIM
-    void printCommandStringBLE(const char* text, const char delim);
+    void BLE_printCommandString(const char* text, const char delim);
     
 #ifdef	__cplusplus
 }
