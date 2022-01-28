@@ -6,7 +6,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-void (*rxHandler)(char);
+static void (*rxHandler)(char);
 
 void USART2_init(void)
 {
