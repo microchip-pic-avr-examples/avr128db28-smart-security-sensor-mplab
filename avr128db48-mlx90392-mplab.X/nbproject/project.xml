@@ -3,7 +3,7 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>avr128db48-mlx90392-mplab-mcc</name>
+            <name>avr128db48-mlx90392-mplab</name>
             <creation-uuid>610f713d-f733-4545-a2d4-3a304f0c0dbe</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
