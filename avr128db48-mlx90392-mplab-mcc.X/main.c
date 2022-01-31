@@ -77,6 +77,9 @@ int main(void)
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
     
+    //Sets the temp units to Fahrenheit
+    tempMonitor_setUnit('F');
+    
     //Start Interrupts
     sei();
     

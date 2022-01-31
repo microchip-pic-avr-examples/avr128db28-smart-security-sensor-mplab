@@ -36,19 +36,25 @@ extern "C" {
 //Update Rate for Temp Sensor
 #define TEMP_UPDATE_PERIOD (2 + MEM_VALIDATE)   //0x143C
     
+//High Temperature Warning
+#define TEMP_WARNING_HIGH_LOCATION (2 + TEMP_UPDATE_PERIOD)  //0x143E
+    
+//High Temperature Warning
+#define TEMP_WARNING_LOW_LOCATION (4 + TEMP_WARNING_HIGH_LOCATION)    //0x1443
+
 //Begin MLX90392 Fields
     
 //Device ID of the Magnetometer
-#define EEPROM_MLX90392_ID (2 + TEMP_UPDATE_PERIOD)     //0x143E
+#define EEPROM_MLX90392_ID (4 + TEMP_WARNING_LOW_LOCATION)     //0x1444
     
 //Cracked Window Threshold
-#define CRACKED_THRESHOLD_V (1 + EEPROM_MLX90392_ID)    //0x143F
-#define MAX_VALUE_V (4 + CRACKED_THRESHOLD_V)           //0x1443
+#define CRACKED_THRESHOLD_V (1 + EEPROM_MLX90392_ID)    //0x1445
+#define MAX_VALUE_V (4 + CRACKED_THRESHOLD_V)           //0x1449
     
 //Self-Calibration Offset
-#define MAGNETOMETER_OFFSET_X (4 + MAX_VALUE_V)     //0x1447   
-#define MAGNETOMETER_OFFSET_Y (2 + MAGNETOMETER_OFFSET_X)   //0x1449    
-#define MAGNETOMETER_OFFSET_Z (2 + MAGNETOMETER_OFFSET_Y)   //0x144B
+#define MAGNETOMETER_OFFSET_X (4 + MAX_VALUE_V)     //0x144C   
+#define MAGNETOMETER_OFFSET_Y (2 + MAGNETOMETER_OFFSET_X)   //0x144F    
+#define MAGNETOMETER_OFFSET_Z (2 + MAGNETOMETER_OFFSET_Y)   //0x1451
     
 //Self-Calibration Normalizers (if negative, invert value, if positive)
 #define MAGNETOMETER_SCALER_X (2 + MAGNETOMETER_OFFSET_Z)   //0x144D
