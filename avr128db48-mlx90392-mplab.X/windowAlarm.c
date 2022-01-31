@@ -535,42 +535,55 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
 //Converts raw results into a normalized compressed value
 void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results)
 {
+    int16_t x, y, z;
+    
+    //Remove offsets from measurements
+    x = raw->X_Meas - offsetX;
+    y = raw->Y_Meas - offsetY;
+    z = raw->Z_Meas - offsetZ;
+    
+    //Normalize Values
+    
     if (scaleX < 0)
-    {
-        //Inverted Result
-        results->x = -1 * ((raw->X_Meas - offsetX) >> (scaleX * -1));
-    }
+        x = -1 * (x >> (scaleX * -1));
     else
-    {
-        //Non-Inverted Result
-        results->x = (raw->X_Meas - offsetX) >> (scaleX);
-    }
+        x = x >> (scaleX);
     
     if (scaleY < 0)
-    {
-        //Inverted Result
-        results->y = -1 * ((raw->Y_Meas - offsetY) >> (scaleY * -1));
-    }
+        y = -1 * (y >> (scaleY * -1));
     else
-    {
-        //Non-Inverted Result
-        results->y = (raw->Y_Meas - offsetY) >> (scaleY);
-    }
+        y = y >> (scaleY);
     
     if (scaleZ < 0)
-    {
-        //Inverted Result
-        results->z = -1 * ((raw->Z_Meas - offsetZ) >> (scaleZ * -1));
-    }
+        z = -1 * (z >> (scaleZ * -1));
     else
-    {
-        //Non-Inverted Result
-        results->z = (raw->Z_Meas - offsetZ) >> (scaleZ);
-    }
+        z = z >> (scaleZ);
     
-    results->r2 = (uint16_t)(results->x * results->x) + 
-            (uint16_t)(results->y * results->y) + 
-            (uint16_t)(results->z * results->z);
+    //Calculate Vector Strength
+    results->r2 = (uint32_t)(x * x) +  (uint32_t)(y * y) + (uint32_t)(z * z);
+    
+    //Check to see if x, y, and z fit within an INT8
+    
+    if (x > INT8_MAX)
+        results->x = INT8_MAX;
+    else if (x < INT8_MIN)
+        results->x = INT8_MIN;
+    else
+        results->x = x;
+    
+    if (y > INT8_MAX)
+        results->y = INT8_MAX;
+    else if (y < INT8_MIN)
+        results->y = INT8_MIN;
+    else
+        results->y = y;
+        
+    if (z > INT8_MAX)
+        results->z = INT8_MAX;
+    else if (z < INT8_MIN)
+        results->z = INT8_MIN;
+    else
+        results->z = z;
     
 #ifdef MAGNETOMETER_ANGLE_CHECK
     

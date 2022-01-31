@@ -3,26 +3,22 @@
     "category": "com.microchip.ide.project",
     "content": {
         "metaDataVersion": "1.1.0",
-        "name": "com.microchip.mcu8.mplabx.project.avr128db48-mlx90392-mplab-mcc",
-        "version": " ",
-        "displayName": "",
+        "name": "com.microchip.mcu8.mplabx.project.avr128db48-mlx90392-mplab",
+        "version": "1.0.0",
+        "displayName": "Window Security Alarm and Room Temperature Monitor with AVR DB",
         "projectName": "avr128db48-mlx90392-mplab-mcc",
-        "shortDescription": "Create a magnetic security alarm with a 1 8V MLX90392 sensor using the MVIO on the AVR DB family of MCUs",
+        "shortDescription": "Create a magnetic security alarm with a MLX90392 sensor using the MVIO on the AVR DB family of MCUs",
         "ide": {
             "name": "MPLAB X",
-            "semverRange": ">=5.50.0"
+            "semverRange": ">=6.0.0"
         },
         "compiler": [
             {
                 "name": "XC8",
-                "semverRange": "^2.31.0"
+                "semverRange": "^2.35.0"
             }
         ],
         "dfp": {
-            "name": "",
-            "semverRange": ""
-        },
-        "configurator": {
             "name": "",
             "semverRange": ""
         },
