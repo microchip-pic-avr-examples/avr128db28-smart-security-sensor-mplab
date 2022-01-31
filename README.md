@@ -2,43 +2,106 @@
 
 [![MCHP](images/microchip.png)](https://www.microchip.com)
 
-# Update the title for avr128db48-mlx90392-mplab-mcc here
+# Window Security Sensor and Room Temperature Monitor with AVR&reg; DB,  MLX90632 and MLX90392
 
-<!-- This is where the introduction to the example goes, including mentioning the peripherals used -->
+The objective of this demo is to create a window security sensor with a room temperature sensor for a compact smart home solution. The AVR&reg; DB microcontroller was selected for this application in order to use Multi-Voltage I/O (MVIO) peripheral. To implement this solution, an MLX90632 and an MLX90392 sensor from Melexis were used.
 
 ## Related Documentation
-
-<!-- Any information about an application note or tech brief can be linked here. Use unbreakable links!
-     In addition a link to the device family landing page and relevant peripheral pages as well:
-     - [AN3381 - Brushless DC Fan Speed Control Using Temperature Input and Tachometer Feedback](https://microchip.com/00003381/)
-     - [PIC18F-Q10 Family Product Page](https://www.microchip.com/design-centers/8-bit/pic-mcus/device-selection/pic18f-q10-product-family) -->
+- [MLX90632 (FIR Thermometer) Homepage](https://www.melexis.com/en/product/MLX90632/Miniature-SMD-Infrared-Thermometer-IC)
+  - [MLX90632 Reference Software](https://github.com/melexis/mlx90632-library)
+- [MLX90392 (3D Magnetometer) Homepage](https://www.melexis.com/en/product/MLX90392/3D-Magnetometer-micro-power-and-cost-conscious)
 
 ## Software Used
 
-<!-- All software used in this example must be listed here. Use unbreakable links!
-     - MPLABÂ® X IDE 5.30 or newer [(microchip.com/mplab/mplab-x-ide)](http://www.microchip.com/mplab/mplab-x-ide)
-     - MPLABÂ® XC8 2.10 or a newer compiler [(microchip.com/mplab/compilers)](http://www.microchip.com/mplab/compilers)
-     - MPLABÂ® Code Configurator (MCC) 3.95.0 or newer [(microchip.com/mplab/mplab-code-configurator)](https://www.microchip.com/mplab/mplab-code-configurator)
-     - MPLABÂ® Code Configurator (MCC) Device Libraries PIC10 / PIC12 / PIC16 / PIC18 MCUs [(microchip.com/mplab/mplab-code-configurator)](https://www.microchip.com/mplab/mplab-code-configurator)
-     - Microchip PIC18F-Q Series Device Support (1.4.109) or newer [(packs.download.microchip.com/)](https://packs.download.microchip.com/) -->
-
-- MPLAB® X IDE 5.50.0 or newer [(MPLAB® X IDE 5.50)](https://www.microchip.com/en-us/development-tools-tools-and-software/mplab-x-ide?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_MPAE_Examples&utm_content=avr128db48-mlx90392-mplab-mcc-github)
-- MPLAB® XC8 2.31.0 or newer compiler [(MPLAB® XC8 2.31)](https://www.microchip.com/en-us/development-tools-tools-and-software/mplab-xc-compilers?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_MPAE_Examples&utm_content=avr128db48-mlx90392-mplab-mcc-github)
+- [MPLAB&reg; X IDE v6.0.0 or newer](#)
+- [MPLAB XC8 v2.35 or newer](#)
+- [AVR-Dx_DFP v1.10.124](#)  
+- Bluetooth Smart Data App
+  - [For IOS](#)
+  - [For Android](#)
 
 ## Hardware Used
 
-<!-- All hardware used in this example must be listed here. Use unbreakable links!
-     - PIC18F47Q10 Curiosity Nano [(DM182029)](https://www.microchip.com/Developmenttools/ProductDetails/DM182029)
-     - Curiosity Nano Base for Click boardsâ„¢ [(AC164162)](https://www.microchip.com/Developmenttools/ProductDetails/AC164162)
-     - POT Click boardâ„¢ [(MIKROE-3402)](https://www.mikroe.com/pot-click) -->
+Please consult the Bill of Materials (BOM) in the documentation.
 
-## Setup
+## Table of Contents
 
-<!-- Explain how to connect hardware and set up software. Depending on complexity, step-by-step instructions and/or tables and/or images can be used -->
+- [Window Alarm Sensing](#window-alarm-sensing)
+- [Temperature Measurements](#temperature-measurements)
+- [Operating the Demo](#operating-the-demo)
 
-## Operation
+## Window Alarm Sensing
 
-<!-- Explain how to operate the example. Depending on complexity, step-by-step instructions and/or tables and/or images can be used -->
+Sensor: MLX90392-011 (&plusmn;50 mT version)
+
+### The Advantage of a Magnetometer
+
+One of the most common ways to detect whether a window or door has been opened/closed by an unknown person is to use a magnetic reed switch. When a magnet is placed near the switch, the two contacts inside either open or close. An external alarm circuit can monitor each circuit to know the current state of the system.
+
+While reed switches are simple and easy to use, they come with the drawback that they only have 2 binary states. If an external magnet is placed close to the switch, the field from the magnet can hold the contacts in position while the window is opened.
+
+A magnetometer avoids this problem by measuring the intensity of the magnetic field. If the intensity changes beyond a set range, then the magnetometer can detect the attempt to bypass the alarm.
+
+### Calibrating the Magnetometer
+
+Before using the magnetometer in system, it must be calibrated. Small variations in installation and position are more than enough to cause the alarm to trigger. After some internal testing, we found a 4-step calibration routine worked best.
+
+1. Zero Calibration
+2. Data Normalization
+3. Threshold Set
+4. Return to Closed
+
+#### Step 1 - Zero Calibration
+
+User Directions: *Open the window and press the button to start.*  
+
+To zero the sensor, the microcontroller collects a set number of samples from the magnetometer with the magnet on the window in the farthest position from the sensor. After the set number of samples are acquired, the microcontroller computes the (whole number) average from the totals in each dimension and uses this as the offset.
+
+#### Step 2 - Data Normalization
+
+User Directions: *Please close the window and the press the button to continue.*  
+**Maximum Magnitude Monitoring - Vector Sum of Magnitude is Tracked for Step 3**
+
+The objective of the data normalization to scale each of the 3 axes to be in similar scales to each other. Due to the direction of travel, one of the axes will have a much higher scale than the others.
+
+The calibration algorithm in this step performs a similar action to the [Zero Calibration in Step 1](#step-1---zero-calibration). However, each averaged value is used to compute the scaling factor to compress the values to a 7-bit number. If the value is negative, then the scaling factor is negative.
+
+| Input | Computed Scaling Factor | Normalized Value
+| ----- | ----------------------- | ---------------
+| 255   | 1 | 127
+| -80   | -1 | 80
+| -288  | -2 | 72
+
+**Note: Ideally the values would remain 7-bit, but depending on the placement of the magnetometer, it is possible for the maximum intensity to occur at a slightly different position. The program limits the maximum intensity to 127.**
+
+#### Step 3 - Threshold Set
+
+User Directions: *Please open the window to the desired threshold, then press the button.*  
+**Maximum Magnitude Monitoring - Vector Sum of Magnitude is Tracked**
+
+In this step, the magnetometer is programmed to the threshold between open and closed. Unlike the reed switch, the user can set how far the window is open before triggering the alarm.
+
+Additionally, at the conclusion of this stage, the program stores the highest magnitude of the field strength recorded during steps 2 and 3.
+
+Magnitude<sup>2</sup> = X<sup>2</sup> + Y<sup>2</sup> + Z<sup>2</sup>
+
+The maximum magnitude is used to protect against an attempt to tamper with the sensor with another magnet.
+
+#### Step 4 - Return to Closed
+
+User Directions: *Please close the window and press the button to finish.*  
+
+This step ends the calibration sequence and saves the constants to the EEPROM of the microcontroller.
+
+## Temperature Measurements
+
+Sensor: MLX90632
+
+### How FIR Sensors Work
+
+
+
+## Operating the Demo
 
 ## Summary
 

@@ -68,10 +68,10 @@ extern "C" {
     //Computes the temperature of an object. Returns the result in Celsius
     bool MLX90632_computeTemperature(void);
     
-    //Returns the Temperature of the Sensor
+    //Returns the Temperature of the Sensor (in Celsius)
     float MLX90632_getSensorTemp(void);
     
-    //Returns the Temperature of the Object
+    //Returns the Temperature of the Object (in Celsius)
     float MLX90632_getObjectTemp(void);
     
 #ifdef	__cplusplus

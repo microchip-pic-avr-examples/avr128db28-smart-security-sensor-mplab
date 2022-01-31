@@ -83,7 +83,7 @@ uint8_t _windowAlarm_computeScalingFactor(int16_t result)
     return scale;
 }
 
-void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults* normResults)
+void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults8* normResults)
 {
 #ifdef MAGNETOMETER_ANGLE_CHECK
     if (minXY > normResults->xyAngle)
@@ -116,11 +116,11 @@ void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults* normResults)
 }
 
 //Internal function for setting the trigger thresholds (calibration)
-void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_NormalizedResults* normResults)
+void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_NormalizedResults8* normResults)
 {
     static MagnetometerCalibrationState oldState = CAL_BAD;
     static uint16_t sampleCount = 0, instructionCount = 0;
-    static uint8_t blinkCount = 0;
+    static uint8_t blinkCount = 0, weightedAlarmState = 0;
     
     //Digital Counter to blink the LED
     if (blinkCount >= MAGNETOMETER_CAL_BLINK_PERIOD)
@@ -329,7 +329,10 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 
                 //Apply Tolerance, if set
 #ifdef MAGNETOMETER_VECTOR_TOLERANCE
-                crackedV = round(crackedV * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                //For the window cracked threshold, use a <1 multiplier
+                crackedV = round(crackedV * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                
+                //For max magnitude, use a >1 multiplier
                 maxV = round(maxV * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
 #endif
                 
@@ -339,12 +342,41 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                                                 
                 //Update Cal State
                 calState = CAL_CLOSED_FINAL_WAIT;
+                
+                //Clear Alarm Counter
+                weightedAlarmState = 0;
             }
             break;
         }
         case CAL_CLOSED_FINAL_WAIT:
         {
-            if (buttonPressed)
+            //Keep Track of Alarm Status
+            if (windowAlarm_compareResults(normResults))
+            {
+                if (weightedAlarmState > 0)
+                {
+                    weightedAlarmState--;
+                }
+            }
+            else
+            {
+                if (weightedAlarmState < MAGNETOMETER_ALARM_TRIGGER_MAX)
+                {
+                    weightedAlarmState++;
+                }
+            }
+            
+            //If the alarm would go off, then restart calibration
+            if (weightedAlarmState >= MAGNETOMETER_ALARM_TRIGGER)
+            {
+                //Alarm went off, calibration failed
+                BLE_sendString("[ERROR] Alarm Calibration Failed, please retry.\r\n");
+                
+                //Return to step 1
+                calState = CAL_OPEN_WAIT;
+            }
+            
+            else if (buttonPressed)
             {
 #ifdef MAGNETOMETER_ANGLE_CHECK
                 
@@ -374,7 +406,9 @@ void windowAlarm_runCalibration(MLX90392_RawResult* rawResult, MLX90392_Normaliz
                 
                 //Save values to EEPROM
                 windowAlarm_saveThresholds();
-
+                
+                //Reset Alarm State Monitor
+                alarmState = 0;
             }
             break;
         }
@@ -499,7 +533,7 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
 }
 
 //Converts raw results into a normalized compressed value
-void windowAlarm_createNormalizedResults(MLX90392_RawResult* raw, MLX90392_NormalizedResults* results)
+void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results)
 {
     if (scaleX < 0)
     {
@@ -567,25 +601,18 @@ void windowAlarm_createNormalizedResults(MLX90392_RawResult* raw, MLX90392_Norma
         results->xzAngle = 0;
         results->yzAngle = 0;
     }
-#else
-    //Set values to 0
-    results->xyAngle = 0;
-    results->xzAngle = 0;
-    results->yzAngle = 0;
-#endif
-    
+#endif    
 }
 
-void windowAlarm_processResults(MLX90392_NormalizedResults* normResults)
+//Checks to see if the alarm should be triggered or not
+bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
 {
-    static uint8_t counter = 0;
-    bool alarmOK = false;
-
     if ((normResults->r2 >= crackedV) && (normResults->r2 <= maxV))
     {
         //Within Expected Intensity
-
-#ifdef MAGNETOMETER_ANGLE_CHECK        
+#ifdef MAGNETOMETER_ANGLE_CHECK   
+        bool alarmOK = false;
+        
         //Check Angles
         if ((normResults->xyAngle > maxXY) || (normResults->xyAngle < minXY))
         {
@@ -618,19 +645,28 @@ void windowAlarm_processResults(MLX90392_NormalizedResults* normResults)
         {
             alarmOK = true;
         }
+        
+        return alarmOK;
 #else
-        alarmOK = true;
+        return true;
 #endif
-
     }
     else
     {
 #ifdef MAGNETOMETER_DEBUG_PRINT
-        sprintf(USB_getCharBuffer(), "Max Value: %lu, Cracked: %lu, found %lu\r\n", maxV, crackedV, normResults->r2);
+        USB_sendString("[ERROR] Alarm Compare Failed\r\n");
+        sprintf(USB_getCharBuffer(), "Max Magnitude Strength: %lu, Cracked Threshold: %lu, Current Value %lu\r\n", maxV, crackedV, normResults->r2);
         USB_sendBufferedString();
-        USB_sendString("<Threshold Exceeded> - ");
 #endif 
     }
+    
+    return false;
+}
+
+void windowAlarm_compareAndProcessResults(MLX90392_NormalizedResults8* normResults)
+{
+    static uint8_t counter = 0;
+    bool alarmOK = windowAlarm_compareResults(normResults);
     
     if (alarmOK)
     {
@@ -782,8 +818,8 @@ void windowAlarm_FSM(void)
             //If data is ready
             if (success)
             {
-                MLX90392_RawResult magResult;
-                MLX90392_NormalizedResults normResult;
+                MLX90392_RawResult16 magResult;
+                MLX90392_NormalizedResults8 normResult;
                 success = MLX90392_getResult(&magResult);
                 if (success)
                 {
@@ -805,7 +841,7 @@ void windowAlarm_FSM(void)
                     if ((calState == CAL_GOOD) && (!buttonPressed))
                     {
                         //Process Result if Cal is valid
-                        windowAlarm_processResults(&normResult);
+                        windowAlarm_compareAndProcessResults(&normResult);
                     }
                     else
                     {

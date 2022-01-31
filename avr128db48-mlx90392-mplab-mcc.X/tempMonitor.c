@@ -19,8 +19,18 @@ typedef enum  {
     TEMP_SLEEP = 0, TEMP_START, TEMP_WAIT, TEMP_RESULTS, TEMP_ERROR_WAIT, TEMP_ERROR
 } TemperatureMeasState;
 
-static volatile TemperatureMeasState tempState = TEMP_SLEEP;
-static volatile bool temperatureResultsReady = false;
+//Temperature Measurement State Machine
+static TemperatureMeasState tempState = TEMP_SLEEP;
+
+//Set if results are ready to be printed
+static bool temperatureResultsReady = false;
+
+//Temperature Warning Points
+static float tempWarningH = DEFAULT_TEMP_WARNING_H, tempWarningL = DEFAULT_TEMP_WARNING_L;
+
+//If set to 'F', results will be printed in Fahrenheit
+//Threshold inputs will be considered as numbers in Fahrenheit
+static char tempUnit = 'C';
 
 //Init the Temp Monitor
 void tempMonitor_init(bool safeStart)
@@ -31,7 +41,6 @@ void tempMonitor_init(bool safeStart)
     if (safeStart)
     {
         //Button is Held - Safe Mode
-        
         success = MLX90632_initDevice(true);
     }
     else
@@ -48,6 +57,10 @@ void tempMonitor_init(bool safeStart)
         
         //Update RTC Timer
         RTC_setPeriod(eeprom_read_word((uint16_t*) TEMP_UPDATE_PERIOD));
+        
+        //Load Stored Values
+        tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
+        tempWarningL = eeprom_read_float((float*) TEMP_WARNING_LOW_LOCATION);
     }
     else
     {
@@ -56,6 +69,10 @@ void tempMonitor_init(bool safeStart)
         
         //Write default RTC period to EEPROM
         eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, RTC_getPeriod());
+        
+        //Save Default Values
+        eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
+        eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, tempWarningL);
     }
     
     //Print Result
@@ -68,6 +85,12 @@ void tempMonitor_init(bool safeStart)
         USB_sendString("FAILED\r\n");
         tempState = TEMP_ERROR;
     }
+}
+
+//Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
+void tempMonitor_setUnit(char unit)
+{
+    tempUnit = unit;
 }
 
 //Run the Temp Monitor's Finite State Machine
@@ -175,10 +198,116 @@ void tempMonitor_printResults(void)
     //Clear Flag
     temperatureResultsReady = false;
     
+    //Get temp (in Celsius)
+    float sensorTemp, objTemp;
+    sensorTemp = MLX90632_getSensorTemp();
+    objTemp = MLX90632_getObjectTemp();
+    
+    if (objTemp >= tempWarningH)
+    {
+        //High Room Temp
+        BLE_sendString("[WARN] Room Temperature High\r\n");
+    }
+    else if (objTemp <= tempWarningL)
+    {
+        //Low Room Temp
+        BLE_sendString("[WARN] Room Temperature Low\r\n");
+    }
+    
+    if (tempUnit == 'F')
+    {
+        //Convert to Fahrenheit
+        sensorTemp = (sensorTemp * 1.8) + 32;
+        objTemp = (objTemp * 1.8) + 32;
+    }
+    else if (tempUnit == 'K')
+    {
+        //Convert to Kelvin
+        sensorTemp += 273.15;
+        objTemp += 273.15;
+    }
+    else if (tempUnit != 'C')
+    {
+        //Invalid Units
+        
+        //Print Constant String
+        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        
+        //Then call sprintf to print the value
+        sprintf("%c\r\n", tempUnit);
+        USB_sendBufferedString();
+    }
+    
     //Queue Data to Send
-    sprintf(RN4870_getCharBuffer(), "Sensor Temperature: %2.2fC\r\nRoom Temperature: %2.2fC\r\n",
-        MLX90632_getSensorTemp(), MLX90632_getObjectTemp());
+    sprintf(RN4870_getCharBuffer(), "Sensor Temperature: %2.1f%c\r\nRoom Temperature: %2.1f%c\r\n",
+        sensorTemp, tempUnit, objTemp, tempUnit);
     
     //Print String
     RN4870_printBufferedString();
+}
+
+//Sets the warning temp for high temperatures. Temp units are auto-converted from current set to C 
+void tempMonitor_setTempWarningHigh(float temp)
+{   
+    //Convert to C
+    if (tempUnit == 'F')
+    {
+        //Fahrenheit
+        temp = (temp - 32.0) * 0.55555;
+    }
+    else if (tempUnit == 'K')
+    {
+        //Kelvin
+        temp -= 273.15;
+    }
+    else if (tempUnit != 'C')
+    {
+        //Invalid Units
+        
+        //Print Constant String
+        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        
+        //Then call sprintf to print the value
+        sprintf("%c\r\n", tempUnit);
+        USB_sendBufferedString();
+    }
+    
+    //Update Value
+    tempWarningH = temp;
+    
+    //Write Value
+    eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
+}
+
+//Sets the warning temp for low temperatures. Temp units are auto-converted from current set to C 
+void tempMonitor_setTempWarningLow(float temp)
+{
+    //Convert to C
+    if (tempUnit == 'F')
+    {
+        //Fahrenheit
+        temp = (temp - 32.0) * 0.55555;
+    }
+    else if (tempUnit == 'K')
+    {
+        //Kelvin
+        temp -= 273.15;
+    }
+    else if (tempUnit != 'C')
+    {
+        //Invalid Units
+        
+        //Print Constant String
+        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        
+        //Then call sprintf to print the value
+        sprintf("%c\r\n", tempUnit);
+        USB_sendBufferedString();
+    }
+    
+    //Update Value
+    tempWarningL = temp;
+    
+    //Write Value
+    eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningL);
 }

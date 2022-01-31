@@ -76,7 +76,7 @@ bool MLX90392_isDataReady(void)
     return (status & 0x01);
 }
 
-bool MLX90392_getSingleMeasurementBlocking(MLX90392_RawResult* result)
+bool MLX90392_getSingleMeasurementBlocking(MLX90392_RawResult16* result)
 {
     //Set the Sensor into Single Measurement Mode
     if (!MLX90392_setOperatingMode(SINGLE))
@@ -113,7 +113,7 @@ bool MLX90392_selfTest(void)
     } while (!MLX90392_isDataReady());
     
     //Read measurement data
-    MLX90392_RawResult result;
+    MLX90392_RawResult16 result;
     
     //Get results
     if (!MLX90392_getResult(&result))
@@ -155,7 +155,7 @@ bool MLX90392_setOperatingMode(MLX90392_Mode mode)
     return MLX90392_setRegister(MLX90392_CTRL, mode);
 }
 
-bool MLX90392_getResult(MLX90392_RawResult* result)
+bool MLX90392_getResult(MLX90392_RawResult16* result)
 {    
     //If MVIO is not ready, then exit.
     if (!MVIO_isOK())
