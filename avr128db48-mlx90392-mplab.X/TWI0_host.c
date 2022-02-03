@@ -48,7 +48,6 @@ void TWI0_initHost(void)
     
     //[No ISRs] and Host Mode
     TWI0.MCTRLA = TWI_ENABLE_bm;
-
 }
 
 void TWI0_initPins(void)

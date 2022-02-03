@@ -40,19 +40,19 @@ void RN4870RX_init(void)
 //Insert a character into the buffer
 void RN4870RX_loadCharacter(char input)
 {
-    DBG_OUT_Toggle();
     if (processingMessage)
     {
         //Waiting for End of Status Marker
         
-        if ((input == currentDelim) || (input == '\r'))
+        if ((input == currentDelim) || (input == '\r') || (input == '\n'))
         {
+            DBG_OUT_SetLow();
             RN4870RX_statusBuffer[respWriteIndex] = '\0';
             
             processingMessage = false;
             respCount++;
         }
-        else
+        else if (input != ' ')
         {
             RN4870RX_statusBuffer[respWriteIndex] = convertToUppercase(input);
         }
@@ -67,6 +67,7 @@ void RN4870RX_loadCharacter(char input)
         //Input is the deliminator of status
         if ((input == RN4870_DELIM_STATUS) || (input == RN4870_DELIM_USER))
         {
+            DBG_OUT_SetHigh();
             //Store the Deliminator
             RN4870RX_statusBuffer[respWriteIndex] = input;
             respWriteIndex++;
