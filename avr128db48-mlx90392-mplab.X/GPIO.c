@@ -17,5 +17,5 @@ void GPIO_init(void)
     //PD2 - Debug GPIO
     
     PORTD.OUTSET = PIN0_bm;
-    PORTD.DIRSET = PIN0_bm;
+    PORTD.DIRSET = PIN0_bm | PIN2_bm;
 }

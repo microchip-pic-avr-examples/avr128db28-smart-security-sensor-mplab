@@ -32,7 +32,8 @@ bool isTWI1Bad(void)
 void TWI1_initHost(void)
 {        
     //Standard 100kHz TWI, 4 Cycle Hold, 50ns SDA Hold Time
-    TWI1.CTRLA = TWI_SDAHOLD_50NS_gc;    
+    TWI1.CTRLA = TWI_SDAHOLD_50NS_gc; 
+    
     //Clear Dual Control
     TWI1.DUALCTRL = 0x00;
     
@@ -46,8 +47,8 @@ void TWI1_initHost(void)
     //Set for 100kHz from a 4MHz oscillator
     TWI1.MBAUD = 15;
     
-    //[No ISRs] and Host Mode
-    TWI1.MCTRLA = TWI_ENABLE_bm;
+    //[No ISRs], Host Mode, 50us bus timeout
+    TWI1.MCTRLA = TWI_ENABLE_bm | TWI_TIMEOUT_50US_gc;
 }
 
 void TWI1_initPins(void)

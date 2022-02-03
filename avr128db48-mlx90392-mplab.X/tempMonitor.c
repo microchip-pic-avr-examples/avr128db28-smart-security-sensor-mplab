@@ -115,13 +115,13 @@ void tempMonitor_FSM(void)
             break;
         }
         case TEMP_START:
-        {
+        {            
             //Start a temperature measurement
             success = MLX90632_startSingleConversion();
 
             //Move to the next state
             if (!success)
-            {
+            {               
                 USB_sendString("[ERR] Failed to start temp conversion in TEMP_START\r\n");
                 tempState = TEMP_ERROR;
             }
