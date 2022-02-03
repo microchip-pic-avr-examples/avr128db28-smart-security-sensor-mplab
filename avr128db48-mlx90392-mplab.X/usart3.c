@@ -1,4 +1,5 @@
 #include "usart3.h"
+#include "GPIO.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -7,6 +8,7 @@
 #include <avr/interrupt.h>
 
 static void (*rxHandler)(char);
+static volatile bool isRXBusy = false;
 
 void USART3_init(void)
 {
@@ -16,8 +18,8 @@ void USART3_init(void)
     //Enable Run in Debug
     USART3.DBGCTRL = USART_DBGRUN_bm;
     
-    //Enable RX Interrupts
-    USART3.CTRLA = USART_RXCIE_bm;
+    //Enable RX Interrupts, Start of Frame
+    USART3.CTRLA = USART_RXCIE_bm | USART_RXSIE_bm;
     
     //Async Mode, No Parity, 1 Stop Bit, 8 bit TX
     USART3.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_SBMODE_1BIT_gc | USART_CHSIZE_8BIT_gc;
@@ -25,7 +27,7 @@ void USART3_init(void)
     //Baud for 115,200 at 4 MHz Clock
     USART3.BAUD = 139;
     
-    //Enable Normal Mode for USART
+    //Enable Normal Mode for USART, Enable Start of Frame Detect
     USART3.CTRLB = USART_RXMODE_NORMAL_gc;
     
     //Note: Call enableTX/enableRX after this function
@@ -100,6 +102,12 @@ bool USART3_isBusy(void)
     return (!(USART3.STATUS & USART_TXCIF_bm));
 }
 
+//Returns true if data is being shifted in
+bool USART3_isRXActive(void)
+{
+    return isRXBusy;
+}
+
 ISR(USART3_RXC_vect)
 {
     char rx = USART3.RXDATAL;
@@ -107,4 +115,5 @@ ISR(USART3_RXC_vect)
     {
         rxHandler(rx);
     }
+    isRXBusy = false;
 }

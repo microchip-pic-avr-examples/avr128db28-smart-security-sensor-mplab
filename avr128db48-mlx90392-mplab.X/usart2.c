@@ -1,4 +1,5 @@
 #include "usart2.h"
+#include "GPIO.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -7,6 +8,7 @@
 #include <avr/interrupt.h>
 
 static void (*rxHandler)(char);
+static volatile bool isRXBusy = false;
 
 void USART2_init(void)
 {
@@ -106,11 +108,22 @@ bool USART2_isBusy(void)
     return (!(USART2.STATUS & USART_TXCIF_bm));
 }
 
+//Returns true if data is being shifted in
+bool USART2_isRXActive(void)
+{
+    return isRXBusy;
+}
+
 ISR(USART2_RXC_vect)
 {
+    //Data
+    
+    DBG_OUT_Toggle();
+    
     char rx = USART2.RXDATAL;
     if (rxHandler)
     {
         rxHandler(rx);
     }
+    isRXBusy = false;
 }

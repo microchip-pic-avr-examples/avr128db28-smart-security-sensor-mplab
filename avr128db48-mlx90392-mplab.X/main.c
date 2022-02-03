@@ -34,6 +34,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "GPIO.h"
 
 #include "windowAlarm.h"
@@ -52,6 +55,8 @@
 #include "system.h"
 #include "TCB0_oneShot.h"
 #include "RTC.h"
+#include "printUtility.h"
+#include "demo.h"
 
 int main(void)
 {
@@ -60,39 +65,39 @@ int main(void)
     
     //Init Peripherals and IO
     System_initPeripherals();
-    
+        
     //Attach Callback Function for USART2
     USART2_setRXCallback(&RN4870RX_loadCharacter);
+    
+    //Configure Callback for User Commands
+    RN4870_setUserEventHandler(&DEMO_handleUserCommands);
     
     //Setup ISR Callback for RTC
     RTC_setOVFCallback(&tempMonitor_requestConversion);
     
     //Setup MVIO ISR
     MVIO_setCallback(&_windowAlarm_onMVIOChange);
-            
+                
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
             
     //Init State Machines
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
-    
-    //Sets the temp units to Fahrenheit
-    tempMonitor_setUnit('F');
-    
+        
     //Start Interrupts
     sei();
-    
+        
     //Configure RN4870
     RN4870_init();
-    
+        
     while(1)
     {        
         //Clear the Watchdog Timer
         asm("WDR");
-                                
+                                        
         //Check for Events
-        RN4870_checkForEvents();
+        RN4870_processEvents();
         
         //Run the magnetometer state machine
         windowAlarm_FSM();
@@ -119,7 +124,10 @@ int main(void)
                 tempMonitor_printResults();
             }
         }
+
+        //asm("SLEEP");
         
-        asm("SLEEP");
+        //Simple Delay
+        for (uint16_t i = 0; i < 0xFFFF; i++) { ; }
     }    
 }

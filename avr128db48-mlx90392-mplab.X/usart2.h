@@ -31,8 +31,11 @@ extern "C" {
     //Returns true if the peripheral can accept a new byte
     bool USART2_canTransmit(void);
     
-    //Returns true if the shifter is running
+    //Returns true if the TX shifter is running
     bool USART2_isBusy(void);
+    
+    //Returns true if data is being shifted in
+    bool USART2_isRXActive(void);
 
 #ifdef	__cplusplus
 }

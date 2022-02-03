@@ -16,6 +16,11 @@ extern "C" {
 #define RN4870_MODE_SetHigh() do { PORTD.OUTSET = PIN0_bm; } while(0)
 #define RN4870_MODE_SetLow() do { PORTD.OUTCLR = PIN0_bm; } while(0)
 #define RN4870_MODE_Toggle() do { PORTD.OUTTGL = PIN0_bm; } while(0)
+    
+#define DBG_OUT_SetHigh() do { PORTD.OUTSET = PIN2_bm; } while(0)
+#define DBG_OUT_SetLow() do { PORTD.OUTCLR = PIN2_bm; } while(0)
+#define DBG_OUT_Toggle() do { PORTD.OUTTGL = PIN2_bm; } while(0)
+
 
     //Inits. General Purpose I/O
     void GPIO_init(void);

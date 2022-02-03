@@ -13,8 +13,9 @@ void GPIO_init(void)
     //Output, Start LOW
     PORTB.DIRSET = PIN3_bm;
     
-    //PD0 - RN4870_MODE Output
-    //Output, Start High
+    //PD0 - RN4870_MODE Output (Start High)
+    //PD2 - Debug GPIO
+    
     PORTD.OUTSET = PIN0_bm;
     PORTD.DIRSET = PIN0_bm;
 }

@@ -67,7 +67,7 @@ void tempMonitor_init(bool safeStart)
         //Write the default RTC Period to EEPROM
         USB_sendString("\r\nLoaded constants from sensor and reset to defaults...");
         
-        //Write default RTC period to EEPROM
+        //Write Default Sample Rate Value
         eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, RTC_getPeriod());
         
         //Save Default Values
@@ -93,6 +93,16 @@ void tempMonitor_setUnit(char unit)
     tempUnit = unit;
 }
 
+//Updates the RTC's sample rate and stores it in EEPROM
+void tempMonitor_updateSampleRate(uint16_t sampleRate)
+{
+    //Update RTC
+    RTC_setPeriod(sampleRate);
+    
+    //Store new period
+    eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, sampleRate);
+}
+
 //Run the Temp Monitor's Finite State Machine
 void tempMonitor_FSM(void)
 {
@@ -112,6 +122,7 @@ void tempMonitor_FSM(void)
             //Move to the next state
             if (!success)
             {
+                USB_sendString("[ERR] Failed to start temp conversion in TEMP_START\r\n");
                 tempState = TEMP_ERROR;
             }
             else
@@ -131,6 +142,7 @@ void tempMonitor_FSM(void)
                 //Move to the next state
                 if (!success)
                 {
+                    USB_sendString("[ERR] Failed to get temp data from MLX90632_getResults()\r\n");
                     tempState = TEMP_ERROR;
                 }
                 else
@@ -155,6 +167,7 @@ void tempMonitor_FSM(void)
             }
             else
             {
+                USB_sendString("[ERR] Failed to compute temp from MLX90632_computeTemperature()\r\n");
                 tempState = TEMP_ERROR;
             }
             
@@ -165,6 +178,7 @@ void tempMonitor_FSM(void)
             //Wait...
             break;
         }
+        case TEMP_ERROR:
         default:
         {
             //Sensor Error has Occurred
@@ -234,7 +248,7 @@ void tempMonitor_printResults(void)
         USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
-        sprintf("%c\r\n", tempUnit);
+        sprintf(USB_getCharBuffer(), "%c\r\n", tempUnit);
         USB_sendBufferedString();
     }
     
@@ -268,7 +282,7 @@ void tempMonitor_setTempWarningHigh(float temp)
         USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
-        sprintf("%c\r\n", tempUnit);
+        sprintf(USB_getCharBuffer(),"%c\r\n", tempUnit);
         USB_sendBufferedString();
     }
     
@@ -301,7 +315,7 @@ void tempMonitor_setTempWarningLow(float temp)
         USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
-        sprintf("%c\r\n", tempUnit);
+        sprintf(USB_getCharBuffer(), "%c\r\n", tempUnit);
         USB_sendBufferedString();
     }
     
