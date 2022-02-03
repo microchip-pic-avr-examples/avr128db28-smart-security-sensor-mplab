@@ -15,6 +15,7 @@ extern "C" {
 #define RN4870_RX_STATUS_BUFFER_SIZE 32
     
 //Delimiters
+#define RN4870_DELIM_USER '!'
 #define RN4870_DELIM_STATUS '%'
 #define RN4870_DELIM_RESP '\r'   
 #define RN4870_MARKER_CMD '>'
@@ -25,14 +26,29 @@ extern "C" {
     //Insert a character into the buffer
     void RN4870RX_loadCharacter(char input);
     
+    //Returns true if status / user commands are empty
+    bool RN4870RX_isEmpty(void);
+    
     //Returns true if a status message (%TEXT%) was received
     bool RN4870RX_isStatusRX(void);
+    
+    //Returns true if a user command (!TEXT!) was received
+    bool RN4870RX_isUserRX(void);
     
     //Clears status flag
     void RN4870RX_clearStatusRX(void);
     
     //Returns true if status matches COMP string
-    bool RN4870RX_compareStatus(const char* comp);
+    bool RN4870RX_searchMessage(const char* comp);
+    
+    //Advances to the next status / command in the buffer, if available.
+    void RN4870RX_advanceMessage(void);
+    
+    //Returns the message buffer
+    const char* RN4870RX_getMessageBuffer(void);
+    
+    //Returns the substring after the ','. Returns null if not present
+    char* RN4870RX_getMessageParameter(void);
     
     //Returns true if a deliminater was received.
     bool RN4870RX_isResponseComplete(void);

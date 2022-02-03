@@ -11,11 +11,33 @@ extern "C" {
 //Flipped version of AOK... saves some computation time
 #define RN4870_AOK "KOA"
     
+#define RN4870_NO_POWER_GATE_TEST 
+    
+    typedef enum {
+        RN4870_EVENT_NONE = 0, RN4870_EVENT_REBOOT, RN4870_EVENT_STREAM_OPEN,
+                RN4870_EVENT_CONNECT, RN4870_EVENT_DISCONNECT, RN4870_EVENT_BONDED
+    } RN4870_EVENT;
+    
     //Configures the RN4870
     void RN4870_init(void);
     
-    //Checks for events from the RN4870
-    void RN4870_checkForEvents(void);
+    //Setup on initial power-up
+    bool RN4870_startupInit(void);
+    
+    //Sets a user event handler
+    void RN4870_setUserEventHandler(bool (*userEvent)(void));
+    
+    //Handles user commands and status messages
+    void RN4870_processEvents(void);
+    
+    //Processes user commands from the RN4870 (called by RN4870_processEvents)
+    void RN4870_runUserCommands(void);
+
+    //Handles status messages from the RN4870 (called by RN4870_processEvents)
+    void RN4870_processStatusMessages(void);
+    
+    //Returns a status event, if one is available
+    RN4870_EVENT RN4870_getStatusEvent(void);
     
     //Powers up the RN4870. Non-Blocking
     void RN4870_powerUp(void);

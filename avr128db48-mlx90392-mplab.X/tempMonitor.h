@@ -6,6 +6,7 @@ extern "C" {
 #endif
     
 #include <stdbool.h>
+#include <stdint.h>
         
 //Default High Temp Warning (90F/32.2C). Value must be in C
 #define DEFAULT_TEMP_WARNING_H 32.2
@@ -18,6 +19,9 @@ extern "C" {
     
     //Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
     void tempMonitor_setUnit(char unit);
+    
+    //Updates the RTC's sample rate and stores it in EEPROM
+    void tempMonitor_updateSampleRate(uint16_t sampleRate);
     
     //Run the Temp Monitor's Finite State Machine
     void tempMonitor_FSM(void);
