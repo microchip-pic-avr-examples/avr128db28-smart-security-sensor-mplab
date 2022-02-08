@@ -213,10 +213,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         case CAL_CLOSED_WAIT:
         {
             if (buttonPressed)
-            {
-                //Reset maximum value
-                maxV = 0;
-                
+            {                
                 RN4870_sendStringToUser("Beginning closed window calibration.\r\n");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
@@ -250,6 +247,9 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
 
                 //Advance State Machine
                 calState = CAL_CRACKED_WAIT;
+                
+                //Reset maximum value
+                maxV = 0;
                 
 #ifdef MAGNETOMETER_ANGLE_CHECK
                 //Compute Normalized Results Immediately from New Values

@@ -16,9 +16,9 @@ The objective of this demo is to create a window security sensor with a room tem
 - [MPLAB&reg; X IDE v6.0.0 or newer](#)
 - [MPLAB XC8 v2.35 or newer](#)
 - [AVR-Dx_DFP v1.10.124](#)  
-- Bluetooth Smart Data App
-  - [For IOS](#)
-  - [For Android](#)
+- Bluetooth Smart Data App by Microchip
+  - [For IOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
+  - [For Android](https://play.google.com/store/apps/details?id=com.microchip.bluetooth.data&hl=en_US&gl=US)
 
 ## Hardware Used
 
@@ -60,7 +60,6 @@ To zero the sensor, the microcontroller collects a set number of samples from th
 #### Step 2 - Data Normalization
 
 User Directions: *Please close the window and the press the button to continue.*  
-**Maximum Magnitude Monitoring - Vector Sum of Magnitude is Tracked for Step 3**
 
 The objective of the data normalization to scale each of the 3 axes to be in similar scales to each other. Due to the direction of travel, one of the axes will have a much higher scale than the others.
 
@@ -77,31 +76,47 @@ The calibration algorithm in this step performs a similar action to the [Zero Ca
 #### Step 3 - Threshold Set
 
 User Directions: *Please open the window to the desired threshold, then press the button.*  
-**Maximum Magnitude Monitoring - Vector Sum of Magnitude is Tracked**
 
 In this step, the magnetometer is programmed to the threshold between open and closed. Unlike the reed switch, the user can set how far the window is open before triggering the alarm.
 
-Additionally, at the conclusion of this stage, the program stores the highest magnitude of the field strength recorded during steps 2 and 3.
+Additionally, at the conclusion of this stage, the program stores the highest magnitude of the field strength recorded between (the end of) step 2 and 3.
 
 Magnitude<sup>2</sup> = X<sup>2</sup> + Y<sup>2</sup> + Z<sup>2</sup>
 
-The maximum magnitude is used to protect against an attempt to tamper with the sensor with another magnet.
+The maximum magnitude is used to protect against attempts to tamper with the sensor with another magnet.
 
 #### Step 4 - Return to Closed
 
 User Directions: *Please close the window and press the button to finish.*  
 
-This step ends the calibration sequence and saves the constants to the EEPROM of the microcontroller.
+This step validates the calibration while the user closes the window. If the alarm triggers during this, the calibration is considered bad and returns to step 1. If the window is closed and the alarm did not trigger, then the constants are saved to the EEPROM of the microcontroller.
 
 ## Temperature Measurements
 
 Sensor: MLX90632
 
-### How FIR Sensors Work
+### Timing
 
 
 
 ## Operating the Demo
+
+
+
+## User Commands
+
+| User Command | Format | Example | Description
+| ------------ | ------ | ------- | ------------
+| HELP | HELP | HELP | Returns list of commands
+| DEMO | DEMO | DEMO | Prints information about this demo
+| BAT  | BAT  | BAT | Prints current battery voltage
+| STATUS | STATUS | STATUS | Prints the current system status
+| STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin)
+| STWH | STWH,\<TEMP\> | STWH,40.1 | Sets the High Temperature Alarm Point. Units are inherited from STU.
+| STWL | STWL,\<TEMP\> | STWL,10.0 | Sets the High Temperature Alarm Point. Units are inherited from STU.
+| STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
+| RST   | RST   | RST   | Resets the microcontroller. Communications will be reset.
+| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications.
 
 ## Summary
 

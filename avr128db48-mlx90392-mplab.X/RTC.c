@@ -24,16 +24,20 @@ void RTC_init(void)
     //Run from 32.768kHz Internal Oscillator
     RTC.CLKSEL = RTC_CLKSEL_OSC32K_gc;
     
+    while (RTC.STATUS & RTC_PERBUSY_bm);
+    
     //Set Period to 15s 
     //0x0F00 = 3840
     RTC.PER = 0x0F00;
+    
+    while (RTC.STATUS & RTC_CTRLABUSY_bm);
     
     //Run the RTC in Standby, Prescaler is 128, Enable RTC
     RTC.CTRLA = RTC_RUNSTDBY_bm | RTC_PRESCALER_DIV128_gc | RTC_RTCEN_bm;
     
     //Enable PIT Interrupt
     RTC.PITINTCTRL = RTC_PI_bm;
-    
+        
     //Enable Clock Pre-scaler 128, Enable PIT
     RTC.PITCTRLA = RTC_PERIOD_CYC128_gc | RTC_PITEN_bm;
 }
@@ -57,11 +61,25 @@ uint16_t RTC_getPeriod(void)
 
 void RTC_setPeriod(uint16_t period)
 {
-    //Wait for Sync...
+    while (RTC.STATUS & RTC_CTRLABUSY_bm);
+    
+    //Turn off the RTC
+    RTC.CTRLA &= ~(RTC_RTCEN_bm);
+    
+    while (RTC.STATUS & RTC_CNTBUSY_bm);
+    
+    //Clear Counter
+    RTC.CNT = 0x0000;
+    
     while (RTC.STATUS & RTC_PERBUSY_bm);
     
     //Write Value
     RTC.PER = period;
+ 
+    while (RTC.STATUS & RTC_CTRLABUSY_bm);
+    
+    //Reset the RTC
+    RTC.CTRLA |= RTC_RTCEN_bm;
 }
 
 ISR(RTC_CNT_vect)
