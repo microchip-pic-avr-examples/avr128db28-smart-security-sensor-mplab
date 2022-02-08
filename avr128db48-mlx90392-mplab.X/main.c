@@ -126,8 +126,5 @@ int main(void)
         }
 
         //asm("SLEEP");
-        
-        //Simple Delay
-        for (uint16_t i = 0; i < 0xFFFF; i++) { ; }
     }    
 }

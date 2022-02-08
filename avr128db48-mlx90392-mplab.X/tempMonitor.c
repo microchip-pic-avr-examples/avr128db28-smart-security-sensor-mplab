@@ -61,6 +61,7 @@ void tempMonitor_init(bool safeStart)
         //Load Stored Values
         tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
         tempWarningL = eeprom_read_float((float*) TEMP_WARNING_LOW_LOCATION);
+        tempUnit = eeprom_read_byte((char*) TEMP_UNIT_LOCATION);
     }
     else
     {
@@ -70,9 +71,11 @@ void tempMonitor_init(bool safeStart)
         //Write Default Sample Rate Value
         eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, RTC_getPeriod());
         
-        //Save Default Values
+        //Reset to Default
         eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
         eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, tempWarningL);
+        eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
+        
     }
     
     //Print Result
@@ -91,6 +94,9 @@ void tempMonitor_init(bool safeStart)
 void tempMonitor_setUnit(char unit)
 {
     tempUnit = unit;
+    
+    //Store New Value
+    eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
 }
 
 //Updates the RTC's sample rate and stores it in EEPROM
@@ -101,6 +107,9 @@ void tempMonitor_updateSampleRate(uint16_t sampleRate)
     
     //Store new period
     eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, sampleRate);
+    
+    sprintf(USB_getCharBuffer(), "New RTC Period: 0x%x\r\n", sampleRate);
+    USB_sendBufferedString();
 }
 
 //Run the Temp Monitor's Finite State Machine

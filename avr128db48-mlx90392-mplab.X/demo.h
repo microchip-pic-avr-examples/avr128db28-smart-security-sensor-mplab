@@ -14,7 +14,7 @@ extern "C" {
 #define DEMO_SAMPLE_RATE_NORM 0x0F00
     
 //30s Period
-#define DEMO_SAMPLE_RATE_SLOW 0x1000
+#define DEMO_SAMPLE_RATE_SLOW 0x1E00
     
     //Handle User Commands
     bool DEMO_handleUserCommands(void);

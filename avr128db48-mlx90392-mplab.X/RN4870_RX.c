@@ -11,16 +11,16 @@
 #include "GPIO.h"
 
 //Modified by ISRs
-volatile static char RN4870RX_buffer[RN4870_RX_BUFFER_SIZE];
-volatile static char RN4870RX_statusBuffer[RN4870_RX_STATUS_BUFFER_SIZE];
-volatile static char* respPosition = &RN4870RX_statusBuffer[0];
+volatile static char generalTextBuffer[RN4870_RX_BUFFER_SIZE];
+volatile static char statusCommandBuffer[RN4870_RX_STATUS_BUFFER_SIZE + 1];
+volatile static char* statusCommandPosition = &statusCommandBuffer[0];
 volatile static char currentDelim = '\0';
-volatile static uint8_t writeIndex = 0, respWriteIndex = 0, respReadIndex = 0, respCount = 0;
+volatile static uint8_t commandWriteIndex = 0, respWriteIndex = 0, respReadIndex = 0, respCount = 0;
 volatile static bool readReady = false, processingMessage = false, cmdOccurred = false;
 
 //NOT modified or accessed by ISRs
-static char RN4870RX_responseBuffer[4];
-static uint8_t readIndex = 0;
+static char commandResponseBuffer[4];
+static uint8_t commandReadIndex = 0;
 
 //Utility Function - Converts input to uppercase
 char convertToUppercase(char in) { 
@@ -34,6 +34,10 @@ char convertToUppercase(char in) {
 //Initializes the RX Engine for the RN4870
 void RN4870RX_init(void)
 {
+    //Protective Terminator
+    statusCommandBuffer[RN4870_RX_BUFFER_SIZE] = '\0';
+
+    //Reset Buffers
     RN4870RX_clearBuffer();
 }
 
@@ -47,14 +51,14 @@ void RN4870RX_loadCharacter(char input)
         if ((input == currentDelim) || (input == '\r') || (input == '\n'))
         {
             DBG_OUT_SetLow();
-            RN4870RX_statusBuffer[respWriteIndex] = '\0';
+            statusCommandBuffer[respWriteIndex] = '\0';
             
             processingMessage = false;
             respCount++;
         }
         else if (input != ' ')
         {
-            RN4870RX_statusBuffer[respWriteIndex] = convertToUppercase(input);
+            statusCommandBuffer[respWriteIndex] = convertToUppercase(input);
         }
         
         //Increment writeIndex for response
@@ -69,7 +73,7 @@ void RN4870RX_loadCharacter(char input)
         {
             DBG_OUT_SetHigh();
             //Store the Deliminator
-            RN4870RX_statusBuffer[respWriteIndex] = input;
+            statusCommandBuffer[respWriteIndex] = input;
             respWriteIndex++;
             
             currentDelim = input;
@@ -90,8 +94,8 @@ void RN4870RX_loadCharacter(char input)
         cmdOccurred = true;
     }
     
-    RN4870RX_buffer[writeIndex] = input;
-    writeIndex++;
+    generalTextBuffer[commandWriteIndex] = input;
+    commandWriteIndex++;
 }
 
 //Returns true if status / user commands are empty
@@ -106,7 +110,7 @@ bool RN4870RX_isStatusRX(void)
     if (respCount == 0)
         return false;
     
-    return (respPosition[0] == RN4870_DELIM_STATUS);
+    return (statusCommandPosition[0] == RN4870_DELIM_STATUS);
 }
 
 //Returns true if a user command (!TEXT!) was received
@@ -115,7 +119,7 @@ bool RN4870RX_isUserRX(void)
     if (respCount == 0)
         return false;
     
-    return (respPosition[0] == RN4870_DELIM_USER);
+    return (statusCommandPosition[0] == RN4870_DELIM_USER);
 }
 
 void RN4870RX_clearStatusRX(void)
@@ -123,15 +127,43 @@ void RN4870RX_clearStatusRX(void)
     respCount = 0;
     respReadIndex = 0;
     respWriteIndex = 0;
-    respPosition = &RN4870RX_statusBuffer[0];
+    statusCommandPosition = &statusCommandBuffer[0];
 }
 
 //Returns true if status matches COMP string
 bool RN4870RX_searchMessage(const char* comp)
 {
+    volatile uint8_t rC = respCount;
+    //Nothing to search
+    if ((comp[0] == '\0') || (respCount == 0))
+        return false;
+    
     //Compare strings
-    if (strstr(respPosition, comp) != 0)
-        return true;
+    uint8_t tIndex = respReadIndex;
+    uint8_t compIndex = 0;
+    
+    while (statusCommandBuffer[tIndex] != '\0')
+    {
+        if (comp[compIndex] == statusCommandBuffer[tIndex])
+        {
+            compIndex++;
+        }
+        else
+        {
+            compIndex = 0;
+        }
+        
+        if (comp[compIndex] == '\0')
+        {
+            //End of String
+            return true;
+        }
+        
+        tIndex++;
+    }
+    
+//    if (strstr(statusCommandPosition, comp) != 0)
+//        return true;
     
     return false;
 }
@@ -158,11 +190,11 @@ void RN4870RX_advanceMessage(void)
         //Move to the end of the message (NULL)
         do
         {
-            readIndex++;
+            respReadIndex++;
         }
-        while ((RN4870RX_statusBuffer[readIndex] != RN4870_DELIM_RESP) && (RN4870RX_statusBuffer[readIndex] != RN4870_DELIM_USER));
+        while ((statusCommandBuffer[respReadIndex] != RN4870_DELIM_RESP) && (statusCommandBuffer[respReadIndex] != RN4870_DELIM_USER));
         
-        respPosition = &RN4870RX_statusBuffer[readIndex];
+        statusCommandPosition = &statusCommandBuffer[respReadIndex];
     }
     
     
@@ -171,13 +203,13 @@ void RN4870RX_advanceMessage(void)
 //Returns the message
 const char* RN4870RX_getMessageBuffer(void)
 {
-    return &respPosition[0];
+    return &statusCommandPosition[0];
 }
 
 //Returns the substring after the ','. Returns null if not present
 char* RN4870RX_getMessageParameter(void)
 {
-    char* ptr = strstr(respPosition, ",");
+    char* ptr = strstr(statusCommandPosition, ",");
     
     //If there are no commas, return NULL
     if (ptr == NULL)
@@ -208,10 +240,10 @@ bool RN4870RX_isCMDPresent(void)
 void RN4870RX_clearResponseBuffer(void)
 {
     //Clear Response Buffer
-    RN4870RX_responseBuffer[3] = '\0';
-    RN4870RX_responseBuffer[2] = '\0';
-    RN4870RX_responseBuffer[1] = '\0';
-    RN4870RX_responseBuffer[0] = '\0';
+    commandResponseBuffer[3] = '\0';
+    commandResponseBuffer[2] = '\0';
+    commandResponseBuffer[1] = '\0';
+    commandResponseBuffer[0] = '\0';
 }
 
 //Load response buffer with the last 3 bytes received
@@ -223,18 +255,18 @@ void RN4870RX_loadResponseBuffer(void)
     //Clear flag
     readReady = false;
     
-    while ((RN4870RX_buffer[readIndex] != RN4870_DELIM_RESP) && (readIndex != writeIndex))
+    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
     {
-        RN4870RX_responseBuffer[2] = RN4870RX_responseBuffer[1];
-        RN4870RX_responseBuffer[1] = RN4870RX_responseBuffer[0];
-        RN4870RX_responseBuffer[0] = RN4870RX_buffer[readIndex];
-        readIndex++;
+        commandResponseBuffer[2] = commandResponseBuffer[1];
+        commandResponseBuffer[1] = commandResponseBuffer[0];
+        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
+        commandReadIndex++;
     }
     
     //If we stopped because \r is the current char, clear the \r
-    if (RN4870RX_buffer[readIndex] == RN4870_DELIM_RESP)
+    if (generalTextBuffer[commandReadIndex] == RN4870_DELIM_RESP)
     {
-        RN4870RX_buffer[readIndex] = '\0';
+        generalTextBuffer[commandReadIndex] = '\0';
     }
     
     
@@ -248,13 +280,13 @@ void RN4870RX_clearBuffer(void)
     //Main Buffer
     for (uint16_t i = 0; i < RN4870_RX_BUFFER_SIZE; i++)
     {
-        RN4870RX_buffer[i] = '\0';
+        generalTextBuffer[i] = '\0';
     }
     
     //Indexes
     respWriteIndex = 0;
-    writeIndex = 0;
-    readIndex = 0;
+    commandWriteIndex = 0;
+    commandReadIndex = 0;
     
     //Statuses
     readReady = false;
@@ -276,7 +308,7 @@ bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
             RN4870RX_loadResponseBuffer();
             
             //Compare strings
-            if (strstr(&RN4870RX_responseBuffer[0], compare) != 0)
+            if (strstr(&commandResponseBuffer[0], compare) != 0)
             {
                 return true;
             }

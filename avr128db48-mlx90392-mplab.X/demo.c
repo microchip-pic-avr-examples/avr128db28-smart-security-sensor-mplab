@@ -11,6 +11,7 @@
 #include "printUtility.h"
 
 #include "demo.h"
+#include "RTC.h"
 
 bool DEMO_handleUserCommands(void)
 {   
@@ -87,22 +88,24 @@ bool DEMO_handleUserCommands(void)
         
         if (param != NULL)
         {
-            if (strcmp("FAST", param))
+            if (strcmp("FAST", param) == 0)
             {
                 tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_FAST);
                 
                 //Update Success
                 ok = true;
             }
-            else if (strcmp("NORM", param))
+            else if (strcmp("NORM", param) == 0)
             {
                 tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_NORM);
+                
                 //Update Success
                 ok = true;
             }
-            else if (strcmp("SLOW", param))
+            else if (strcmp("SLOW", param) == 0)
             {
                 tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_SLOW);
+                
                 //Update Success
                 ok = true;
             }
@@ -111,7 +114,6 @@ bool DEMO_handleUserCommands(void)
                 USB_sendString("[ERR] Invalid parameter found in STSR command.\r\n");
                 return false;
             }
-            RN4870_sendStringToUser("CMD OK");
         }
         else
         {

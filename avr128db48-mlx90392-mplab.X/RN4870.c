@@ -12,8 +12,8 @@
 
 //Power States of RN4870
 typedef enum {
-    RN4870_POWER_OFF = 0, RN4870_POWERING_UP_INIT, RN4870_POWERING_UP, RN4870_RECONNECT, 
-            RN4870_PAIRING, RN4870_READY, RN4870_POWERING_DOWN
+    RN4870_POWER_OFF = 0, RN4870_POWERING_UP_INIT, RN4870_POWERING_UP, RN4870_PAIR, 
+            RN4870_WELCOME, RN4870_READY, RN4870_POWERING_DOWN
 } RN4870_STATUS;
 
 static RN4870_STATUS stateRN4870 = RN4870_POWERING_UP_INIT;
@@ -85,10 +85,7 @@ void RN4870_processEvents(void)
 RN4870_EVENT RN4870_getStatusEvent(void)
 {
     if (RN4870RX_isStatusRX())
-    {
-        //Clear Status Flag
-        RN4870RX_clearStatusRX();
-        
+    {        
         sprintf(USB_getCharBuffer(), "Received Status Message: %s\r\n", RN4870RX_getMessageBuffer());
         USB_sendBufferedString();
         
@@ -100,9 +97,17 @@ RN4870_EVENT RN4870_getStatusEvent(void)
         {
             return RN4870_EVENT_DISCONNECT;
         }
+        else if (RN4870RX_searchMessage("CONNECT"))
+        {
+            return RN4870_EVENT_CONNECT;
+        }
         else if (RN4870RX_searchMessage("STREAM_OPEN"))
         {
             return RN4870_EVENT_STREAM_OPEN;
+        }
+        else
+        {
+            USB_sendString("[ERR] Unable to match string to response.\r\n");
         }
     }
     return RN4870_EVENT_NONE;
@@ -168,20 +173,20 @@ void RN4870_processStatusMessages(void)
             if (event == RN4870_EVENT_REBOOT)
             {              
                 //Init is done, try to reconnect
-                RN4870_sendCommandAndPrint("C", 0);
+                RN4870_sendCommandAndPrint("C", 50);
 
-                stateRN4870 = RN4870_RECONNECT;
+                stateRN4870 = RN4870_PAIR;
             }
             else if (event == RN4870_EVENT_CONNECT)
             {
                 //Enable UART Service
                 RN4870_sendCommandAndPrint("I", 25);
-                
+                                
                 stateRN4870 = RN4870_READY;
             }
             break;
         }
-        case RN4870_RECONNECT:
+        case RN4870_PAIR:
         {
             //Attempt to reconnect
 
@@ -190,6 +195,7 @@ void RN4870_processStatusMessages(void)
             {
                 //Bond to the connected device
                 //RN4870_sendCommandAndPrint("B", 100);
+                
                 stateRN4870 = RN4870_READY;
             }
             else if (event == RN4870_EVENT_CONNECT)
@@ -206,7 +212,7 @@ void RN4870_processStatusMessages(void)
             {
                 //Disconnected...
                 
-                //stateRN4870 = RN4870_POWERING_DOWN;
+                stateRN4870 = RN4870_PAIR;
             }
             break;
         }
@@ -214,7 +220,7 @@ void RN4870_processStatusMessages(void)
         {
             //TODO: Implement Power Down
             
-            stateRN4870 = RN4870_POWER_OFF;
+            stateRN4870 = RN4870_PAIR;
             break;
         }
     }

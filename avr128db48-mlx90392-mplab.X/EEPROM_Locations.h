@@ -41,11 +41,14 @@ extern "C" {
     
 //High Temperature Warning
 #define TEMP_WARNING_LOW_LOCATION (4 + TEMP_WARNING_HIGH_LOCATION)    //0x1443
+    
+//Temperature Units
+#define TEMP_UNIT_LOCATION (4 + TEMP_WARNING_LOW_LOCATION)
 
 //Begin MLX90392 Fields
     
 //Device ID of the Magnetometer
-#define EEPROM_MLX90392_ID (4 + TEMP_WARNING_LOW_LOCATION)     //0x1444
+#define EEPROM_MLX90392_ID (1 + TEMP_UNIT_LOCATION)     //0x1444
     
 //Cracked Window Threshold
 #define CRACKED_THRESHOLD_V (1 + EEPROM_MLX90392_ID)    //0x1445
