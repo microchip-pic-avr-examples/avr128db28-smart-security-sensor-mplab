@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
     
     //Configures the RTC and PIT
     void RTC_init(void);
@@ -21,6 +22,18 @@ extern "C" {
     
     //Sets the period of the RTC
     void RTC_setPeriod(uint16_t period);
+    
+    //Returns true if PIT was triggered
+    bool RTC_isPITTriggered(void);
+    
+    //Clears PIT Triggered Flag
+    void RTC_clearPITTriggered(void);
+    
+    //Returns true if RTC was triggered
+    bool RTC_isRTCTriggered(void);
+    
+    //Clears RTC Triggered Flag
+    void RTC_clearRTCTrigger(void);
     
 #ifdef	__cplusplus
 }

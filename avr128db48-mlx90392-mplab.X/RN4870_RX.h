@@ -39,16 +39,19 @@ extern "C" {
     void RN4870RX_clearStatusRX(void);
     
     //Returns true if status matches COMP string
-    bool RN4870RX_searchMessage(const char* comp);
+    bool RN4870RX_find(const char* comp);
+    
+    //Returns the text immediately following the comparison
+    volatile char* RN4870RX_search(const char* comp);
     
     //Advances to the next status / command in the buffer, if available.
     void RN4870RX_advanceMessage(void);
     
-    //Returns the message buffer
-    const char* RN4870RX_getMessageBuffer(void);
+    //Fills a buffer with a copy of the current message
+    void RN4870RX_copyMessage(char* buffer, uint8_t size);
     
     //Returns the substring after the ','. Returns null if not present
-    char* RN4870RX_getMessageParameter(void);
+    volatile char* RN4870RX_getMessageParameter(void);
     
     //Returns true if a deliminater was received.
     bool RN4870RX_isResponseComplete(void);

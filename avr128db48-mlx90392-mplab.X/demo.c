@@ -16,10 +16,12 @@
 bool DEMO_handleUserCommands(void)
 {   
     bool ok = false;
-    //Parameter for the command
-    const char* param = RN4870RX_getMessageParameter();
     
-    if (RN4870RX_searchMessage("STU"))
+    //Parameter for the command
+    char param[DEMO_PARAM_LENGTH];
+    RN4870RX_copyMessage(&param[0], DEMO_PARAM_LENGTH);
+    
+    if (RN4870RX_find("STU"))
     {
         //STU = Set Temp Units
         
@@ -39,7 +41,7 @@ bool DEMO_handleUserCommands(void)
             USB_sendString("[ERR] No parameter found in STU command.\r\n");
         }
     }
-    else if (RN4870RX_searchMessage("STWL"))
+    else if (RN4870RX_find("STWL"))
     {
         //STWL - Set Temp Warning Low
         
@@ -60,7 +62,7 @@ bool DEMO_handleUserCommands(void)
             USB_sendString("[ERR] No parameter found in STWL command.\r\n");
         }
     }
-    else if (RN4870RX_searchMessage("STWH"))
+    else if (RN4870RX_find("STWH"))
     {
         //STWH - Set Temp Warning High
         
@@ -81,7 +83,7 @@ bool DEMO_handleUserCommands(void)
             USB_sendString("[ERR] No parameter found in STWH command.\r\n");
         }
     }
-    else if (RN4870RX_searchMessage("STSR"))
+    else if (RN4870RX_find("STSR"))
     {
         //STSR - Set Temperature Sampling Rate
         USB_sendString("Running STSR Command\r\n");
@@ -120,10 +122,12 @@ bool DEMO_handleUserCommands(void)
             USB_sendString("[ERR] No parameter found in STSR command.\r\n");
         }
     }
-    else if (RN4870RX_searchMessage("INFO") || RN4870RX_searchMessage("DEMO"))
+    else if (RN4870RX_find("INFO") || RN4870RX_find("DEMO"))
     {
         //Demo / Info
-        RN4870_sendStringToUser("<Promo Text>\r\n");
+        RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
+                "Developed by Microchip Technology Inc. with assistance from Melexis N.V.\r\n"
+                "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab\r\n");
         ok = true;
     }
     

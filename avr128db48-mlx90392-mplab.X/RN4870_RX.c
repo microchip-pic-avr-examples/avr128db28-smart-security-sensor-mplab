@@ -13,7 +13,6 @@
 //Modified by ISRs
 volatile static char generalTextBuffer[RN4870_RX_BUFFER_SIZE];
 volatile static char statusCommandBuffer[RN4870_RX_STATUS_BUFFER_SIZE + 1];
-volatile static char* statusCommandPosition = &statusCommandBuffer[0];
 volatile static char currentDelim = '\0';
 volatile static uint8_t commandWriteIndex = 0, respWriteIndex = 0, respReadIndex = 0, respCount = 0;
 volatile static bool readReady = false, processingMessage = false, cmdOccurred = false;
@@ -110,7 +109,7 @@ bool RN4870RX_isStatusRX(void)
     if (respCount == 0)
         return false;
     
-    return (statusCommandPosition[0] == RN4870_DELIM_STATUS);
+    return (statusCommandBuffer[commandReadIndex] == RN4870_DELIM_STATUS);
 }
 
 //Returns true if a user command (!TEXT!) was received
@@ -119,7 +118,7 @@ bool RN4870RX_isUserRX(void)
     if (respCount == 0)
         return false;
     
-    return (statusCommandPosition[0] == RN4870_DELIM_USER);
+    return (statusCommandBuffer[commandReadIndex] == RN4870_DELIM_USER);
 }
 
 void RN4870RX_clearStatusRX(void)
@@ -127,16 +126,13 @@ void RN4870RX_clearStatusRX(void)
     respCount = 0;
     respReadIndex = 0;
     respWriteIndex = 0;
-    statusCommandPosition = &statusCommandBuffer[0];
 }
 
-//Returns true if status matches COMP string
-bool RN4870RX_searchMessage(const char* comp)
+//Returns the text immediately following the comparison
+volatile char* RN4870RX_search(const char* comp)
 {
-    volatile uint8_t rC = respCount;
-    //Nothing to search
     if ((comp[0] == '\0') || (respCount == 0))
-        return false;
+        return NULL;
     
     //Compare strings
     uint8_t tIndex = respReadIndex;
@@ -153,19 +149,22 @@ bool RN4870RX_searchMessage(const char* comp)
             compIndex = 0;
         }
         
+        tIndex++;
+        
         if (comp[compIndex] == '\0')
         {
             //End of String
-            return true;
+            return &statusCommandBuffer[tIndex];
         }
-        
-        tIndex++;
     }
     
-//    if (strstr(statusCommandPosition, comp) != 0)
-//        return true;
-    
-    return false;
+    return NULL;
+}
+
+//Returns true if status matches COMP string
+bool RN4870RX_find(const char* comp)
+{  
+    return (RN4870RX_search(comp) != NULL);   
 }
 
 //Advances to the next status / command in the buffer, if available.
@@ -193,31 +192,44 @@ void RN4870RX_advanceMessage(void)
             respReadIndex++;
         }
         while ((statusCommandBuffer[respReadIndex] != RN4870_DELIM_RESP) && (statusCommandBuffer[respReadIndex] != RN4870_DELIM_USER));
-        
-        statusCommandPosition = &statusCommandBuffer[respReadIndex];
     }
-    
-    
 }
 
-//Returns the message
-const char* RN4870RX_getMessageBuffer(void)
+//Fills a buffer with a copy of the current message
+void RN4870RX_copyMessage(char* buffer, uint8_t size)
 {
-    return &statusCommandPosition[0];
+    //If nothing to copy
+    if ((size == 0) || (respCount == 0))
+    {
+        return;
+    }
+    
+    uint8_t bPos = 0, rPos = respReadIndex;
+    
+    while ((bPos < size) && (statusCommandBuffer[rPos] != '\0'))
+    {
+        buffer[bPos] = statusCommandBuffer[rPos];
+        
+        rPos++;
+        bPos++;
+    }
+    
+    if (bPos < size)
+    {
+        //Under buffer limit
+        buffer[bPos] = '\0';
+    }
+    else
+    {
+        //At the buffer limit
+        buffer[size - 1] = '\0';
+    }
 }
 
 //Returns the substring after the ','. Returns null if not present
-char* RN4870RX_getMessageParameter(void)
+volatile char* RN4870RX_getMessageParameter(void)
 {
-    char* ptr = strstr(statusCommandPosition, ",");
-    
-    //If there are no commas, return NULL
-    if (ptr == NULL)
-    {
-        return NULL;
-    }
-    
-    return &ptr[1];
+    return RN4870RX_search(",");
 }
 
 void RN4870RX_clearCMDFlag(void)
@@ -255,13 +267,13 @@ void RN4870RX_loadResponseBuffer(void)
     //Clear flag
     readReady = false;
     
-    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
-    {
-        commandResponseBuffer[2] = commandResponseBuffer[1];
-        commandResponseBuffer[1] = commandResponseBuffer[0];
-        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
-        commandReadIndex++;
-    }
+//    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
+//    {
+//        commandResponseBuffer[2] = commandResponseBuffer[1];
+//        commandResponseBuffer[1] = commandResponseBuffer[0];
+//        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
+//        commandReadIndex++;
+//    }
     
     //If we stopped because \r is the current char, clear the \r
     if (generalTextBuffer[commandReadIndex] == RN4870_DELIM_RESP)

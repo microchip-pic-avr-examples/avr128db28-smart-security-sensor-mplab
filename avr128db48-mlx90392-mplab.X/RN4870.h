@@ -23,9 +23,12 @@ extern "C" {
     
     //Setup on initial power-up
     bool RN4870_startupInit(void);
-    
+        
     //Sets a user event handler
     void RN4870_setUserEventHandler(bool (*userEvent)(void));
+    
+    //Returns true if the module is not active, and the MCU can enter sleep
+    bool RN4870_canSleep(void);
     
     //Handles user commands and status messages
     void RN4870_processEvents(void);
@@ -50,6 +53,9 @@ extern "C" {
     
     //Exits Command Mode in the RN4870
     void RN4870_exitCommandMode(void);
+    
+    //Returns true if connected
+    bool RN4870_isConnected(uint8_t timeout);
     
     //Sends a Command to the RN4870
     bool RN4870_sendCommand(const char* string, uint8_t timeout);

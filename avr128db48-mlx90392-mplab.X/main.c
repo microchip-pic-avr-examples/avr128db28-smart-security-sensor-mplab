@@ -74,9 +74,6 @@ int main(void)
     
     //Setup ISR Callback for RTC
     RTC_setOVFCallback(&tempMonitor_requestConversion);
-    
-    //Setup MVIO ISR
-    MVIO_setCallback(&_windowAlarm_onMVIOChange);
                 
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
@@ -125,6 +122,20 @@ int main(void)
             }
         }
 
-        //asm("SLEEP");
+        if (RN4870_canSleep())
+        {
+            //If the module is powered off, then sleep
+            asm("SLEEP");
+        }
+        else
+        {
+            //Can't enter sleep, but we should wait for the next PIT trigger
+            
+            //Wait for PIT Trigger
+
+            asm("WDR");
+            RTC_clearPITTriggered();
+            while (!RTC_isPITTriggered()) { ; }
+        }
     }    
 }

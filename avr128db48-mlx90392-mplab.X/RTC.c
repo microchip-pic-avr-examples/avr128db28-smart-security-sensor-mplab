@@ -4,9 +4,13 @@
 #include <avr/interrupt.h>
 
 #include <stdint.h>
+#include <stdbool.h>
 
 void (*PIT_handler)(void);
 void (*RTC_OVF_handler)(void);
+
+static volatile bool PITtriggered = false;
+static volatile bool RTCtriggered = false;
 
 void RTC_init(void)
 {
@@ -82,18 +86,60 @@ void RTC_setPeriod(uint16_t period)
     RTC.CTRLA |= RTC_RTCEN_bm;
 }
 
+//Returns true if PIT was triggered
+bool RTC_isPITTriggered(void)
+{
+    cli();
+    bool temp = PITtriggered;
+    sei();
+    
+    return temp;
+}
+
+//Clears PIT Triggered Flag
+void RTC_clearPITTriggered(void)
+{
+    cli();
+    PITtriggered = false;
+    sei();
+}
+
+//Returns true if RTC was triggered
+bool RTC_isRTCTriggered(void)
+{
+    cli();
+    bool temp = RTCtriggered;
+    sei();
+    
+    return temp;
+}
+
+//Clears RTC Triggered Flag
+void RTC_clearRTCTrigger(void)
+{
+    cli();
+    RTCtriggered = false;
+    sei();
+}
+
+
 ISR(RTC_CNT_vect)
 {
-    if (RTC.INTFLAGS | RTC_OVF_bm)
-    {
+    
+//    if (RTC.INTFLAGS | RTC_OVF_bm)
+//    {
         //Overflow Flag
+    
+        //Set RTC Trigger Flag
+        RTCtriggered = true;
+
         
         //If callback is set...
         if (RTC_OVF_handler)
         {
             RTC_OVF_handler();
         }
-    }
+//    }
     
     //Clear OVF Flag
     RTC.INTFLAGS |= RTC_OVF_bm;
@@ -101,6 +147,9 @@ ISR(RTC_CNT_vect)
 
 ISR(RTC_PIT_vect)
 {
+    //Set PIT Trigger Flag
+    PITtriggered = true;
+    
     //If callback is set...
     if (PIT_handler)
     {
