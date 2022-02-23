@@ -1,10 +1,15 @@
 #include "TWI0_host.h"
+#include "MVIO.h"
+#include "TCB0_oneShot.h"
 
 #include <avr/io.h>
 #include <stdbool.h>
 
 #define TWI_READ true
 #define TWI_WRITE false
+
+//10ms timeout
+#define TWI0_TIMEOUT 10
 
 #define TWI0_IS_CLOCKHELD() TWI0.MSTATUS & TWI_CLKHOLD_bm
 #define TWI0_IS_BUSERR() TWI0.MSTATUS & TWI_BUSERR_bm
@@ -13,13 +18,50 @@
 #define CLIENT0_NACK() TWI0.MSTATUS & TWI_RXACK_bm
 #define CLIENT0_ACK() !(TWI0.MSTATUS & TWI_RXACK_bm)
 
-#define TWI0_IS_BUSBUSY() (((TWI0.MSTATUS & TWI_BUSSTATE_gm) == TWI_BUSSTATE_BUSY_gc))
+#define TWI0_IS_BUSBUSY() ((((TWI0.MSTATUS & TWI_BUSSTATE_gm) == TWI_BUSSTATE_BUSY_gc)))
 //#define TWI_IS_BAD() ((TWI_IS_BUSERR()) | (TWI_IS_ARBLOST()) | (CLIENT_NACK()) | (TWI_IS_BUSBUSY()))
 
-#define TWI0_WAIT() while (!((TWI0_IS_CLOCKHELD()) || (TWI0_IS_BUSERR()) || (TWI0_IS_ARBLOST()) || (TWI0_IS_BUSBUSY())))
+//Timer, MVIO, else...
+//#define TWI0_WAIT() while (!((TWI0_IS_CLOCKHELD()) || (TWI0_IS_BUSERR()) || (TWI0_IS_ARBLOST()) || (TWI0_IS_BUSBUSY())))
+
+bool TWI0_Wait(void)
+{
+    //Start the 1ms timer
+    TCB0_triggerTimer();
+    uint8_t timerCounter = 0;
+    
+    do
+    {
+        if (!MVIO_isOK())
+        {
+            //MVIO Failure
+            return false;
+        }
+        
+        if (!TCB0_isRunning())
+        {
+            //Need to start the timer
+            timerCounter++;
+            TCB0_triggerTimer();
+        }
+        
+        if (timerCounter == TWI0_TIMEOUT)
+        {
+            return false;
+        }
+        
+    } while (!((TWI0_IS_CLOCKHELD()) || (TWI0_IS_BUSERR()) || (TWI0_IS_ARBLOST()) || (TWI0_IS_BUSBUSY())));
+    return true;
+}
 
 bool isTWI0Bad(void)
 {
+    //If MVIO is not active...
+    if (!MVIO_isOK())
+    {
+        return true;
+    }
+    
     //Checks for: NACK, ARBLOST, BUSERR, Bus Busy
     if ((((TWI0.MSTATUS) & (TWI_RXACK_bm | TWI_ARBLOST_bm | TWI_BUSERR_bm)) > 0)
             || (TWI0_IS_BUSBUSY()))
@@ -32,7 +74,8 @@ bool isTWI0Bad(void)
 void TWI0_initHost(void)
 {        
     //Standard 100kHz TWI, 4 Cycle Hold, 50ns SDA Hold Time
-    TWI0.CTRLA = TWI_SDAHOLD_50NS_gc;    
+    TWI0.CTRLA = TWI_SDAHOLD_50NS_gc;   
+    
     //Clear Dual Control
     TWI0.DUALCTRL = 0x00;
     
@@ -70,8 +113,20 @@ void TWI0_initPins(void)
     PORTC.PINCTRLUPD = PIN2_bm | PIN3_bm;
 }
 
+void TWI0_flush(void)
+{
+    //Flush and Reset
+    //TWI0.MCTRLB |= TWI_FLUSH_bm;
+}
+
 bool _startTWI0(uint8_t addr, bool read)
 {
+    //If the bus is not high on both pins
+//    if (!((VPORTC.IN & PIN2_bm) && (VPORTC.IN & PIN3_bm)))
+//    {
+//        return false;
+//    }
+    
     //If the Bus is Busy
     if (TWI0_IS_BUSBUSY())
     {
@@ -82,7 +137,13 @@ bool _startTWI0(uint8_t addr, bool read)
     TWI0.MADDR = (addr << 1) | read;
     
     //Wait...
-    TWI0_WAIT();
+    if (!TWI0_Wait())
+    {
+        //Something went wrong
+        //Stop the TWI Bus if an error occurred
+        TWI0.MCTRLB = TWI_MCMD_STOP_gc;
+        return false;
+    }
                 
     if (isTWI0Bad())
     {
@@ -109,7 +170,13 @@ void _readFromTWI0(uint8_t* data, uint8_t len)
     while (bCount < len)
     {
         //Wait...
-        TWI0_WAIT();
+        if (!TWI0_Wait())
+        {
+            //Something went wrong
+            //Stop the TWI Bus if an error occurred
+            TWI0.MCTRLB = TWI_MCMD_STOP_gc;
+            return;
+        }
         
         //Store data
         data[bCount] = TWI0.MDATA;
@@ -139,7 +206,13 @@ bool _writeToTWI0(uint8_t* data, uint8_t len)
         TWI0.MDATA = data[count];
         
         //Wait...
-        TWI0_WAIT();
+        if (!TWI0_Wait())
+        {
+            //Something went wrong
+            //Stop the TWI Bus if an error occurred
+            return false;
+        }
+
         
         //If the client NACKed, then abort the write
         if (CLIENT0_NACK())
@@ -228,7 +301,13 @@ bool TWI0_sendAndReadBytes(uint8_t addr, uint8_t regAddress, uint8_t* data, uint
     TWI0.MCTRLB = TWI_MCMD_REPSTART_gc;
     
     //Wait...
-    TWI0_WAIT();
+    if (!TWI0_Wait())
+    {
+        //Something went wrong
+        //Stop the TWI Bus if an error occurred
+        TWI0.MCTRLB = TWI_MCMD_STOP_gc;
+        return false;
+    }
     
     if (isTWI0Bad())
     {

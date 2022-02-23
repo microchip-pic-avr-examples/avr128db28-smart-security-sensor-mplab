@@ -29,6 +29,7 @@ void RN4870_init(void)
 bool RN4870_startupInit(void)
 {
     USB_sendString("Beginning RN4870 Initial Power-Up Config...\r\n");
+    asm("WDR");
     
     bool status = RN4870_enterCommandMode();
     
@@ -36,6 +37,17 @@ bool RN4870_startupInit(void)
     {
         RN4870_exitCommandMode();
         return false;
+    }
+    
+    if (RN4870_isConnected(255))
+    {
+        //Already Connected
+        stateRN4870 = RN4870_READY;
+        return true;
+    }
+    else
+    {
+        
     }
                 
     //Enable UART Transparent Service
@@ -55,6 +67,13 @@ void RN4870_setUserEventHandler(bool (*userEvent)(void))
 {
     onUserEvent = userEvent;
 }
+
+//Returns true if the module is not active, and the MCU can enter sleep
+bool RN4870_canSleep(void)
+{
+    return (stateRN4870 == RN4870_POWER_OFF);
+}
+
 
 //Polls for events and runs the power-up/down state machine
 void RN4870_processEvents(void)
@@ -85,23 +104,25 @@ void RN4870_processEvents(void)
 RN4870_EVENT RN4870_getStatusEvent(void)
 {
     if (RN4870RX_isStatusRX())
-    {        
-        sprintf(USB_getCharBuffer(), "Received Status Message: %s\r\n", RN4870RX_getMessageBuffer());
+    {     
+        USB_sendString("Received Status Message: ");
+        RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
+        USB_sendString("\r\n");
         
-        if (RN4870RX_searchMessage("REBOOT"))
+        if (RN4870RX_find("REBOOT"))
         {
             return RN4870_EVENT_REBOOT;
         }
-        else if (RN4870RX_searchMessage("DISCONNECT"))
+        else if (RN4870RX_find("DISCONNECT"))
         {
             return RN4870_EVENT_DISCONNECT;
         }
-        else if (RN4870RX_searchMessage("CONNECT"))
+        else if (RN4870RX_find("CONNECT"))
         {
             return RN4870_EVENT_CONNECT;
         }
-        else if (RN4870RX_searchMessage("STREAM_OPEN"))
+        else if (RN4870RX_find("STREAM_OPEN"))
         {
             return RN4870_EVENT_STREAM_OPEN;
         }
@@ -120,8 +141,10 @@ void RN4870_runUserCommands(void)
     //If a user command was received
     if (RN4870RX_isUserRX())
     {        
-        sprintf(USB_getCharBuffer(), "Received User Command: %s\r\n", RN4870RX_getMessageBuffer());
+        USB_sendString("Received User Command: ");
+        RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
+        USB_sendString("\r\n");
 
         //If set, call user event handler
         if (onUserEvent)
@@ -137,9 +160,12 @@ void RN4870_runUserCommands(void)
         }    
     }
     else
-    {
-        sprintf(USB_getCharBuffer(), "Non-User Command: %s\r\n", RN4870RX_getMessageBuffer());
+    {       
+        USB_sendString("Non-User Command: ");
+        RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
+        USB_sendString("\r\n");
+
     }
 }
 
@@ -287,6 +313,21 @@ void RN4870_exitCommandMode(void)
     RN4870_MODE_SetHigh();
 
 }
+
+//Returns true if connected
+bool RN4870_isConnected(uint8_t timeout)
+{
+    return false;
+    
+    BLE_printCommandString("GK", RN4870_DELIM_RESP);
+    
+    if (RN4870RX_waitForResponseRX(timeout, "non"))
+    {
+        return false;
+    }
+    return true;
+}
+
 
 bool RN4870_sendCommand(const char* string, uint8_t timeout)
 {

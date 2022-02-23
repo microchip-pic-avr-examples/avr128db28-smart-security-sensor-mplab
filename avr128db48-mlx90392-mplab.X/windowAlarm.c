@@ -14,6 +14,7 @@
 #include "MVIO.h"
 #include "windowAlarm_messages.h"
 #include "RN4870.h"
+#include "TWI0_host.h"
 
 //Enumeration for the Measurement State Machine
 typedef enum {
@@ -791,6 +792,18 @@ void windowAlarm_FSM(void)
         lastButtonState = false;
     }
     
+    if ((!MVIO_isOK()) && (magState != MAGNETOMETER_ERROR))
+    {
+        //MVIO Power Error
+        magState = MAGNETOMETER_ERROR;
+        
+        //Triggers immediate message print
+        magCounter = MAGNETOMETER_ERROR_DELAY;
+        
+        //Flush I2C
+        TWI0_flush();
+    }
+    
     bool success;
     
     //MLX90392 Magnetometer State Machine
@@ -886,6 +899,8 @@ void windowAlarm_FSM(void)
             success = MLX90392_init();
             if (success)
             {
+                USB_sendString("Magnetometer Successfully Restarted\r\n");
+                
                 prevResultState = INVALID;
                 
                 //Attempt to load calibration constants from EEPROM
@@ -904,6 +919,13 @@ void windowAlarm_FSM(void)
         case MAGNETOMETER_ERROR:
         default:
         {
+            //Retry Power-Up
+            if (MVIO_isOK())
+            {                
+                //Update State
+                magState = MAGNETOMETER_REINIT_WAIT;
+            }
+            
             //Simple delay to keep this error from filling the UART.
             if (magCounter >= MAGNETOMETER_ERROR_DELAY)
             {

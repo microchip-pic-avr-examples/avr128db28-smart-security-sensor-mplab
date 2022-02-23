@@ -26,6 +26,14 @@ extern "C" {
     void TWI0_initPins(void);
     
     /**
+     * <b><FONT COLOR=BLUE>void</FONT> TWI0_flush(<FONT COLOR=BLUE>void</FONT>)</B>
+     * 
+     * This function flushes and I2C buffers and resets the peripheral.
+     */
+    void TWI0_flush(void);
+
+    
+    /**
      * <b><FONT COLOR=BLUE>void</FONT> TWI0_sendByte(<FONT COLOR=BLUE>uint8_t</FONT> addr, <FONT COLOR=BLUE>uint8_t</FONT> data)</B>
      * @param uint8_t addr - Client Device Address
      * @param uint8_t data - Data to Send

@@ -11,7 +11,7 @@ void MVIO_init(void)
     handler = 0;
     
     //Enable MVIO Interrupts
-    MVIO.INTCTRL = MVIO_VDDIO2IE_bm;
+    //MVIO.INTCTRL = MVIO_VDDIO2IE_bm;
 }
 
 //Sets the callback function for MVIO Change Events
