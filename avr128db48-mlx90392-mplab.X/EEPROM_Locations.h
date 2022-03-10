@@ -32,12 +32,12 @@ extern "C" {
     
 //Memory Validation (2 bytes) - XOR of 16-bit Device IDs
 #define MEM_VALIDATE (4 + MEM_HB)               //0x143A
-
-//Update Rate for Temp Sensor
-#define TEMP_UPDATE_PERIOD (2 + MEM_VALIDATE)   //0x143C
+    
+//Update Timing for Temp Sensor
+#define TEMP_TRIGGER_PERIOD (2 + MEM_VALIDATE)   //0x143C
     
 //High Temperature Warning
-#define TEMP_WARNING_HIGH_LOCATION (2 + TEMP_UPDATE_PERIOD)  //0x143E
+#define TEMP_WARNING_HIGH_LOCATION (2 + TEMP_TRIGGER_PERIOD)  //0x143E
     
 //High Temperature Warning
 #define TEMP_WARNING_LOW_LOCATION (4 + TEMP_WARNING_HIGH_LOCATION)    //0x1443
@@ -64,10 +64,18 @@ extern "C" {
 #define MAGNETOMETER_SCALER_Y (1 + MAGNETOMETER_SCALER_X)   //0x144E
 #define MAGNETOMETER_SCALER_Z (1 + MAGNETOMETER_SCALER_Y)   //0x144F
 
+//Begin System Parameters
+    
+//If set to GOOD_VALUE, then settings are OK
+#define SYSTEM_GOOD_MARKER (1 + MAGNETOMETER_SCALER_Z)   //0x143C
+    
+//Update Rate for Full System
+#define SYSTEM_UPDATE_PERIOD (1 + SYSTEM_GOOD_MARKER)   //0x143C
+    
 //If angles are not used, EEPROM ends at 0x1450
     
 //Angle Ranges
-#define MAGNETOMETER_MIN_XY (1 + MAGNETOMETER_SCALER_Z)     //0x1450
+#define MAGNETOMETER_MIN_XY (2 + SYSTEM_UPDATE_PERIOD)     //0x1450
 #define MAGNETOMETER_MAX_XY (2 + MAGNETOMETER_MIN_XY)       //0x1451
 #define MAGNETOMETER_MIN_XZ (2 + MAGNETOMETER_MAX_XY)       //0x1452
 #define MAGNETOMETER_MAX_XZ (2 + MAGNETOMETER_MIN_XZ)       //0x1453

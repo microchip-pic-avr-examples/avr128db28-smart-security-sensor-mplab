@@ -27,6 +27,10 @@ extern "C" {
     //Init the Magnetometer and related parameters
     void windowAlarm_init(bool safeStart);
     
+    //Loads settings for window alarm
+    //If nReset = false, settings are reset to defaults
+    void windowAlarm_loadSettings(bool nReset);
+    
     //Tries to load constants from EEPROM - called by windowAlarm_init
     //Returns true if successful, or false if EEPROM is invalid
     bool windowAlarm_loadFromEEPROM(bool safeStart);

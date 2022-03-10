@@ -17,9 +17,22 @@ extern "C" {
 //30s Period
 #define DEMO_SAMPLE_RATE_SLOW 0x1E00
     
+//Time for Temp Sensor to Run (320 = 1.25s)
+#define DEMO_TEMP_DELAY_START 320
+    
+    //Load settings in EEPROM or reset to default (if in safe mode)
+    void DEMO_init(bool safeStart);
+    
+    //Loads settings for the demo
+    //If nReset = false, will load default settings
+    void DEMO_loadSettings(bool nReset);
+    
     //Handle User Commands
     bool DEMO_handleUserCommands(void);
 
+    //Sets the update rate of the demo
+    void DEMO_setSystemUpdateRate(uint16_t rate);
+    
 #ifdef	__cplusplus
 }
 #endif

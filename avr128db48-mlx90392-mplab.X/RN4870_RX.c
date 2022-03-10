@@ -54,14 +54,17 @@ void RN4870RX_loadCharacter(char input)
             
             processingMessage = false;
             respCount++;
+            
+            //Increment writeIndex for response
+            respWriteIndex++;
         }
         else if (input != ' ')
         {
             statusCommandBuffer[respWriteIndex] = convertToUppercase(input);
+            
+            //Increment writeIndex for response
+            respWriteIndex++;
         }
-        
-        //Increment writeIndex for response
-        respWriteIndex++;
         
         return;
     }
@@ -226,10 +229,53 @@ void RN4870RX_copyMessage(char* buffer, uint8_t size)
     }
 }
 
-//Returns the substring after the ','. Returns null if not present
-volatile char* RN4870RX_getMessageParameter(void)
+//Copies the parameter of the command.
+//Returns false if no parameter is present
+bool RN4870RX_copyMessageParameter(char* buffer, uint8_t size)
 {
-    return RN4870RX_search(",");
+    if ((respCount == 0) || (size == 0))
+        return false;
+    
+    //Compare strings
+    uint8_t tIndex = respReadIndex;
+    
+    bool found = false;
+    uint8_t cIndex = 0;
+    
+    while ((statusCommandBuffer[tIndex] != '\0') && (cIndex < size))
+    {
+        if (statusCommandBuffer[tIndex] == ',')
+        {
+            //Comma Found!
+            found = true;
+        }
+        else if (found)
+        {
+            //Comma was found, begin copy
+            
+            buffer[cIndex] = statusCommandBuffer[tIndex];
+            cIndex++;
+        }
+        
+        tIndex++;
+    }
+    
+    //No Parameter Found
+    if (!found)
+    {
+        return NULL;
+    }
+    
+    //Out of room in dest. buffer, last char will be cutoff
+    if (cIndex == size)
+    {
+        cIndex -= 1;
+    }
+    
+    //Add Terminator to Buffer
+    buffer[cIndex] = '\0';
+    
+    return true;
 }
 
 void RN4870RX_clearCMDFlag(void)

@@ -49,33 +49,17 @@ void tempMonitor_init(bool safeStart)
         success = MLX90632_initDevice(false);
     }
             
-    //EEPROM was successfully loaded
+    //If Sensor EEPROM was successfully loaded...
     if (MLX90632_cacheOK())
     {
-        //Load EEPROM Value for RTC Period
         USB_sendString("\r\nLoaded cached constants and settings...");
-        
-        //Update RTC Timer
-        RTC_setPeriod(eeprom_read_word((uint16_t*) TEMP_UPDATE_PERIOD));
-        
-        //Load Stored Values
-        tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
-        tempWarningL = eeprom_read_float((float*) TEMP_WARNING_LOW_LOCATION);
-        tempUnit = eeprom_read_byte((char*) TEMP_UNIT_LOCATION);
+        tempMonitor_loadSettings(true);
     }
     else
     {
-        //Write the default RTC Period to EEPROM
         USB_sendString("\r\nLoaded constants from sensor and reset to defaults...");
-        
-        //Write Default Sample Rate Value
-        eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, RTC_getPeriod());
-        
-        //Reset to Default
-        eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
-        eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, tempWarningL);
-        eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
-        
+        tempMonitor_loadSettings(false);
+                
     }
     
     //Print Result
@@ -90,6 +74,37 @@ void tempMonitor_init(bool safeStart)
     }
 }
 
+//Load Temp. Sensor Settings and Constants
+//If nReset = false, defaults will be loaded
+void tempMonitor_loadSettings(bool nReset)
+{
+    if (!nReset)
+    {
+        //Reset to Defaults
+        
+        //Write Default Sample Rate Value
+        eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, RTC_getCompare());
+        
+        //Reset to Default
+        eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
+        eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, tempWarningL);
+        eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
+    }
+    else
+    {
+        //Load Settings
+        
+        //Update RTC Timer
+        RTC_setCompare(eeprom_read_word((uint16_t*) TEMP_TRIGGER_PERIOD));
+        
+        //Load Stored Values
+        tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
+        tempWarningL = eeprom_read_float((float*) TEMP_WARNING_LOW_LOCATION);
+        tempUnit = eeprom_read_byte((char*) TEMP_UNIT_LOCATION);
+    }
+}
+
+
 //Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
 void tempMonitor_setUnit(char unit)
 {
@@ -102,13 +117,13 @@ void tempMonitor_setUnit(char unit)
 //Updates the RTC's sample rate and stores it in EEPROM
 void tempMonitor_updateSampleRate(uint16_t sampleRate)
 {
-    //Update RTC
-    RTC_setPeriod(sampleRate);
+    //Update RTC Compare
+    RTC_setCompare(sampleRate);
     
     //Store new period
-    eeprom_write_word((uint16_t*) TEMP_UPDATE_PERIOD, sampleRate);
+    eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, sampleRate);
     
-    sprintf(USB_getCharBuffer(), "New RTC Period: 0x%x\r\n", sampleRate);
+    sprintf(USB_getCharBuffer(), "New RTC Compare: 0x%x\r\n", sampleRate);
     USB_sendBufferedString();
 }
 
@@ -136,6 +151,7 @@ void tempMonitor_FSM(void)
             }
             else
             {
+                USB_sendString("Started new temp conversion in TEMP_START\r\n");
                 tempState = TEMP_WAIT;
             }
 
@@ -191,7 +207,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            RN4870_sendStringToUser("Temperature Sensor Error - Reboot Device\r\n");
+            RN4870_sendStringToUser("Error - Temperature sensor communication failure. Reboot device\r\n");
             tempState = TEMP_ERROR_WAIT;
         }
     }
@@ -218,6 +234,17 @@ bool tempMonitor_getResultStatus(void)
 
 void tempMonitor_printResults(void)
 {
+    //If results aren't ready...
+    if (!temperatureResultsReady)
+    {
+        USB_sendString("[ERR] Temperature results not ready for printing.\r\n");
+        sprintf(USB_getCharBuffer(), "RTC.CMP = 0x%x\r\n, RTC.PER = 0x%x\r\n", RTC_getCompare(), RTC_getPeriod());
+        USB_sendBufferedString();
+        
+        BLE_sendString("Error - Temperature results are not ready.\r\n");
+        return;
+    }
+    
     //Clear Flag
     temperatureResultsReady = false;
     

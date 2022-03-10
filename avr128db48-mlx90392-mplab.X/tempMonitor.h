@@ -17,6 +17,10 @@ extern "C" {
     //Init the Temp Monitor
     void tempMonitor_init(bool safeStart);
     
+    //Load Temp. Sensor Settings and Constants
+    //If nReset = false, defaults will be loaded
+    void tempMonitor_loadSettings(bool nReset);
+    
     //Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
     void tempMonitor_setUnit(char unit);
     
