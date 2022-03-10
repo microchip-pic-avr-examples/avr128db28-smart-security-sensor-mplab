@@ -14,6 +14,7 @@
 #include "demo.h"
 #include "RTC.h"
 #include "EEPROM_Locations.h"
+#include "DEFAULTS.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -44,7 +45,8 @@ void DEMO_loadSettings(bool nReset)
     {
         //Write Default Value
         eeprom_write_byte((uint8_t*) SYSTEM_GOOD_MARKER, DEMO_GOOD_VALUE);
-        eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, RTC_getPeriod());
+        eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, DEFAULT_RTC_PERIOD);
+        RTC_setPeriod(DEFAULT_RTC_PERIOD);
     }
     else
     {
@@ -175,6 +177,34 @@ bool DEMO_handleUserCommands(void)
         RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
                 "Developed by Microchip Technology Inc. with assistance from Melexis N.V.\r\n"
                 "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab\r\n");
+        ok = true;
+    }
+    else if (RN4870RX_find("STATUS"))
+    {
+        //Print Current Results
+        RN4870_sendStringToUser("Current System State: \r\n");
+        
+        windowAlarm_printResults();
+        tempMonitor_printLastResults();
+        
+        ok = true;
+    }
+    else if (RN4870RX_find("RECAL"))
+    {
+        //Set Window Alarm in Calibration Mode
+        windowAlarm_requestCalibration();
+        
+        ok = true;
+    }
+    else if (RN4870RX_find("RESET"))
+    {
+        //Reset User Settings
+        windowAlarm_loadSettings(false);
+        tempMonitor_loadSettings(false);
+        DEMO_loadSettings(false);
+        
+        RN4870_sendStringToUser("Settings were reset.\r\n");
+        
         ok = true;
     }
     

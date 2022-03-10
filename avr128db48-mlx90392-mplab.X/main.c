@@ -109,15 +109,18 @@ int main(void)
             tempMonitor_FSM();
         }
         
-        //If Transmitter is Ready
-        if (RN4870_isReady())
+        if (RTC_isOVFTriggered())
         {
-            if (RTC_isOVFTriggered())
+            RTC_clearOVFTrigger();
+
+            if (RN4870_isReady())
             {
-                RTC_clearOVFTrigger();
-                
-                windowAlarm_printResults();
-                tempMonitor_printResults();
+                if (windowAlarm_isCalGood())
+                {
+                    //If not calibrating...
+                    windowAlarm_printResults();
+                    tempMonitor_printResults();
+                }
             }
         }
 

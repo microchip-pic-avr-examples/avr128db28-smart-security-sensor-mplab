@@ -112,7 +112,7 @@ bool RN4870RX_isStatusRX(void)
     if (respCount == 0)
         return false;
     
-    return (statusCommandBuffer[commandReadIndex] == RN4870_DELIM_STATUS);
+    return (statusCommandBuffer[respReadIndex] == RN4870_DELIM_STATUS);
 }
 
 //Returns true if a user command (!TEXT!) was received
@@ -121,7 +121,7 @@ bool RN4870RX_isUserRX(void)
     if (respCount == 0)
         return false;
     
-    return (statusCommandBuffer[commandReadIndex] == RN4870_DELIM_USER);
+    return (statusCommandBuffer[respReadIndex] == RN4870_DELIM_USER);
 }
 
 void RN4870RX_clearStatusRX(void)
@@ -313,13 +313,13 @@ void RN4870RX_loadResponseBuffer(void)
     //Clear flag
     readReady = false;
     
-//    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
-//    {
-//        commandResponseBuffer[2] = commandResponseBuffer[1];
-//        commandResponseBuffer[1] = commandResponseBuffer[0];
-//        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
-//        commandReadIndex++;
-//    }
+    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
+    {
+        commandResponseBuffer[2] = commandResponseBuffer[1];
+        commandResponseBuffer[1] = commandResponseBuffer[0];
+        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
+        commandReadIndex++;
+    }
     
     //If we stopped because \r is the current char, clear the \r
     if (generalTextBuffer[commandReadIndex] == RN4870_DELIM_RESP)

@@ -102,7 +102,7 @@ void RN4870_processEvents(void)
     
 //Returns a status event, if one is available
 RN4870_EVENT RN4870_getStatusEvent(void)
-{
+{    
     if (RN4870RX_isStatusRX())
     {     
         USB_sendString("Received Status Message: ");
@@ -174,7 +174,7 @@ void RN4870_processStatusMessages(void)
 {
     //Get Status Event
     RN4870_EVENT event = RN4870_getStatusEvent();
-
+    
     switch (stateRN4870)
     {
         case RN4870_POWER_OFF:
@@ -389,11 +389,11 @@ char* RN4870_getCharBuffer(void)
 //Sends the cached string to the user, if powered up
 void RN4870_printBufferedString(void)
 {
-//    if (stateRN4870 != RN4870_READY)
-//    {
-//        //Not Ready to Send Data...
-//        return;
-//    }
+    if (stateRN4870 != RN4870_READY)
+    {
+        //Not Ready to Send Data...
+        return;
+    }
     
     BLE_sendBufferedString();
 }
