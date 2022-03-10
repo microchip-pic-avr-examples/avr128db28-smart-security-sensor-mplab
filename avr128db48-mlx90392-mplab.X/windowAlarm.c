@@ -116,6 +116,12 @@ void windowAlarm_updateAngleMaxMin(MLX90392_NormalizedResults8* normResults)
 #endif
 }
 
+//Starts a calibration sequence, but does NOT interrupt it.
+void windowAlarm_requestCalibration(void)
+{
+    calState = CAL_BAD;
+}
+
 //Internal function for setting the trigger thresholds (calibration)
 void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_NormalizedResults8* normResults)
 {
@@ -371,7 +377,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (weightedAlarmState >= MAGNETOMETER_ALARM_TRIGGER)
             {
                 //Alarm went off, calibration failed
-                BLE_sendString("[ERROR] Alarm Calibration Failed, please retry.\r\n");
+                RN4870_sendStringToUser("[ERROR] Alarm Calibration Failed, please retry.\r\n");
                 
                 //Return to step 1
                 calState = CAL_OPEN_WAIT;
@@ -455,9 +461,12 @@ void windowAlarm_init(bool safeStart)
 {
     bool success;
     
+    //Set Debouncer State
+    lastButtonState = SW0_GetValue();
+    
     //Print Welcome
     USB_sendString("Initializing MLX90392 Magnetometer Sensor...");
-    
+        
     //Init Sensor
     success = MLX90392_init();
 

@@ -35,6 +35,9 @@ extern "C" {
     //Returns true if successful, or false if EEPROM is invalid
     bool windowAlarm_loadFromEEPROM(bool safeStart);
     
+    //Starts a calibration sequence, but does NOT interrupt it.
+    void windowAlarm_requestCalibration(void);
+    
     //Internal function for setting the trigger thresholds (calibration)
     void windowAlarm_runCalibration(MLX90392_RawResult16* result, MLX90392_NormalizedResults8* normResults);
     

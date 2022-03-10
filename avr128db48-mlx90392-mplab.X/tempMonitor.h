@@ -8,12 +8,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
         
-//Default High Temp Warning (90F/32.2C). Value must be in C
-#define DEFAULT_TEMP_WARNING_H 32.2
-
-//Default High Temp Warning (50F/10C). Value must be in C
-#define DEFAULT_TEMP_WARNING_L 10.0
-
     //Init the Temp Monitor
     void tempMonitor_init(bool safeStart);
     
@@ -38,6 +32,9 @@ extern "C" {
     
     //Call this function to print the temp results to the Bluetooth UART Interface
     void tempMonitor_printResults(void);
+    
+    //Prints the last results to the Bluetooth Interface. Does NOT clear flags or check for new data
+    void tempMonitor_printLastResults(void);
     
     //Sets the warning temp for high temperatures. Temp units are auto-converted from current set to C 
     void tempMonitor_setTempWarningHigh(float temp);

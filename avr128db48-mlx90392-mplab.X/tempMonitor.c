@@ -10,6 +10,7 @@
 #include "printUtility.h"
 #include "RTC.h"
 #include "RN4870.h"
+#include "DEFAULTS.h"
 
 #include <avr/io.h>
 #include <avr/eeprom.h>
@@ -30,7 +31,7 @@ static float tempWarningH = DEFAULT_TEMP_WARNING_H, tempWarningL = DEFAULT_TEMP_
 
 //If set to 'F', results will be printed in Fahrenheit
 //Threshold inputs will be considered as numbers in Fahrenheit
-static char tempUnit = 'C';
+static char tempUnit = DEFAULT_TEMP_UNIT;
 
 //Init the Temp Monitor
 void tempMonitor_init(bool safeStart)
@@ -82,13 +83,17 @@ void tempMonitor_loadSettings(bool nReset)
     {
         //Reset to Defaults
         
-        //Write Default Sample Rate Value
-        eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, RTC_getCompare());
+        eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, DEFAULT_RTC_COMPARE);
+        RTC_setCompare(DEFAULT_RTC_COMPARE);
         
-        //Reset to Default
-        eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
-        eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, tempWarningL);
-        eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
+        eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, DEFAULT_TEMP_WARNING_H);
+        tempWarningH = DEFAULT_TEMP_WARNING_H;
+        
+        eeprom_write_float((float*) TEMP_WARNING_LOW_LOCATION, DEFAULT_TEMP_WARNING_L);
+        tempWarningL = DEFAULT_TEMP_WARNING_L;
+        
+        eeprom_write_byte((char*) TEMP_UNIT_LOCATION, DEFAULT_TEMP_UNIT);
+        tempUnit = DEFAULT_TEMP_UNIT;
     }
     else
     {
@@ -241,13 +246,19 @@ void tempMonitor_printResults(void)
         sprintf(USB_getCharBuffer(), "RTC.CMP = 0x%x\r\n, RTC.PER = 0x%x\r\n", RTC_getCompare(), RTC_getPeriod());
         USB_sendBufferedString();
         
-        BLE_sendString("Error - Temperature results are not ready.\r\n");
+        RN4870_sendStringToUser("Temperature results are not ready.\r\n");
         return;
     }
     
     //Clear Flag
     temperatureResultsReady = false;
     
+    //Print Results
+    tempMonitor_printLastResults();
+}
+
+void tempMonitor_printLastResults(void)
+{
     //Get temp (in Celsius)
     float sensorTemp, objTemp;
     sensorTemp = MLX90632_getSensorTemp();
@@ -256,12 +267,12 @@ void tempMonitor_printResults(void)
     if (objTemp >= tempWarningH)
     {
         //High Room Temp
-        BLE_sendString("[WARN] Room Temperature High\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature High\r\n");
     }
     else if (objTemp <= tempWarningL)
     {
         //Low Room Temp
-        BLE_sendString("[WARN] Room Temperature Low\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature Low\r\n");
     }
     
     if (tempUnit == 'F')

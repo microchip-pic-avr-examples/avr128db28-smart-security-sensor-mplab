@@ -29,6 +29,7 @@
       <itemPath>RN4870_RX.h</itemPath>
       <itemPath>windowAlarm_messages.h</itemPath>
       <itemPath>demo.h</itemPath>
+      <itemPath>DEFAULTS.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
