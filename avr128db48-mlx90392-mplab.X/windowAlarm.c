@@ -40,7 +40,7 @@ static MagnetometerResultState prevResultState = INVALID;
 
 //State Machine Variables
 static volatile MagentometerMeasState magState = MAGNETOMETER_START;
-static volatile uint16_t magCounter = MAGNETOMETER_ERROR_DELAY;
+//static volatile uint16_t magCounter = MAGNETOMETER_ERROR_DELAY;
 
 //Alarm Parameters
 static uint32_t crackedV, maxV;
@@ -472,33 +472,24 @@ void windowAlarm_init(bool safeStart)
     //If unable to init EEPROM constants
     if (!windowAlarm_loadFromEEPROM(safeStart))
     {
+        windowAlarm_loadSettings(false);
         USB_sendString("CAL BAD\r\n");
-        calState = CAL_BAD;
         return;
     }
     
     USB_sendString("OK\r\n");
 }
 
-//Tries to load constants from EEPROM - called by windowAlarm_init
-//Returns true if successful, or false if EEPROM is invalid
-bool windowAlarm_loadFromEEPROM(bool safeStart)
+//Loads settings for window alarm
+//If reset = true, settings are reset to defaults
+void windowAlarm_loadSettings(bool nReset)
 {
-    //Set Calibration Status
-    calState = CAL_BAD;
-    
-    uint8_t _verify_sensorID;
-    bool success = MLX90392_getRegister(MLX90392_DEVICE_ID, &_verify_sensorID);
-    
-    if (!success)
-        return false;
-    
-    uint8_t EEPROM_id_test = eeprom_read_byte((uint8_t*) EEPROM_MLX90392_ID);
-    
-    if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
-    {       
-        //EEPROM is valid, load thresholds
-        
+    if (!nReset)
+    {
+        calState = CAL_BAD;
+    }
+    else
+    {
         //Window Vector Threshold
         crackedV = eeprom_read_dword((uint32_t*) CRACKED_THRESHOLD_V);
         
@@ -527,6 +518,30 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
         
 #endif      
         calState = CAL_GOOD;
+
+    }
+}
+
+
+//Tries to load constants from EEPROM - called by windowAlarm_init
+//Returns true if successful, or false if EEPROM is invalid
+bool windowAlarm_loadFromEEPROM(bool safeStart)
+{
+    //Set Calibration Status
+    calState = CAL_BAD;
+    
+    uint8_t _verify_sensorID;
+    bool success = MLX90392_getRegister(MLX90392_DEVICE_ID, &_verify_sensorID);
+    
+    if (!success)
+        return false;
+    
+    uint8_t EEPROM_id_test = eeprom_read_byte((uint8_t*) EEPROM_MLX90392_ID);
+    
+    if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
+    {       
+        //EEPROM is valid, load thresholds
+        windowAlarm_loadSettings(true);
         
         return true;
     }
@@ -798,7 +813,10 @@ void windowAlarm_FSM(void)
         magState = MAGNETOMETER_ERROR;
         
         //Triggers immediate message print
-        magCounter = MAGNETOMETER_ERROR_DELAY;
+        //magCounter = MAGNETOMETER_ERROR_DELAY;
+        
+        //Set the results flag so the error is printed.
+        alarmResultsReady = true;
         
         //Flush I2C
         TWI0_flush();
@@ -908,7 +926,7 @@ void windowAlarm_FSM(void)
                 
                 //Update state machine
                 magState = MAGNETOMETER_START;
-                magCounter = MAGNETOMETER_ERROR_DELAY;
+                //magCounter = MAGNETOMETER_ERROR_DELAY;
             }
             else
             {
@@ -927,15 +945,15 @@ void windowAlarm_FSM(void)
             }
             
             //Simple delay to keep this error from filling the UART.
-            if (magCounter >= MAGNETOMETER_ERROR_DELAY)
-            {
-                RN4870_sendStringToUser("Magnetometer Sensor Error - Reboot Device\r\n");
-                magCounter = 1;
-            }
-            else
-            {
-                magCounter++;
-            }
+//            if (magCounter >= MAGNETOMETER_ERROR_DELAY)
+//            {
+//                RN4870_sendStringToUser("Magnetometer Sensor Error - Reboot Device\r\n");
+//                magCounter = 1;
+//            }
+//            else
+//            {
+//                magCounter++;
+//            }
 
             break;
         }
@@ -956,7 +974,7 @@ void _windowAlarm_onMVIOChange(void)
         magState = MAGNETOMETER_ERROR;
         
         //Triggers immediate message print
-        magCounter = MAGNETOMETER_ERROR_DELAY;
+        //magCounter = MAGNETOMETER_ERROR_DELAY;
     }
     
 }

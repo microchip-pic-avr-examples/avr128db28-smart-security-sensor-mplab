@@ -73,11 +73,14 @@ int main(void)
     RN4870_setUserEventHandler(&DEMO_handleUserCommands);
     
     //Setup ISR Callback for RTC
-    RTC_setOVFCallback(&tempMonitor_requestConversion);
+    RTC_setCMPCallback(&tempMonitor_requestConversion);
                 
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = SW0_GetValue();
-            
+    
+    //Init User Settings
+    DEMO_init(safeStart);
+    
     //Init State Machines
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
@@ -109,15 +112,11 @@ int main(void)
         //If Transmitter is Ready
         if (RN4870_isReady())
         {
-            //Print Alarm Status
-            if (windowAlarm_getResultStatus())
+            if (RTC_isOVFTriggered())
             {
+                RTC_clearOVFTrigger();
+                
                 windowAlarm_printResults();
-            }
-
-            //Print Temperature
-            if (tempMonitor_getResultStatus())
-            {
                 tempMonitor_printResults();
             }
         }
@@ -132,8 +131,6 @@ int main(void)
             //Can't enter sleep, but we should wait for the next PIT trigger
             
             //Wait for PIT Trigger
-
-            asm("WDR");
             RTC_clearPITTriggered();
             while (!RTC_isPITTriggered()) { ; }
         }

@@ -50,8 +50,9 @@ extern "C" {
     //Fills a buffer with a copy of the current message
     void RN4870RX_copyMessage(char* buffer, uint8_t size);
     
-    //Returns the substring after the ','. Returns null if not present
-    volatile char* RN4870RX_getMessageParameter(void);
+    //Fills a buffer with a copy of the parameter of the command.
+    //Returns false if no parameter is present
+    bool RN4870RX_copyMessageParameter(char* buffer, uint8_t size);
     
     //Returns true if a deliminater was received.
     bool RN4870RX_isResponseComplete(void);

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <avr/eeprom.h>
 
 #include "tempMonitor.h"
 #include "windowAlarm.h"
@@ -12,23 +13,63 @@
 
 #include "demo.h"
 #include "RTC.h"
+#include "EEPROM_Locations.h"
+
+#define DEMO_GOOD_VALUE 0x7A
+
+//Load settings in EEPROM or reset to default (if in safe mode)
+void DEMO_init(bool safeStart)
+{
+    uint8_t value;
+
+    value = eeprom_read_byte((uint8_t*) SYSTEM_GOOD_MARKER);
+
+    if ((!safeStart) && (value == DEMO_GOOD_VALUE))
+    {
+        //Load Settings
+        DEMO_loadSettings(true);
+    }
+    else
+    {
+        //If EEPROM validation failed or in safe mode...
+        DEMO_loadSettings(false);
+    }
+}
+
+//Loads or saves default settings.
+//If reset = true, will load defaults
+void DEMO_loadSettings(bool nReset)
+{
+    if (!nReset)
+    {
+        //Write Default Value
+        eeprom_write_byte((uint8_t*) SYSTEM_GOOD_MARKER, DEMO_GOOD_VALUE);
+        eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, RTC_getPeriod());
+    }
+    else
+    {
+        //Read Settings
+        RTC_setPeriod(eeprom_read_word((uint16_t*) SYSTEM_UPDATE_PERIOD));
+    }
+}
 
 bool DEMO_handleUserCommands(void)
 {   
-    bool ok = false;
+    bool ok = false, paramOK = false;
     
-    //Parameter for the command
     char param[DEMO_PARAM_LENGTH];
-    RN4870RX_copyMessage(&param[0], DEMO_PARAM_LENGTH);
-    
+        
     if (RN4870RX_find("STU"))
     {
         //STU = Set Temp Units
         
+        //Copy Parameter
+        paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
+        
         USB_sendString("Running STU Command\r\n");
         //Sets the temp units to the user parameter
         
-        if (param != NULL)
+        if (paramOK)
         {
             //Execute Command
             tempMonitor_setUnit(param[0]);
@@ -45,9 +86,12 @@ bool DEMO_handleUserCommands(void)
     {
         //STWL - Set Temp Warning Low
         
+        //Copy Parameter
+        paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
+        
         USB_sendString("Running STWL Command\r\n");
         
-        if (param != NULL)
+        if (paramOK)
         {
             float result = atof(param);
             
@@ -66,9 +110,12 @@ bool DEMO_handleUserCommands(void)
     {
         //STWH - Set Temp Warning High
         
+        //Copy Parameter
+        paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
+        
         USB_sendString("Running STWH Command\r\n");
         
-        if (param != NULL)
+        if (paramOK)
         {
             float result = atof(param);
             
@@ -90,23 +137,23 @@ bool DEMO_handleUserCommands(void)
         
         if (param != NULL)
         {
-            if (strcmp("FAST", param) == 0)
+            if (RN4870RX_find("FAST"))
             {
-                tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_FAST);
+                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_FAST);
                 
                 //Update Success
                 ok = true;
             }
-            else if (strcmp("NORM", param) == 0)
+            else if (RN4870RX_find("NORM"))
             {
-                tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_NORM);
+                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_NORM);
                 
                 //Update Success
                 ok = true;
             }
-            else if (strcmp("SLOW", param) == 0)
+            else if (RN4870RX_find("SLOW"))
             {
-                tempMonitor_updateSampleRate(DEMO_SAMPLE_RATE_SLOW);
+                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_SLOW);
                 
                 //Update Success
                 ok = true;
@@ -134,3 +181,23 @@ bool DEMO_handleUserCommands(void)
     return ok;
 }
 
+//Sets the update rate of the demo
+void DEMO_setSystemUpdateRate(uint16_t rate)
+{    
+    RTC_setPeriod(rate);
+    eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, rate);
+    
+    //Calculate Temp Trigger Timing
+    if (rate <= DEMO_TEMP_DELAY_START)
+    {
+        //When RTC.CNT = 0
+        rate = 0;
+    }
+    else
+    {
+        rate -= DEMO_TEMP_DELAY_START;
+    }
+    
+    //Update Temp Trigger Timing
+    tempMonitor_updateSampleRate(rate);
+}
