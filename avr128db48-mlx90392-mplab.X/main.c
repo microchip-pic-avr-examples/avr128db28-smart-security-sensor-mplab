@@ -45,11 +45,10 @@
 #include "RN4870.h"
 #include "RN4870_RX.h"
 
-#include "usart3.h"
-#include "usart2.h"
+#include "USART2.h"
+#include "usart0.h"
 
 #include "TWI0_host.h"
-#include "TWI1_host.h"
 
 #include "MVIO.h"
 #include "system.h"
@@ -66,8 +65,8 @@ int main(void)
     //Init Peripherals and IO
     System_initPeripherals();
         
-    //Attach Callback Function for USART2
-    USART2_setRXCallback(&RN4870RX_loadCharacter);
+    //Attach Callback Function for USART0
+    USART0_setRXCallback(&RN4870RX_loadCharacter);
     
     //Configure Callback for User Commands
     RN4870_setUserEventHandler(&DEMO_handleUserCommands);
@@ -76,7 +75,7 @@ int main(void)
     RTC_setCMPCallback(&tempMonitor_requestConversion);
                 
     //This boolean is used to determine if reset to defaults is required
-    bool safeStart = SW0_GetValue();
+    bool safeStart = WAKE_GetValue();
     
     //Init User Settings
     DEMO_init(safeStart);
@@ -95,6 +94,8 @@ int main(void)
     {        
         //Clear the Watchdog Timer
         asm("WDR");
+        
+        LED0G_Toggle();
                                         
         //Check for Events
         RN4870_processEvents();

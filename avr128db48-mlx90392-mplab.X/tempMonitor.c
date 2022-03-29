@@ -184,8 +184,6 @@ void tempMonitor_FSM(void)
         }
         case TEMP_RESULTS:
         {
-            LED0_Toggle();
-
             //Compute Temperature
             success = MLX90632_computeTemperature();
 

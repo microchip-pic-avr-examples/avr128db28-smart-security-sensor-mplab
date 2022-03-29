@@ -132,7 +132,6 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
     //Digital Counter to blink the LED
     if (blinkCount >= MAGNETOMETER_CAL_BLINK_PERIOD)
     {
-        LED0_Toggle();
         blinkCount = 0;
     }
     else
@@ -462,7 +461,7 @@ void windowAlarm_init(bool safeStart)
     bool success;
     
     //Set Debouncer State
-    lastButtonState = SW0_GetValue();
+    lastButtonState = WAKE_GetValue();
     
     //Print Welcome
     USB_sendString("Initializing MLX90392 Magnetometer Sensor...");
@@ -712,7 +711,6 @@ void windowAlarm_compareAndProcessResults(MLX90392_NormalizedResults8* normResul
         {
             alarmState--;
         }
-        LED0_SetLow();
     }
     else
     {
@@ -720,7 +718,6 @@ void windowAlarm_compareAndProcessResults(MLX90392_NormalizedResults8* normResul
         {
             alarmState++;
         }
-        LED0_SetHigh();
     }
         
     if ((counter == MAGNETOMETER_ALARM_PRINT_RATE) || (alarmState == MAGNETOMETER_ALARM_TRIGGER))
@@ -804,13 +801,13 @@ void windowAlarm_FSM(void)
 {    
     //Software button debouncer
     //Button is cleared at the end of MAGNETOMETER_WAIT
-    if ((!lastButtonState) && (SW0_GetValue()))
+    if ((!lastButtonState) && (WAKE_GetValue()))
     {
         //Button is pressed
         lastButtonState = true;
         buttonPressed = true;
     }
-    else if ((lastButtonState) && (!SW0_GetValue()))
+    else if ((lastButtonState) && (!WAKE_GetValue()))
     {
         //Button released (reset state machine)
         lastButtonState = false;

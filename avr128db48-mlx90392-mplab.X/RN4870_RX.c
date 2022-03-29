@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "usart2.h"
+#include "usart0.h"
 #include "TCB0_oneShot.h"
 #include "GPIO.h"
 
@@ -49,7 +49,6 @@ void RN4870RX_loadCharacter(char input)
         
         if ((input == currentDelim) || (input == '\r') || (input == '\n'))
         {
-            DBG_OUT_SetLow();
             statusCommandBuffer[respWriteIndex] = '\0';
             
             processingMessage = false;
@@ -73,7 +72,6 @@ void RN4870RX_loadCharacter(char input)
         //Input is the deliminator of status
         if ((input == RN4870_DELIM_STATUS) || (input == RN4870_DELIM_USER))
         {
-            DBG_OUT_SetHigh();
             //Store the Deliminator
             statusCommandBuffer[respWriteIndex] = input;
             respWriteIndex++;

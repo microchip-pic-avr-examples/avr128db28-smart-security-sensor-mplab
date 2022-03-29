@@ -321,3 +321,37 @@ bool TWI0_sendAndReadBytes(uint8_t addr, uint8_t regAddress, uint8_t* data, uint
     
     return true;
 }
+
+bool TWI0_sendsAndReadBytes(uint8_t addr, uint8_t* write, uint8_t writeLen, uint8_t* read, uint8_t readLen)
+{
+    //Address Client Device (Write)
+    if (!_startTWI0(addr, TWI_WRITE))
+        return false;
+        
+    //Write register address
+    if (!_writeToTWI0(write, writeLen))
+    {
+        TWI0.MCTRLB = TWI_MCMD_STOP_gc;
+        return false;
+    }
+    
+    //Restart the TWI Bus in READ mode
+    TWI0.MADDR |= TWI_READ;
+    TWI0.MCTRLB = TWI_MCMD_REPSTART_gc;
+    
+    //Wait...
+    TWI0_Wait();
+    
+    if (isTWI0Bad())
+    {
+        //Stop the TWI Bus if an error occurred
+        TWI0.MCTRLB = TWI_MCMD_STOP_gc;
+        return false;
+    }
+    
+    //Read the data from the client
+    _readFromTWI0(read, readLen);
+    
+    return true;
+
+}

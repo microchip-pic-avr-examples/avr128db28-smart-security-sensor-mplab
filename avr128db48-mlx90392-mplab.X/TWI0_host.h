@@ -87,6 +87,20 @@ extern "C" {
      */
     bool TWI0_sendAndReadBytes(uint8_t addr, uint8_t regAddress, uint8_t* data, uint8_t len);
     
+    /**
+     * <b><FONT COLOR=BLUE>void</FONT> TWI0_sendsAndReadBytes(<FONT COLOR=BLUE>uint8_t</FONT> addr, <FONT COLOR=BLUE>uint8_t</FONT>* write, <FONT COLOR=BLUE>uint8_t</FONT> writeLen, <FONT COLOR=BLUE>uint8_t</FONT>* read, <FONT COLOR=BLUE>uint8_t</FONT> readLen)</B>
+     * @param uint8_t addr - Client Device Address
+     * @param uint8_t* write - Bytes to Write
+     * @param uint8_t writeLen - Number of Bytes to write
+     * @param uint8_t* read - Where the bytes received should be stored
+     * @param uint8_t readLen - Number of Bytes to read 
+     * 
+     * This function writes writeLen bytes to the client, then restarts and attempts to read readLen of data.
+     * Returns true if successful, false if it failed to get data.
+     */
+    bool TWI0_sendsAndReadBytes(uint8_t addr, uint8_t* write, uint8_t writeLen, uint8_t* read, uint8_t readLen);
+
+    
 #ifdef	__cplusplus
 }
 #endif

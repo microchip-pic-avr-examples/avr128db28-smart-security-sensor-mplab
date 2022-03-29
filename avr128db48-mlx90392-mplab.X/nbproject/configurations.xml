@@ -5,15 +5,14 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="f1" displayName="Bare Metal" projectFiles="true">
-        <itemPath>usart2.h</itemPath>
         <itemPath>TWI0_host.h</itemPath>
-        <itemPath>TWI1_host.h</itemPath>
-        <itemPath>usart3.h</itemPath>
         <itemPath>MVIO.h</itemPath>
         <itemPath>system.h</itemPath>
         <itemPath>TCB0_oneShot.h</itemPath>
         <itemPath>RTC.h</itemPath>
         <itemPath>GPIO.h</itemPath>
+        <itemPath>usart0.h</itemPath>
+        <itemPath>usart2.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
         <itemPath>MLX90392.h</itemPath>
@@ -39,15 +38,14 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f1" displayName="Bare Metal" projectFiles="true">
-        <itemPath>usart2.c</itemPath>
         <itemPath>TWI0_host.c</itemPath>
-        <itemPath>TWI1_host.c</itemPath>
-        <itemPath>usart3.c</itemPath>
         <itemPath>MVIO.c</itemPath>
         <itemPath>system.c</itemPath>
         <itemPath>TCB0_oneShot.c</itemPath>
         <itemPath>RTC.c</itemPath>
         <itemPath>GPIO.c</itemPath>
+        <itemPath>usart0.c</itemPath>
+        <itemPath>usart2.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
         <itemPath>MLX90632.c</itemPath>
@@ -75,12 +73,12 @@
     <conf name="XC8_free" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>AVR128DB48</targetDevice>
+        <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
         <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>2.35</languageToolchainVersion>
+        <languageToolchainVersion>2.36</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
@@ -308,16 +306,16 @@
     <conf name="XC8_pro" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>AVR128DB48</targetDevice>
+        <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>nEdbgTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>2.35</languageToolchainVersion>
+        <languageToolchainVersion>2.36</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.10.124"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.0.151"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -541,16 +539,16 @@
     <conf name="AVR_GCC" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>AVR128DB48</targetDevice>
+        <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>nEdbgTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>AVR</languageToolchain>
         <languageToolchainVersion>5.4.0</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="1.10.124"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.0.151"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>

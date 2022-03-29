@@ -41,5 +41,5 @@ extern "C" {
 }
 #endif
 
-#endif	/* USART2_H */
+#endif	/* USART_H */
 

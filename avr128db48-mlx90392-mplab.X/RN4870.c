@@ -23,6 +23,9 @@ void RN4870_init(void)
 {            
     //Init RX Engine
     RN4870RX_init();
+    
+    //Release Reset
+    BTLE_ReleaseReset();
 }
 
 //Setup on initial power-up
@@ -183,7 +186,7 @@ void RN4870_processStatusMessages(void)
         }
         case RN4870_POWERING_UP_INIT:
         {
-            //if (event == RN4870_EVENT_REBOOT)
+            if (event == RN4870_EVENT_REBOOT)
             {
                 //Power-Up Init!
                 if (RN4870_startupInit())
@@ -278,9 +281,6 @@ bool RN4870_enterCommandMode(void)
     //Clear the Watchdog Timer
     asm("WDR");
     
-    //Set Mode Switch to Low
-    RN4870_MODE_SetLow();
-    
     //Enter Command Mode
     BLE_sendString("$$$");
     
@@ -308,10 +308,6 @@ void RN4870_exitCommandMode(void)
     
     //Clear buffers... anything received is from CMD mode
     RN4870RX_clearBuffer();
-    
-    //Move to Data Mode
-    RN4870_MODE_SetHigh();
-
 }
 
 //Returns true if connected

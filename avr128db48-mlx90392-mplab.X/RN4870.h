@@ -10,8 +10,9 @@ extern "C" {
     
 //Flipped version of AOK... saves some computation time
 #define RN4870_AOK "KOA"
-    
-#define RN4870_NO_POWER_GATE_TEST 
+  
+//If set, BLE module is expected to be powered up on init.
+//#define RN4870_NO_POWER_GATE_TEST 
         
     typedef enum {
         RN4870_EVENT_NONE = 0, RN4870_EVENT_REBOOT, RN4870_EVENT_STREAM_OPEN,
