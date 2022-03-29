@@ -7,7 +7,7 @@
 #include "TCB0_oneShot.h"
 #include "TWI0_host.h"
 #include "usart0.h"
-#include "USART2.h"
+#include "usart2.h"
 #include "RTC.h"
 
 FUSES = 

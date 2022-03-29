@@ -45,7 +45,7 @@
 #include "RN4870.h"
 #include "RN4870_RX.h"
 
-#include "USART2.h"
+#include "usart2.h"
 #include "usart0.h"
 
 #include "TWI0_host.h"
