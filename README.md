@@ -4,9 +4,9 @@
 
 # Window Security Sensor and Room Temperature Monitor with AVR&reg; DB,  MLX90632 and MLX90392
 
-The objective of this application is to create a window security sensor with room temperature monitoring for a compact smart home solution. The AVR&reg; DB microcontroller was selected for this application in order to use Multi-Voltage I/O (MVIO) peripheral to communicate with the sensors. To implement this solution, an MLX90632 and an MLX90392 sensor were used.
+The objective of this application is to create a window security sensor with room temperature monitoring for a compact smart home solution. The AVR&reg; DB microcontroller was selected for this application in order to use [Multi-Voltage I/O (MVIO) peripheral](#) to communicate with the sensors. To implement this solution, an [MLX90632](https://www.melexis.com/en/product/MLX90632) and an [MLX90392 sensor](https://www.melexis.com/en/product/MLX90392) were used.
 
-This application was co-developed with Melexis N.V., a manufacturer of digital sensors.
+This application was co-developed with Melexis, a global supplier of microelectronic semiconductor solutions.
 
 [![Melexis Logo](./images/melexis.png)](https://www.melexis.com/)
 
@@ -14,14 +14,15 @@ This application was co-developed with Melexis N.V., a manufacturer of digital s
 - [MLX90632 (FIR Thermometer) Homepage](https://www.melexis.com/en/product/MLX90632/Miniature-SMD-Infrared-Thermometer-IC)
   - [MLX90632 Reference Software Library (from Melexis)](https://github.com/melexis/mlx90632-library)
 - [MLX90392 (3D Magnetometer) Homepage](https://www.melexis.com/en/product/MLX90392/3D-Magnetometer-micro-power-and-cost-conscious)
+- [MVIO Peripheral Homepage](#)
 
 ## Software Used
 
 - [MPLAB&reg; X IDE v6.0.0 or newer](#)
 - [MPLAB XC8 v2.35 or newer](#)
 - [AVR-Dx_DFP v1.10.124](#)  
-- Bluetooth Smart Data App by Microchip
-  - [For IOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
+- Bluetooth&reg; Smart Data App by Microchip
+  - [For iOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
   - [For Android](https://play.google.com/store/apps/details?id=com.microchip.bluetooth.data&hl=en_US&gl=US)
 
 ## Hardware Used
@@ -31,8 +32,19 @@ Please consult the Bill of Materials (BOM) in the documentation.
 ## Table of Contents
 
 - [Window Alarm Sensing](#window-alarm-sensing)
+  - [The Advantage of a Magnetometer](#the-advantage-of-a-magnetometer)
+  - [Calibrating the Magnetometer](#calibrating-the-magnetometer)
+    - [Step 1 - Zero Calibration](#step-1---zero-calibration)
+    - [Step 2 - Data Normalization](#step-2---data-normalization)
+    - [Step 3 - Threshold Set](#step-3---threshold-set)
+    - [Step 4 - Return to Closed](#step-4---return-to-closed)
 - [Temperature Measurements](#temperature-measurements)
+  - [Timing](#timing)
+  - [Constant Caching](#constant-caching)
+- [Advanced Features](#advanced-features)
+  - [Safe Mode](#safe-mode)
 - [Operating the Demo](#operating-the-demo)
+- [User Commands](#user-commands)
 
 ## Window Alarm Sensing
 
@@ -42,7 +54,7 @@ Sensor Version: MLX90392-011 (&plusmn;50 mT version)
 
 One of the most common ways to detect whether a window or door has been opened/closed by an unknown person is to use a magnetic reed switch. When a magnet is placed near the switch, the two contacts inside either open or close. An external alarm circuit can monitor each circuit to know the current state of the system.
 
-While reed switches are simple and easy to use, they come with the drawback that they only have 2 binary states. If an external magnet is placed close to the switch, the field from the magnet can hold the contacts in position while the window is opened.
+While reed switches are simple and easy to use, they come with the drawback that they only have 2 binary states. If an external magnet is placed close to the switch, the field from the added magnet can hold the contacts in position while the window is opened.
 
 A magnetometer avoids this problem by measuring the intensity of the magnetic field. If the intensity changes beyond a set range, then the magnetometer can detect the attempt to bypass the alarm.
 
@@ -99,7 +111,7 @@ Sensor: MLX90632
 
 ### Timing
 
-The MLX90632 sensor takes 500ms to get one half of a sample (see sensor datasheet), and/or 1s for a full conversion. This demo only uses the full conversion timing. Due to the acquisition time delay, the microcontroller starts the temperature acquisition early to ensure the results are ready when the application prints the status. 
+The MLX90632 sensor takes 500ms to get one half of a sample (see sensor datasheet), and/or 1s for a full conversion. This demo only uses the full conversion timing. Due to the acquisition time delay, the microcontroller starts the temperature acquisition early to ensure the results are ready when the application prints the status.
 
 ### Constant Caching
 To improve the start-up time of the application, the factory calibration constants stored on the MLX90632 are converted into the required floating point values and are stored in the microcontroller's EEPROM memory.
@@ -126,22 +138,75 @@ In safe mode, the application ignores stored values in EEPROM and resets all use
 
 ## Operating the Demo
 
+For ease of demonstrability, an [RN4870 Bluetooth module](https://www.microchip.com/en-us/product/RN4870) was used for wireless communication. In a production setting, we'd recommend switching to a different wireless protocol, like [Zigbee&reg;](https://www.microchip.com/en-us/products/wireless-connectivity/zigbee).
 
-## User Commands
+### Pairing
+
+Instructions, System Conditions, and other messages are sent via Bluetooth to the user's smartphone.
+
+1. Open the Microchip Smart Data App
+  1. Download links are provided in the [Software Used](#software-used) section.
+2. Power-On the Demo Board.
+3. Connect to the Bluetooth Device **MCHP-MLX_UXYZ**, where UXYZ is the S/N of the RN4870.
+4. After connecting, a status message should appear in the app's terminal window.
+
+### Sending Commands
+
+Commands can be sent to the demo board to get more information or changing operating parameters / user settings.
+
+All commands must be sent in the following format: **!\<Command,Parameter\>!**, with the ! acting as the deliminator. In cases where the parameter is not used (ex: HELP), it should be omitted.
+
+Command Examples:  
+**!HELP!** - Prints Help  
+**!STU,F!** - Sets Temperature Units to Fahrenheit
+
+### User Command List
 
 | User Command | Format | Example | Description
 | ------------ | ------ | ------- | ------------
-| HELP | HELP | HELP | Returns list of commands
-| DEMO | DEMO | DEMO | Prints information about this demo
-| BAT  | BAT  | BAT | Prints current battery voltage
-| STATUS | STATUS | STATUS | Prints the current system status
-| STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin)
+| HELP | HELP | HELP | Get help with this demo.
+| DEMO | DEMO | DEMO | Prints information about this demo.
+| BAT  | BAT  | BAT | Prints current battery voltage.
+| RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
+| STATUS | STATUS | STATUS | Prints the current system status.
+| RESET | RESET | RESET | Resets in RAM and EEPROM user settings. The demo will be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.
+| STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin).
 | STWH | STWH,\<TEMP\> | STWH,40.1 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STWL | STWL,\<TEMP\> | STWL,10.0 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
 | RST   | RST   | RST   | Resets the microcontroller. Communications will be reset.
-| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications.
+| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. See [Low Power Mode](#low-power-mode) for more information.
+
+### LED Status Indicator
+
+The RGB LED on the board is used to indicate the following statuses:
+
+**<TODO: Add this section>**
+
+### Calibration Mode
+
+To enter calibration mode, press the Cal. button when NOT in Low Power mode or by sending the command "RECAL".
+
+**Note: If in calibration mode and the board is powered off before completed the calibration previous calibration settings will be used. (Calibration values in progress are NOT stored in EEPROM until the cycle has finished). If the stored values are invalid, the system will request calibration on power being restored.**
+
+### Low Power Mode
+
+For longer battery life, the demo can be placed into Low Power Mode. In this mode, the Bluetooth radio is electrically disconnected from the power-supply. Periodically, the microcontroller will reapply power to the radio, attempt to pair to the last bonded device, send system status, and then disconnect again. In this mode, commands from the user are not accepted. **On startup, the device does NOT start in Low Power Mode.**
+
+To enter Low Power Mode, send the "PWDWN" command.   
+To exit Low Power Mode, press the Cal. button on the demo.
+
+Note: Debug UART will remain active in Low Power Mode.
+
+### Debug UART
+
+A second UART is used on the device to print errors and technical information. A standard off-the-shelf USB-UART bridge can be connected to this pin header to view this output. Debug UART remains active in all modes, including Low Power Mode.
+
+UART Settings:
+- 115,200 Baud
+- 8 bits, no parity, 1 stop bit
+- Transmit Only (receiver not enabled)
 
 ## Summary
 
-<!-- Summarize what the example has shown -->
+This demo has shown how MVIO can be used to interface with sensors that run at a different voltage level than the rest of the device. Special thanks again to Melexis for development assistance with this demo. 

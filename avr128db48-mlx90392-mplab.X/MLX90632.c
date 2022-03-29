@@ -10,7 +10,7 @@
 
 #include "MLX90392.h"
 
-#include "TWI1_host.h"
+#include "TWI0_host.h"
 
 //I2C Address to Communicate at. Can be changed later
 static uint8_t _MLX90632_address = MLX90632_I2C_ADDR_BASE;
@@ -48,7 +48,7 @@ bool _readWriteMLX90632(MLX90632_Register reg, uint8_t* memory, uint8_t size)
     i2cBuffer[1] = (reg & 0xFF);
     
     //Queue I2C
-    bool success = TWI1_sendsAndReadBytes(_MLX90632_address, &i2cBuffer[0], 2, &memory[0], size);
+    bool success = TWI0_sendsAndReadBytes(_MLX90632_address, &i2cBuffer[0], 2, &memory[0], size);
     
     if (!success)
         return false;
@@ -325,7 +325,7 @@ bool MLX90632_getRegister(MLX90632_Register reg, uint16_t* result)
     i2cBuffer[0] = (reg & 0xFF00) >> 8;
     i2cBuffer[1] = (reg & 0xFF);
     
-    bool success = TWI1_sendsAndReadBytes(MLX90632_I2C_ADDR_BASE, &i2cBuffer[0], 2, &i2cBuffer[2] , 2);
+    bool success = TWI0_sendsAndReadBytes(MLX90632_I2C_ADDR_BASE, &i2cBuffer[0], 2, &i2cBuffer[2] , 2);
     
     if (!success)
         return false;
@@ -402,7 +402,7 @@ bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data)
     i2cBuffer[3] = (data & 0xFF);
     
     //Queue I2C
-    bool success = TWI1_sendBytes(_MLX90632_address, &i2cBuffer[0], 4);
+    bool success = TWI0_sendBytes(_MLX90632_address, &i2cBuffer[0], 4);
     
     if (!success)
         return false;

@@ -6,9 +6,8 @@
 #include "MVIO.h"
 #include "TCB0_oneShot.h"
 #include "TWI0_host.h"
-#include "TWI1_host.h"
-#include "usart2.h"
-#include "usart3.h"
+#include "usart0.h"
+#include "USART2.h"
 #include "RTC.h"
 
 FUSES = 
@@ -55,24 +54,20 @@ void System_initPeripherals(void)
     TWI0_initHost();
     TWI0_initPins();
     
-    //Configure TWI1 for Thermometer
-    TWI1_initHost();
-    TWI1_initPins();
-    
     //Configure USART 2 for BLE
-    USART2_init();
-    USART2_initIO();
+    USART0_init();
+    USART0_initIO();
     
     //Configure USART 3 for USB
-    USART3_init();
-    USART3_initIO();
+    USART2_init();
+    USART2_initIO();
         
     //Enable USART for BLE
-    USART2_enableRX();
-    USART2_enableTX();
+    USART0_enableRX();
+    USART0_enableTX();
     
     //Enable USART for USB (TX Only)
-    USART3_enableTX();
+    USART2_enableTX();
     
     //Init TCB0 for 1-shot timing
     TCB0_init();

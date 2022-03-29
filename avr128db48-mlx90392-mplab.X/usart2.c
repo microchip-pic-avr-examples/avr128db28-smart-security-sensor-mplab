@@ -1,4 +1,4 @@
-#include "usart2.h"
+#include "USART2.h"
 #include "GPIO.h"
 
 #include <stdint.h>
@@ -18,8 +18,8 @@ void USART2_init(void)
     //Enable Run in Debug
     USART2.DBGCTRL = USART_DBGRUN_bm;
     
-    //Enable RX Interrupts
-    USART2.CTRLA = USART_RXCIE_bm;
+    //Enable RX Interrupts, Start of Frame
+    USART2.CTRLA = USART_RXCIE_bm | USART_RXSIE_bm;
     
     //Async Mode, No Parity, 1 Stop Bit, 8 bit TX
     USART2.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_SBMODE_1BIT_gc | USART_CHSIZE_8BIT_gc;
@@ -27,7 +27,7 @@ void USART2_init(void)
     //Baud for 115,200 at 4 MHz Clock
     USART2.BAUD = 139;
     
-    //Enable Normal Mode for USART
+    //Enable Normal Mode for USART, Enable Start of Frame Detect
     USART2.CTRLB = USART_RXMODE_NORMAL_gc;
     
     //Note: Call enableTX/enableRX after this function
@@ -36,19 +36,13 @@ void USART2_init(void)
 void USART2_initIO(void)
 {
     //Default Value for output should be 1
-    PORTF.OUTSET = PIN4_bm;
+    PORTF.OUTSET = PIN0_bm;
     
-    //Clear PORTMUX for USART2
-    PORTMUX.USARTROUTEA &= ~(PORTMUX_USART2_gm);
+    //Set PB0 as Output
+    PORTF.DIRSET = PIN0_bm;
     
-    //Set PORTMUX for USART2
-    PORTMUX.USARTROUTEA |= (PORTMUX_USART2_ALT1_gc);
-    
-    //Set PF4 as Output
-    PORTF.DIRSET = PIN4_bm;
-    
-    //Set PF5 as Input
-    PORTF.DIRCLR = PIN5_bm;
+    //Set PB1 as Input
+    PORTF.DIRCLR = PIN1_bm;
 }
 
 //Enable TX 
@@ -116,10 +110,6 @@ bool USART2_isRXActive(void)
 
 ISR(USART2_RXC_vect)
 {
-    //Data
-    
-    DBG_OUT_Toggle();
-    
     char rx = USART2.RXDATAL;
     if (rxHandler)
     {

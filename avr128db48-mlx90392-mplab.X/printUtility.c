@@ -3,8 +3,8 @@
 
 #include "printUtility.h"
 
-#include "usart2.h"
-#include "usart3.h"
+#include "usart0.h"
+#include "USART2.h"
 
 static char bufferUSB[PRINT_BUFFER_SIZE];
 static volatile char bufferBLE[PRINT_BUFFER_SIZE];
@@ -30,19 +30,19 @@ void USB_sendBufferedString(void)
     uint8_t index = 0;
     
     //Clear USART Done Flag
-    USART3.STATUS |= USART_TXCIF_bm;
+    USART2.STATUS |= USART_TXCIF_bm;
     
     while ((bufferUSB[index] != '\0') && (index < PRINT_BUFFER_SIZE))
     {
-        while (!USART3_canTransmit());
+        while (!USART2_canTransmit());
         
-        USART3_sendByte(bufferUSB[index]);
+        USART2_sendByte(bufferUSB[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART3_canTransmit());
-    while (USART3_isBusy());
+    while (!USART2_canTransmit());
+    while (USART2_isBusy());
 }
 
 //Prints a constant string to the UART
@@ -57,19 +57,19 @@ void USB_sendString(const char* text)
     uint8_t index = 0;
     
     //Clear USART Done Flag
-    USART3.STATUS |= USART_TXCIF_bm;
+    USART2.STATUS |= USART_TXCIF_bm;
     
     while ((text[index] != '\0') && (index < 255))
     {
-        while (!USART3_canTransmit());
+        while (!USART2_canTransmit());
         
-        USART3_sendByte(text[index]);
+        USART2_sendByte(text[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART3_canTransmit());
-    while (USART3_isBusy());
+    while (!USART2_canTransmit());
+    while (USART2_isBusy());
 #endif
 }
 
@@ -94,19 +94,19 @@ void BLE_sendBufferedString(void)
     uint8_t index = 0;
     
     //Clear USART Done Flag
-    USART2.STATUS |= USART_TXCIF_bm;
+    USART0.STATUS |= USART_TXCIF_bm;
     
     while ((bufferBLE[index] != '\0') && (index < PRINT_BUFFER_SIZE))
     {
-        while (!USART2_canTransmit());
+        while (!USART0_canTransmit());
         
-        USART2_sendByte(bufferBLE[index]);
+        USART0_sendByte(bufferBLE[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART2_canTransmit());
-    while (USART2_isBusy());
+    while (!USART0_canTransmit());
+    while (USART0_isBusy());
 }
 
 //Prints a constant string to the UART
@@ -118,19 +118,19 @@ void BLE_sendString(const char* text)
     uint8_t index = 0;
     
     //Clear USART Done Flag
-    USART2.STATUS |= USART_TXCIF_bm;
+    USART0.STATUS |= USART_TXCIF_bm;
     
     while ((text[index] != '\0') && (index < 255))
     {
-        while (!USART2_canTransmit());
+        while (!USART0_canTransmit());
         
-        USART2_sendByte(text[index]);
+        USART0_sendByte(text[index]);
         index++;
     }
     
     //Wait for completion of UART
-    while (!USART2_canTransmit());
-    while (USART2_isBusy());
+    while (!USART0_canTransmit());
+    while (USART0_isBusy());
 }
 
 void BLE_printCommandString(const char* text, const char delim)
@@ -141,22 +141,22 @@ void BLE_printCommandString(const char* text, const char delim)
     uint8_t index = 0;
     
     //Clear USART Done Flag
-    USART2.STATUS |= USART_TXCIF_bm;
+    USART0.STATUS |= USART_TXCIF_bm;
     
     while ((text[index] != '\0') && (index < 255))
     {
-        while (!USART2_canTransmit());
+        while (!USART0_canTransmit());
         
-        USART2_sendByte(text[index]);
+        USART0_sendByte(text[index]);
         index++;
     }
     
     //Send Deliminator
-    while (!USART2_canTransmit());
-    USART2_sendByte(delim);
+    while (!USART0_canTransmit());
+    USART0_sendByte(delim);
     
     //Wait for completion of UART
-    while (!USART2_canTransmit());
-    while (USART2_isBusy());
+    while (!USART0_canTransmit());
+    while (USART0_isBusy());
 
 }
