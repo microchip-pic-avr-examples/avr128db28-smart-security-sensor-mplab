@@ -15,7 +15,7 @@
         "compiler": [
             {
                 "name": "XC8",
-                "semverRange": "^2.35.0"
+                "semverRange": "^2.36.0"
             }
         ],
         "dfp": {
@@ -37,7 +37,7 @@
           "TWI", "RTC", "USART", "MVIO"
         ],
         "keywords": [
-          "Sensor", "Temperature", "Bare Metal", "EEPROM", "Magnetic Sensor", "Security System", "EEPROM"
+          "Sensor", "Temperature", "Bare Metal", "EEPROM", "Magnetic Sensor", "Security System", "EEDATA"
         ],
         "additionalData": {
             "longDescription": {
