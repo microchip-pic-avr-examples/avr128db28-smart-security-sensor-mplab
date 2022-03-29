@@ -1,4 +1,4 @@
-#include "USART2.h"
+#include "usart2.h"
 #include "GPIO.h"
 
 #include <stdint.h>

@@ -4,7 +4,7 @@
 #include "printUtility.h"
 
 #include "usart0.h"
-#include "USART2.h"
+#include "usart2.h"
 
 static char bufferUSB[PRINT_BUFFER_SIZE];
 static volatile char bufferBLE[PRINT_BUFFER_SIZE];
