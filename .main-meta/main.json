@@ -6,7 +6,7 @@
         "name": "com.microchip.mcu8.mplabx.project.avr128db28-smart-window-mplab",
         "version": "1.0.0",
         "displayName": "Window Security Alarm and Room Temperature Monitor with AVR DB",
-        "projectName": "avr128db28-smart-window-mplab-mcc",
+        "projectName": "avr128db28-smart-window-mplab",
         "shortDescription": "Create a smart window security sensor with temperature monitor using MVIO on the AVR DB family of MCUs.",
         "ide": {
             "name": "MPLAB X",
