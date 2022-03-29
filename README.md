@@ -20,7 +20,7 @@ This application was co-developed with Melexis, a global supplier of microelectr
 
 - [MPLAB&reg; X IDE v6.0.0 or newer](#)
 - [MPLAB XC8 v2.35 or newer](#)
-- [AVR-Dx_DFP v1.10.124](#)  
+- [AVR-Dx_DFP v2.0.151](#)  
 - Bluetooth&reg; Smart Data App by Microchip
   - [For iOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
   - [For Android](https://play.google.com/store/apps/details?id=com.microchip.bluetooth.data&hl=en_US&gl=US)
@@ -209,4 +209,4 @@ UART Settings:
 
 ## Summary
 
-This demo has shown how MVIO can be used to interface with sensors that run at a different voltage level than the rest of the device. Special thanks again to Melexis for development assistance with this demo. 
+This demo has shown how MVIO can be used to interface with sensors that run at a different voltage level than the rest of the device. Special thanks again to Melexis for development assistance with this demo.
