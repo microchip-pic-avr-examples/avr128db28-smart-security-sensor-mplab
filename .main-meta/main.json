@@ -34,10 +34,10 @@
         },
         "author": "Robert Perkel",
         "peripherals": [
-          "TWI", "RTC", "USART", "EEPROM", "MVIO"
+          "TWI", "RTC", "USART", "MVIO"
         ],
         "keywords": [
-          "Sensor", "Temperature", "Bare Metal", "EEPROM", "Magnetic Sensor", "Security System"
+          "Sensor", "Temperature", "Bare Metal", "EEPROM", "Magnetic Sensor", "Security System", "EEPROM"
         ],
         "additionalData": {
             "longDescription": {
