@@ -6,9 +6,6 @@
 void GPIO_init(void)
 {    
     //PA0 - SW0 Input (Wake / Calibrate)
-    //Inverted Logic, Enable Pull-Up
-    PORTA.PIN0CTRL = PORT_INVEN_bm | PORT_PULLUPEN_bm;
-    
     //PA1 - BTLE_STS (Input)
     
     //PA4, PA4 - MCU_TXD/MCU_RXD (For Bluetooth)

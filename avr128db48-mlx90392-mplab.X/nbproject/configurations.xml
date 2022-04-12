@@ -309,7 +309,7 @@
         <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>AtmelIceTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
         <languageToolchainVersion>2.36</languageToolchainVersion>
         <platform>3</platform>
@@ -344,6 +344,9 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <AtmelIceTool>
+        <property key="debugoptions.useswbreakpoints" value="true"/>
+      </AtmelIceTool>
       <HI-TECH-COMP>
         <property key="additional-warnings" value="true"/>
         <property key="asmlist" value="true"/>
@@ -542,7 +545,7 @@
         <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>AtmelIceTool</platformTool>
         <languageToolchain>AVR</languageToolchain>
         <languageToolchainVersion>5.4.0</languageToolchainVersion>
         <platform>3</platform>
@@ -677,6 +680,9 @@
         <property key="sram-segment" value=""/>
         <property key="v-printf" value="true"/>
       </AVR-LD>
+      <AtmelIceTool>
+        <property key="debugoptions.useswbreakpoints" value="true"/>
+      </AtmelIceTool>
       <Tool>
         <property key="AutoSelectMemRanges" value="auto"/>
         <property key="communication.activationmode" value="nohv"/>
