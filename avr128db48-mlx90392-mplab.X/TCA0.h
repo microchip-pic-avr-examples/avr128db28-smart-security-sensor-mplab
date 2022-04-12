@@ -10,7 +10,6 @@ extern "C" {
 #define TCA_LEDR_ON_TIME 3
 #define TCA_LEDG_ON_TIME 3
 #define TCA_LEDB_ON_TIME 3
-
     
 #include <stdbool.h>
     
@@ -38,6 +37,7 @@ extern "C" {
 #define TCA0_disableLEDG TCA0_disableHCMP1
 #define TCA0_disableLEDB TCA0_disableHCMP2
 
+    //Returns true if the HCMP is enabled (ie: PWM is ON)
     bool TCA0_getHCMP0EN(void);
     bool TCA1_getHCMP1EN(void);
     bool TCA2_getHCMP2EN(void);
