@@ -319,9 +319,7 @@ void RN4870_powerDown(void)
 {    
     //Turn on the Blue LED
     TCA0_disableLEDB();
-    
-    volatile bool test = TCA0_getLEDR();
-    
+
     //If the red LED was on...
     if (TCA0_getLEDR())
     {

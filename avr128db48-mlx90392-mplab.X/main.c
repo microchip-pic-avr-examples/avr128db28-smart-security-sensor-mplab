@@ -93,9 +93,7 @@ int main(void)
     
     TCA0_init();
     TCA0_initIO();
-    
-    TCA0_enableLEDR();
-    
+        
     while(1)
     {        
         //Clear the Watchdog Timer

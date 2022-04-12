@@ -37,7 +37,7 @@
           "TWI", "RTC", "USART", "MVIO"
         ],
         "keywords": [
-          "Sensor", "Temperature", "Bare Metal", "EEPROM", "Magnetic Sensor", "Security System", "EEDATA"
+          "Sensor", "Temperature", "Bare Metal", "Magnetic Sensor", "Security System", "EEDATA"
         ],
         "additionalData": {
             "longDescription": {
