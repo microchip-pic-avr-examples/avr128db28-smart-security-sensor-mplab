@@ -9,6 +9,7 @@
 #include "usart0.h"
 #include "usart2.h"
 #include "RTC.h"
+#include "ADC.h"
 
 FUSES = 
 {
@@ -70,4 +71,7 @@ void System_initPeripherals(void)
     
     //Init RTC
     RTC_init();
+    
+    //Init ADC
+    ADC_init();
 }
