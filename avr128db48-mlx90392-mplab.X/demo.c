@@ -207,6 +207,13 @@ bool DEMO_handleUserCommands(void)
         
         ok = true;
     }
+    else if (RN4870RX_find("PWDWN"))
+    {
+        //Power down
+        RN4870_powerDown();
+        
+        ok = true;
+    }
     
     return ok;
 }

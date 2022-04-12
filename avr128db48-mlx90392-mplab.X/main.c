@@ -83,7 +83,7 @@ int main(void)
     //Init State Machines
     windowAlarm_init(safeStart);
     tempMonitor_init(safeStart);
-        
+    
     //Start Interrupts
     sei();
         

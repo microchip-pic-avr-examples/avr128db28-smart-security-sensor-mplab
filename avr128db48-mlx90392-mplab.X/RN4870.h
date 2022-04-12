@@ -21,7 +21,7 @@ extern "C" {
     
     //Configures the RN4870
     void RN4870_init(void);
-    
+        
     //Setup on initial power-up
     bool RN4870_startupInit(void);
         
