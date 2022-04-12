@@ -166,7 +166,7 @@ Command Examples:
 | ------------ | ------ | ------- | ------------
 | HELP | HELP | HELP | Get help with this demo.
 | DEMO | DEMO | DEMO | Prints information about this demo.
-| BAT  | BAT  | BAT | Prints current battery voltage.
+| VBAT  | VBAT  | VBAT | Prints current battery voltage.
 | RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
 | STATUS | STATUS | STATUS | Prints the current system status.
 | RESET | RESET | RESET | Resets in RAM and EEPROM user settings. The demo will be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.

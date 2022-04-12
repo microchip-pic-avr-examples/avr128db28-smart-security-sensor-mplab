@@ -15,6 +15,7 @@
 #include "RTC.h"
 #include "EEPROM_Locations.h"
 #include "DEFAULTS.h"
+#include "ADC.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -177,6 +178,13 @@ bool DEMO_handleUserCommands(void)
         RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
                 "Developed by Microchip Technology Inc. with assistance from Melexis N.V.\r\n"
                 "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab\r\n");
+        ok = true;
+    }
+    else if (RN4870RX_find("VBAT"))
+    {
+        sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
+        RN4870_printBufferedString();
+        
         ok = true;
     }
     else if (RN4870RX_find("STATUS"))
