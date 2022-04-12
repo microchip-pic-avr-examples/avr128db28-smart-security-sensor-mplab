@@ -53,7 +53,7 @@ static int16_t minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ;
 #endif
 
 //Debouncing
-static bool buttonPressed = false, lastButtonState = false;
+static volatile bool buttonPressed = false, lastButtonState = false;
 
 //Result Print
 static volatile bool alarmResultsReady = false;
@@ -965,6 +965,13 @@ void windowAlarm_FSM(void)
         }
     }
 }
+
+//Updates the pushbutton state to prevent calibration when waking up
+void windowAlarm_maskButton(void)
+{
+    lastButtonState = true;
+}
+
 
 //Run this ISR if the MVIO changes readiness
 void _windowAlarm_onMVIOChange(void)

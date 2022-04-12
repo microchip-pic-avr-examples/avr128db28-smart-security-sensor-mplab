@@ -14,6 +14,7 @@
         <itemPath>usart0.h</itemPath>
         <itemPath>usart2.h</itemPath>
         <itemPath>ADC.h</itemPath>
+        <itemPath>TCA0.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
         <itemPath>MLX90392.h</itemPath>
@@ -48,6 +49,7 @@
         <itemPath>usart0.c</itemPath>
         <itemPath>usart2.c</itemPath>
         <itemPath>ADC.c</itemPath>
+        <itemPath>TCA0.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Melexis Drivers" projectFiles="true">
         <itemPath>MLX90632.c</itemPath>

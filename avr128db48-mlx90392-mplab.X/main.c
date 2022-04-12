@@ -56,6 +56,7 @@
 #include "RTC.h"
 #include "printUtility.h"
 #include "demo.h"
+#include "TCA0.h"
 
 int main(void)
 {
@@ -89,7 +90,12 @@ int main(void)
         
     //Configure RN4870
     RN4870_init();
-        
+    
+    TCA0_init();
+    TCA0_initIO();
+    
+    TCA0_enableLEDR();
+    
     while(1)
     {        
         //Clear the Watchdog Timer

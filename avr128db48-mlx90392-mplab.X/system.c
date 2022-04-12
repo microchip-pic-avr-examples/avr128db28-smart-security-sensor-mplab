@@ -10,6 +10,7 @@
 #include "usart2.h"
 #include "RTC.h"
 #include "ADC.h"
+#include "TCA0.h"
 
 FUSES = 
 {
