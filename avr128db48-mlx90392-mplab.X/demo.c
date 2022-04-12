@@ -176,12 +176,13 @@ bool DEMO_handleUserCommands(void)
     {
         //Demo / Info
         RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
-                "Developed by Microchip Technology Inc. with assistance from Melexis N.V.\r\n"
+                "Developed by Microchip Technology Inc. with assistance from Melexis\r\n"
                 "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab\r\n");
         ok = true;
     }
     else if (RN4870RX_find("VBAT"))
     {
+        //Print Battery Voltage
         sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
         RN4870_printBufferedString();
         

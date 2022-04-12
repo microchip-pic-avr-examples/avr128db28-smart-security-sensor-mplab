@@ -65,6 +65,9 @@ extern "C" {
     //Run the Finite State Machine for the Magnetometer
     void windowAlarm_FSM(void);
     
+    //Updates the pushbutton state to prevent calibration when waking up
+    void windowAlarm_maskButton(void);
+    
     //Run this ISR if the MVIO changes readiness
     void _windowAlarm_onMVIOChange(void);
     

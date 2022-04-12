@@ -10,6 +10,8 @@
 #include "printUtility.h"
 #include "RN4870_RX.h"
 #include "usart0.h"
+#include "TCA0.h"
+#include "windowAlarm.h"
 
 #include <avr/interrupt.h>
 
@@ -29,6 +31,9 @@ ISR(PORTA_PORT_vect)
     
     //Restart RN4870
     RN4870_powerUp();
+    
+    //Mask the pushbutton signal
+    windowAlarm_maskButton();
     
     //Clear Flag
     WAKE_ClearFlag();
@@ -273,7 +278,20 @@ void RN4870_processStatusMessages(void)
 //Powers up the RN4870. Non-Blocking
 void RN4870_powerUp(void)
 {  
-    LED0B_TurnOn();
+    //Turn on the Blue LED
+    TCA0_enableLEDB();
+    
+    //If the Red LED was on...
+    if (LED0R_GetValue())
+    {
+        TCA0_enableLEDR();
+    }
+    
+    //If the Green LED was on...
+    if (LED0G_GetValue())
+    {
+        TCA0_enableLEDG();
+    }
     
     //Already powered / powering up
     if (stateRN4870 != RN4870_POWER_OFF)
@@ -299,7 +317,34 @@ void RN4870_powerUp(void)
 //Powers down the RN4870. Non-Blocking
 void RN4870_powerDown(void)
 {    
-    LED0B_TurnOff();
+    //Turn on the Blue LED
+    TCA0_disableLEDB();
+    
+    volatile bool test = TCA0_getLEDR();
+    
+    //If the red LED was on...
+    if (TCA0_getLEDR())
+    {
+        LED0R_TurnOn();
+    }
+    else
+    {
+        LED0R_TurnOff();
+    }
+    
+    //If the green LED was on...
+    if (TCA0_getLEDG())
+    {
+        LED0G_TurnOn();
+    }
+    else
+    {
+        LED0G_TurnOff();
+    }
+    
+    //Disable TCA
+    TCA0_disableLEDR();
+    TCA0_disableLEDG();
     
     //Update State
     stateRN4870 = RN4870_POWER_OFF;
@@ -316,7 +361,6 @@ void RN4870_powerDown(void)
     
     //Enable WAKE Pin to resume communication
     WAKE_EnableIOC();
-    
 }
 
 bool RN4870_enterCommandMode(void)

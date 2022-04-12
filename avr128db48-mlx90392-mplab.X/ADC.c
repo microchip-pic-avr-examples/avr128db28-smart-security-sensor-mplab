@@ -50,7 +50,7 @@ float ADC_getResultAsFloat(uint8_t channel)
     uint16_t val = ADC_getValue(channel);
     
     //Convert to Float
-    float result = 3.3 * (val / 1024.0);
+    float result = 3 * (val / 1024.0);
     
     return result;
 }
