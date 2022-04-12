@@ -7,20 +7,20 @@ extern "C" {
     
 #include <avr/io.h>
         
-#define LED0R_TurnOn() do { PORTD.OUTSET = PIN3_bm; } while(0)
-#define LED0R_TurnOff() do { PORTD.OUTCLR = PIN3_bm; } while(0)
-#define LED0R_Toggle() do { PORTD.OUTTGL = PIN3_bm; } while(0)
-#define LED0R_GetValue() (VPORTD.OUT & PIN3_bm)
+#define IO_LED0R_TurnOn() do { PORTD.OUTSET = PIN3_bm; } while(0)
+#define IO_LED0R_TurnOff() do { PORTD.OUTCLR = PIN3_bm; } while(0)
+#define IO_LED0R_Toggle() do { PORTD.OUTTGL = PIN3_bm; } while(0)
+#define IO_LED0R_GetValue() (VPORTD.OUT & PIN3_bm)
 
-#define LED0G_TurnOn() do { PORTD.OUTSET = PIN4_bm; } while(0)
-#define LED0G_TurnOff() do { PORTD.OUTCLR = PIN4_bm; } while(0)
-#define LED0G_Toggle() do { PORTD.OUTTGL = PIN4_bm; } while(0)
-#define LED0G_GetValue() (VPORTD.OUT & PIN4_bm)
+#define IO_LED0G_TurnOn() do { PORTD.OUTSET = PIN4_bm; } while(0)
+#define IO_LED0G_TurnOff() do { PORTD.OUTCLR = PIN4_bm; } while(0)
+#define IO_LED0G_Toggle() do { PORTD.OUTTGL = PIN4_bm; } while(0)
+#define IO_LED0G_GetValue() (VPORTD.OUT & PIN4_bm)
 
-#define LED0B_TurnOn() do { PORTD.OUTSET = PIN5_bm; } while(0)
-#define LED0B_TurnOff() do { PORTD.OUTCLR = PIN5_bm; } while(0)
-#define LED0B_Toggle() do { PORTD.OUTTGL = PIN5_bm; } while(0)
-#define LED0B_GetValue() (VPORTD.OUT & PIN5_bm)
+#define IO_LED0B_TurnOn() do { PORTD.OUTSET = PIN5_bm; } while(0)
+#define IO_LED0B_TurnOff() do { PORTD.OUTCLR = PIN5_bm; } while(0)
+#define IO_LED0B_Toggle() do { PORTD.OUTTGL = PIN5_bm; } while(0)
+#define IO_LED0B_GetValue() (VPORTD.OUT & PIN5_bm)
 
 #define WAKE_GetValue() (VPORTA.IN & PIN0_bm)
 #define WAKE_EnableIOC() do { PORTA.PIN0CTRL |= PORT_ISC_BOTHEDGES_gc; } while (0)

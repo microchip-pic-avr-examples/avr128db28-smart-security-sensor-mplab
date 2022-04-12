@@ -12,13 +12,14 @@
 #include "usart0.h"
 #include "TCA0.h"
 #include "windowAlarm.h"
+#include "LEDcontrol.h"
 
 #include <avr/interrupt.h>
 
 //Power States of RN4870
 typedef enum {
     RN4870_POWER_OFF = 0, RN4870_POWERING_UP_INIT, RN4870_POWERING_UP, RN4870_PAIR, 
-            RN4870_WELCOME, RN4870_READY, RN4870_POWERING_DOWN
+            RN4870_READY, RN4870_POWERING_DOWN
 } RN4870_STATUS;
 
 static RN4870_STATUS stateRN4870 = RN4870_POWER_OFF;
@@ -51,7 +52,7 @@ void RN4870_init(void)
 //Setup on initial power-up
 bool RN4870_startupInit(void)
 {
-    USB_sendString("Beginning RN4870 Initial Power-Up Config...\r\n");
+    USB_sendString("Beginning RN4870 Power-Up Config...\r\n");
     asm("WDR");
     
     bool status = RN4870_enterCommandMode();
@@ -149,6 +150,10 @@ RN4870_EVENT RN4870_getStatusEvent(void)
         {
             return RN4870_EVENT_STREAM_OPEN;
         }
+        else if (RN4870RX_find("CONN_PARAM"))
+        {
+            return RN4870_EVENT_CONN_PARAM;
+        }
         else
         {
             USB_sendString("[ERR] Unable to match string to response.\r\n");
@@ -245,6 +250,7 @@ void RN4870_processStatusMessages(void)
                 //Bond to the connected device
                 //RN4870_sendCommandAndPrint("B", 100);
                 
+                LED_turnOnBlue();
                 stateRN4870 = RN4870_READY;
             }
             else if (event == RN4870_EVENT_CONNECT)
@@ -260,7 +266,7 @@ void RN4870_processStatusMessages(void)
             if (event == RN4870_EVENT_DISCONNECT)
             {
                 //Disconnected...
-                
+                LED_turnOffBlue();
                 stateRN4870 = RN4870_PAIR;
             }
             break;
@@ -277,27 +283,15 @@ void RN4870_processStatusMessages(void)
 
 //Powers up the RN4870. Non-Blocking
 void RN4870_powerUp(void)
-{  
-    //Turn on the Blue LED
-    TCA0_enableLEDB();
-    
-    //If the Red LED was on...
-    if (LED0R_GetValue())
-    {
-        TCA0_enableLEDR();
-    }
-    
-    //If the Green LED was on...
-    if (LED0G_GetValue())
-    {
-        TCA0_enableLEDG();
-    }
-    
+{   
     //Already powered / powering up
     if (stateRN4870 != RN4870_POWER_OFF)
     {
         return;
     }
+    
+    //Switch LEDs to PWM Control
+    LED_switchToActive();
     
     //Power-Up the module
     BTLE_EnablePower();
@@ -311,41 +305,20 @@ void RN4870_powerUp(void)
     USART0_enableRX();
     
     //Update State
-    stateRN4870 = RN4870_POWERING_UP;
+    stateRN4870 = RN4870_POWERING_UP_INIT;
 }
 
 //Powers down the RN4870. Non-Blocking
 void RN4870_powerDown(void)
 {    
-    //Turn on the Blue LED
-    TCA0_disableLEDB();
-
-    //If the red LED was on...
-    if (TCA0_getLEDR())
-    {
-        LED0R_TurnOn();
-    }
-    else
-    {
-        LED0R_TurnOff();
-    }
-    
-    //If the green LED was on...
-    if (TCA0_getLEDG())
-    {
-        LED0G_TurnOn();
-    }
-    else
-    {
-        LED0G_TurnOff();
-    }
-    
-    //Disable TCA
-    TCA0_disableLEDR();
-    TCA0_disableLEDG();
-    
     //Update State
     stateRN4870 = RN4870_POWER_OFF;
+    
+    //Turn off the Blue LED
+    LED_turnOffBlue();
+    
+    //Swap any other LEDs to IO Control
+    LED_switchToSleep();
     
     //Hold in nRESET
     BTLE_AssertReset();

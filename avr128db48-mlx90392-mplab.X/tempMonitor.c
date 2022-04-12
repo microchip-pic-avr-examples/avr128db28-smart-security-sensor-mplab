@@ -11,6 +11,7 @@
 #include "RTC.h"
 #include "RN4870.h"
 #include "DEFAULTS.h"
+#include "LEDcontrol.h"
 
 #include <avr/io.h>
 #include <avr/eeprom.h>
@@ -190,6 +191,7 @@ void tempMonitor_FSM(void)
             //Update State
             if (success)
             {
+                LED_turnOnGreen();
                 temperatureResultsReady = true;
                 tempState = TEMP_SLEEP;
             }
@@ -237,6 +239,8 @@ bool tempMonitor_getResultStatus(void)
 
 void tempMonitor_printResults(void)
 {
+    LED_turnOffGreen();
+    
     //If results aren't ready...
     if (!temperatureResultsReady)
     {
