@@ -20,7 +20,10 @@ extern "C" {
 #define LED0B_Toggle() do { PORTD.OUTTGL = PIN5_bm; } while(0)
 
 #define WAKE_GetValue() (VPORTA.IN & PIN0_bm)
-    
+#define WAKE_EnableIOC() do { PORTA.PIN0CTRL |= PORT_ISC_BOTHEDGES_gc; } while (0)
+#define WAKE_DisableIOC() do { PORTA.PIN0CTRL &= ~(PORT_ISC_gm); } while (0)
+#define WAKE_ClearFlag() do { VPORTA.INTFLAGS |= (PIN0_bm); } while (0)
+
 #define BTLE_EnablePower() do { PORTD.OUTCLR = PIN1_bm; } while (0)
 #define BTLE_DisablePower() do { PORTD.OUTSET = PIN1_bm; } while (0)
     
@@ -31,7 +34,6 @@ extern "C" {
     
     //Inits. General Purpose I/O
     void GPIO_init(void);
-
 
 #ifdef	__cplusplus
 }

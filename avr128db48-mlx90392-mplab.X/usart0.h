@@ -10,10 +10,10 @@ extern "C" {
     
     //Init Peripheral
     void USART0_init(void);
-    
+        
     //Init Peripheral I/O
     void USART0_initIO(void);
-
+    
     //Enable/Disable TX 
     void USART0_enableTX(void);
     void USART0_disableTX(void);

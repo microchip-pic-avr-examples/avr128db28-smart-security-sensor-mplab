@@ -1,6 +1,7 @@
 #include "GPIO.h"
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 //Inits. General Purpose I/O
 void GPIO_init(void)

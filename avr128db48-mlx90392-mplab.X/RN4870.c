@@ -9,6 +9,9 @@
 
 #include "printUtility.h"
 #include "RN4870_RX.h"
+#include "usart0.h"
+
+#include <avr/interrupt.h>
 
 //Power States of RN4870
 typedef enum {
@@ -16,16 +19,28 @@ typedef enum {
             RN4870_WELCOME, RN4870_READY, RN4870_POWERING_DOWN
 } RN4870_STATUS;
 
-static RN4870_STATUS stateRN4870 = RN4870_POWERING_UP_INIT;
+static RN4870_STATUS stateRN4870 = RN4870_POWER_OFF;
 static bool (*onUserEvent)(void) = 0;
+
+ISR(PORTA_PORT_vect)
+{
+    //Disable IOC
+    WAKE_DisableIOC();
+    
+    //Restart RN4870
+    RN4870_powerUp();
+    
+    //Clear Flag
+    WAKE_ClearFlag();
+}
 
 void RN4870_init(void)
 {            
     //Init RX Engine
     RN4870RX_init();
     
-    //Release Reset
-    BTLE_ReleaseReset();
+    //Power-up RN4870
+    RN4870_powerUp();
 }
 
 //Setup on initial power-up
@@ -257,8 +272,8 @@ void RN4870_processStatusMessages(void)
 
 //Powers up the RN4870. Non-Blocking
 void RN4870_powerUp(void)
-{
-    //TODO: Implement Power Up
+{  
+    LED0B_TurnOn();
     
     //Already powered / powering up
     if (stateRN4870 != RN4870_POWER_OFF)
@@ -266,14 +281,42 @@ void RN4870_powerUp(void)
         return;
     }
     
-    stateRN4870 = RN4870_READY;
+    //Power-Up the module
+    BTLE_EnablePower();
+    
+    //Release from nRESET (0)
+    BTLE_ReleaseReset();
+    
+    //Reinit USART
+    USART0_initIO();
+    USART0_enableTX();
+    USART0_enableRX();
+    
+    //Update State
+    stateRN4870 = RN4870_POWERING_UP;
 }
 
 //Powers down the RN4870. Non-Blocking
 void RN4870_powerDown(void)
 {    
-    //TODO: Implement Power Down
+    LED0B_TurnOff();
+    
+    //Update State
     stateRN4870 = RN4870_POWER_OFF;
+    
+    //Hold in nRESET
+    BTLE_AssertReset();
+    
+    //Disable USART
+    USART0_disableTX();
+    USART0_disableRX();
+    
+    //Power-Down the module
+    BTLE_DisablePower();
+    
+    //Enable WAKE Pin to resume communication
+    WAKE_EnableIOC();
+    
 }
 
 bool RN4870_enterCommandMode(void)
@@ -367,11 +410,11 @@ bool RN4870_isReady(void)
 //Sends a string to the user, if powered up.
 void RN4870_sendStringToUser(const char* str)
 {
-//    if (stateRN4870 != RN4870_READY)
-//    {
-//        //Not Ready to Send Data...
-//        return;
-//    }
+    if (stateRN4870 != RN4870_READY)
+    {
+        //Not Ready to Send Data...
+        return;
+    }
     
     BLE_sendString(str);
 }

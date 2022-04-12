@@ -56,15 +56,11 @@ void System_initPeripherals(void)
     
     //Configure USART 2 for BLE
     USART0_init();
-    USART0_initIO();
+    //(USART0_initIO called later)
     
     //Configure USART 3 for USB
     USART2_init();
     USART2_initIO();
-        
-    //Enable USART for BLE
-    USART0_enableRX();
-    USART0_enableTX();
     
     //Enable USART for USB (TX Only)
     USART2_enableTX();
