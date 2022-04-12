@@ -94,9 +94,7 @@ int main(void)
     {        
         //Clear the Watchdog Timer
         asm("WDR");
-        
-        LED0G_Toggle();
-                                        
+                                                
         //Check for Events
         RN4870_processEvents();
         

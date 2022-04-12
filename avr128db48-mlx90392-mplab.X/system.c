@@ -16,9 +16,9 @@ FUSES =
   .BOOTSIZE = 0x0,
   .CODESIZE = 0x0,
   .OSCCFG = CLKSEL_OSCHF_gc,
-  .SYSCFG0 = CRCSEL_CRC16_gc | CRCSRC_NOCRC_gc | RSTPINCFG_GPIO_gc,
+  .SYSCFG0 = CRCSEL_CRC16_gc | CRCSRC_NOCRC_gc | RSTPINCFG_RST_gc,
   .SYSCFG1 = MVSYSCFG_DUAL_gc | SUT_16MS_gc,
-  .WDTCFG = PERIOD_1KCLK_gc | WINDOW_OFF_gc,
+  .WDTCFG = PERIOD_OFF_gc | WINDOW_OFF_gc,  //PERIOD_1K
 };
 
 //Inits CLKCTRL, EVSYS, WDT, and SLPCTRL
@@ -50,9 +50,9 @@ void System_initPeripherals(void)
     //Init MVIO
     MVIO_init();
         
-    //Configure TWI0 (MVIO) for Magnetometer
-    TWI0_initHost();
+    //Configure TWI0 (MVIO)
     TWI0_initPins();
+    TWI0_initHost();
     
     //Configure USART 2 for BLE
     USART0_init();

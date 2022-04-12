@@ -99,18 +99,19 @@ void TWI0_initPins(void)
         
     //Output I/O
     PORTC.DIRSET = PIN2_bm | PIN3_bm;
+    PORTC.OUTCLR = PIN2_bm | PIN3_bm;
 
 #ifdef TWI0_ENABLE_PULLUPS
     //Enable Pull-Ups
     PORTC.PINCONFIG = PORT_PULLUPEN_bm;
+    
+    //Select PC2/PC3
+    PORTC.PINCTRLUPD = PIN2_bm | PIN3_bm;
 #endif
     
     //Set PORTMUX
     PORTMUX.TWIROUTEA &= ~(PORTMUX_TWI0_gm);
     PORTMUX.TWIROUTEA |= PORTMUX_TWI0_ALT2_gc;
-
-    //Select PC2/PC3
-    PORTC.PINCTRLUPD = PIN2_bm | PIN3_bm;
 }
 
 void TWI0_flush(void)
