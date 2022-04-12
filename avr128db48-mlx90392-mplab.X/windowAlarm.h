@@ -24,6 +24,10 @@ extern "C" {
         uint32_t r2;        //Vector Sum of Compressed Values
     } MLX90392_NormalizedResults8;
     
+#define RTC_PIT_FAST_TIMING RTC_PERIOD_CYC128_gc
+    
+#define RTC_PIT_NORMAL_TIMING RTC_PERIOD_CYC2048_gc
+    
     //Init the Magnetometer and related parameters
     void windowAlarm_init(bool safeStart);
     
@@ -62,6 +66,9 @@ extern "C" {
     //Returns true if calibration is good
     bool windowAlarm_isCalGood(void);
     
+    //Returns true if the alarm is OK, false if the alarm was tripped
+    bool windowAlarm_isAlarmOK(void);
+        
     //Run the Finite State Machine for the Magnetometer
     void windowAlarm_FSM(void);
     

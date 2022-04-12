@@ -65,7 +65,7 @@ int main(void)
     
     //Init Peripherals and IO
     System_initPeripherals();
-        
+    
     //Attach Callback Function for USART0
     USART0_setRXCallback(&RN4870RX_loadCharacter);
     
@@ -90,9 +90,6 @@ int main(void)
         
     //Configure RN4870
     RN4870_init();
-    
-    TCA0_init();
-    TCA0_initIO();
         
     while(1)
     {        
@@ -112,18 +109,28 @@ int main(void)
             tempMonitor_FSM();
         }
         
+        //Magnetometer Alarm
+        if ((windowAlarm_getResultStatus()) || (RTC_isOVFTriggered()))
+        {
+            windowAlarm_printResults();
+        }
+        
         if (RTC_isOVFTriggered())
         {
             RTC_clearOVFTrigger();
-
+            
             if (RN4870_isReady())
             {
                 if (windowAlarm_isCalGood())
                 {
                     //If not calibrating...
-                    windowAlarm_printResults();
                     tempMonitor_printResults();
                 }
+            }
+            else
+            {
+                //RN4870 is not ready, show magState on the LEDs
+                
             }
         }
 

@@ -32,6 +32,9 @@ extern "C" {
     //Sets the compare of the RTC
     void RTC_setCompare(uint16_t comp);
     
+    //Set the period of the PIT
+    void RTC_setPIT(uint8_t period);
+    
     //Returns true if PIT was triggered
     bool RTC_isPITTriggered(void);
     

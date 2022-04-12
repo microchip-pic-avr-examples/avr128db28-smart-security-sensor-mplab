@@ -15,6 +15,7 @@
 #include "windowAlarm_messages.h"
 #include "RN4870.h"
 #include "TWI0_host.h"
+#include "LEDcontrol.h"
 
 //Enumeration for the Measurement State Machine
 typedef enum {
@@ -749,10 +750,12 @@ void windowAlarm_printResults(void)
     //Print Results
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {
+        LED_turnOnRed();
         RN4870_sendStringToUser("Alarm BAD\n");
     }
     else
     {
+        LED_turnOffRed();
         RN4870_sendStringToUser("Alarm OK\n");
     }
 }
@@ -795,6 +798,18 @@ bool windowAlarm_saveThresholds(void)
 bool windowAlarm_isCalGood(void)
 {
     return (calState == CAL_GOOD);
+}
+
+//Returns true if the alarm is OK, false if the alarm was tripped
+bool windowAlarm_isAlarmOK(void)
+{   
+    //Print Results
+    if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 void windowAlarm_FSM(void)

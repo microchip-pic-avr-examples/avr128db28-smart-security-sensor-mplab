@@ -75,4 +75,8 @@ void System_initPeripherals(void)
     
     //Init ADC
     ADC_init();
+    
+    //Init TCA
+    TCA0_init();
+    TCA0_initIO();
 }
