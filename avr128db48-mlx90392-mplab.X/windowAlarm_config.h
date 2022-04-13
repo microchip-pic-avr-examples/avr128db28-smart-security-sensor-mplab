@@ -24,7 +24,7 @@ extern "C" {
 //#define MAGNETOMETER_RAW_VALUE_PRINT
              
 //If defined, this will print extra debug info
-#define MAGNETOMETER_DEBUG_PRINT
+//#define MAGNETOMETER_DEBUG_PRINT
         
 //How many cycles of the PIT to run before reprinting magnetometer error
 #define MAGNETOMETER_ERROR_DELAY 1250
