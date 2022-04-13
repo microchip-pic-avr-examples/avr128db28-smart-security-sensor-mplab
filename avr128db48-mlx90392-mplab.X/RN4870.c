@@ -317,9 +317,6 @@ void RN4870_powerDown(void)
     //Turn off the Blue LED
     LED_turnOffBlue();
     
-    //Swap any other LEDs to IO Control
-    LED_switchToSleep();
-    
     //Hold in nRESET
     BTLE_AssertReset();
     
@@ -332,6 +329,9 @@ void RN4870_powerDown(void)
     
     //Enable WAKE Pin to resume communication
     WAKE_EnableIOC();
+    
+    //Swap any other LEDs to IO Control
+    LED_switchToSleep();
 }
 
 bool RN4870_enterCommandMode(void)

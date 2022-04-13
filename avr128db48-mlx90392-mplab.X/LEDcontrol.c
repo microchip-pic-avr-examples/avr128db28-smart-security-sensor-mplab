@@ -19,14 +19,8 @@ void LED_turnOnRed(void)
 }
 void LED_turnOffRed(void)
 {
-    if (RN4870_canSleep())
-    {
-        IO_LED0R_TurnOff();
-    }
-    else
-    {
-        TCA0_disableLEDR();
-    }
+    IO_LED0R_TurnOff();
+    TCA0_disableLEDR();
 }
 
 //Turns on/off the Green channel
@@ -43,14 +37,8 @@ void LED_turnOnGreen(void)
 }
 void LED_turnOffGreen(void)
 {
-    if (RN4870_canSleep())
-    {
-        IO_LED0G_TurnOff();
-    }
-    else
-    {
-        TCA0_disableLEDG();
-    }
+    IO_LED0G_TurnOff();
+    TCA0_disableLEDG();
 }
 
 //Turns on/off the Blue channel
@@ -69,14 +57,8 @@ void LED_turnOnBlue(void)
 
 void LED_turnOffBlue(void)
 {
-    if (RN4870_canSleep())
-    {
-        IO_LED0B_TurnOff();
-    }
-    else
-    {
-        TCA0_disableLEDB();
-    }
+    IO_LED0B_TurnOff();
+    TCA0_disableLEDB();
 }
 
 //Switches from PWM to IO Control
