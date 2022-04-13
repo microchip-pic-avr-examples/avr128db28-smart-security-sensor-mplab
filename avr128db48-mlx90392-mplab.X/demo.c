@@ -142,21 +142,21 @@ bool DEMO_handleUserCommands(void)
         {
             if (RN4870RX_find("FAST"))
             {
-                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_FAST);
+                DEMO_setSystemUpdateRateEEPROM(DEMO_SAMPLE_RATE_FAST);
                 
                 //Update Success
                 ok = true;
             }
             else if (RN4870RX_find("NORM"))
             {
-                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_NORM);
+                DEMO_setSystemUpdateRateEEPROM(DEMO_SAMPLE_RATE_NORM);
                 
                 //Update Success
                 ok = true;
             }
             else if (RN4870RX_find("SLOW"))
             {
-                DEMO_setSystemUpdateRate(DEMO_SAMPLE_RATE_SLOW);
+                DEMO_setSystemUpdateRateEEPROM(DEMO_SAMPLE_RATE_SLOW);
                 
                 //Update Success
                 ok = true;
@@ -228,10 +228,31 @@ bool DEMO_handleUserCommands(void)
 }
 
 //Sets the update rate of the demo
-void DEMO_setSystemUpdateRate(uint16_t rate)
+void DEMO_setSystemUpdateRateEEPROM(uint16_t rate)
 {    
     RTC_setPeriod(rate);
     eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, rate);
+    
+    //Calculate Temp Trigger Timing
+    if (rate <= DEMO_TEMP_DELAY_START)
+    {
+        //When RTC.CNT = 0
+        rate = 0;
+    }
+    else
+    {
+        rate -= DEMO_TEMP_DELAY_START;
+    }
+    
+    //Update Temp Trigger Timing
+    tempMonitor_updateSampleRate(rate);
+}
+
+//Sets the update rate of the demo
+//Does NOT write to EEPROM
+void DEMO_setSystemUpdateRateRAM(uint16_t rate)
+{    
+    RTC_setPeriod(rate);
     
     //Calculate Temp Trigger Timing
     if (rate <= DEMO_TEMP_DELAY_START)

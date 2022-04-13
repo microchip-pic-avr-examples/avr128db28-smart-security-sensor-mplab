@@ -31,7 +31,11 @@ extern "C" {
     bool DEMO_handleUserCommands(void);
 
     //Sets the update rate of the demo
-    void DEMO_setSystemUpdateRate(uint16_t rate);
+    void DEMO_setSystemUpdateRateEEPROM(uint16_t rate);
+    
+    //Sets the update rate of the demo
+    //Does NOT write to EEPROM
+    void DEMO_setSystemUpdateRateRAM(uint16_t rate);
     
 #ifdef	__cplusplus
 }

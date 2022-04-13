@@ -162,8 +162,6 @@ int main(void)
             }
         }
         
-        
-        
         //Magnetometer Alarm
 
         if (RN4870_canSleep())
@@ -175,9 +173,6 @@ int main(void)
             
             //If the alarm was triggered out of sequence...
             //E.g.: It tripped while in sleep...
-            if (windowAlarm_getResultStatus())
-            {
-            }
             
             asm("SLEEP");
         }
