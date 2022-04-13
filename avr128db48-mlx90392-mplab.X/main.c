@@ -57,6 +57,51 @@
 #include "printUtility.h"
 #include "demo.h"
 #include "TCA0.h"
+#include "LEDcontrol.h"
+
+//Prints results when not in low-power mode
+void normalPrint(void)
+{
+    if ((windowAlarm_getResultStatus()) || (RTC_isOVFTriggered()))
+    {
+        windowAlarm_printResults();
+    }
+
+    if (RTC_isOVFTriggered())
+    {
+        RTC_clearOVFTrigger();
+
+        if (RN4870_isReady())
+        {
+            if (windowAlarm_isCalGood())
+            {
+                //If not calibrating...
+                tempMonitor_printResults();
+            }
+        }
+    }
+}
+
+//Updates display in low power mode
+//LEDs are on for ~1s 
+void lowPowerLEDPrint(void)
+{
+    if (RTC_isCMPTriggered())
+    {
+        RTC_clearCMPTrigger();
+        windowAlarm_printResults();
+    }
+    
+    if (RTC_isOVFTriggered())
+    {
+        RTC_clearOVFTrigger();
+        
+        //Shutoff LEDs
+        LED_turnOffBlue();
+        LED_turnOffGreen();
+        LED_turnOffRed();
+    }
+}
 
 int main(void)
 {
@@ -99,53 +144,47 @@ int main(void)
         //Check for Events
         RN4870_processEvents();
         
-        //Run the magnetometer state machine
-        windowAlarm_FSM();
-        
-        //If the calibration for the window alarm is OK
-        if (windowAlarm_isCalGood())
+        //If in sleep, always run the FSM loops
+        //If not, then only run them once per PIT trigger
+        if ((RN4870_canSleep()) || ((!RN4870_canSleep()) && (RTC_isPITTriggered())))
         {
-            //Run the thermometer state machine
-            tempMonitor_FSM();
+            RTC_clearPITTriggered();
+            
+            //Run the magnetometer state machine
+            windowAlarm_FSM();
+
+            //If the calibration for the window alarm is OK
+            //And, not in sleep mode
+            if ((windowAlarm_isCalGood()) && (!RN4870_canSleep()))
+            {
+                //Run the thermometer state machine
+                tempMonitor_FSM();
+            }
         }
+        
+        
         
         //Magnetometer Alarm
-        if ((windowAlarm_getResultStatus()) || (RTC_isOVFTriggered()))
-        {
-            windowAlarm_printResults();
-        }
-        
-        if (RTC_isOVFTriggered())
-        {
-            RTC_clearOVFTrigger();
-            
-            if (RN4870_isReady())
-            {
-                if (windowAlarm_isCalGood())
-                {
-                    //If not calibrating...
-                    tempMonitor_printResults();
-                }
-            }
-            else
-            {
-                //RN4870 is not ready, show magState on the LEDs
-                
-            }
-        }
 
         if (RN4870_canSleep())
         {
-            //If the module is powered off, then sleep
+            //If we can sleep (ie: BLE is OFF)...
+            
+            //Update LED states, if applicable
+            lowPowerLEDPrint();
+            
+            //If the alarm was triggered out of sequence...
+            //E.g.: It tripped while in sleep...
+            if (windowAlarm_getResultStatus())
+            {
+            }
+            
             asm("SLEEP");
         }
         else
         {
-            //Can't enter sleep, but we should wait for the next PIT trigger
-            
-            //Wait for PIT Trigger
-            RTC_clearPITTriggered();
-            while (!RTC_isPITTriggered()) { ; }
+            //Can't enter sleep, print normally
+            normalPrint();
         }
     }    
 }
