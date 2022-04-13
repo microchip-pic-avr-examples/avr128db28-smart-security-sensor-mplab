@@ -9,17 +9,11 @@
 #include "usart0.h"
 #include "TCB0_oneShot.h"
 #include "GPIO.h"
+#include "ringBuffer.h"
 
-//Modified by ISRs
-volatile static char generalTextBuffer[RN4870_RX_BUFFER_SIZE];
-volatile static char statusCommandBuffer[RN4870_RX_STATUS_BUFFER_SIZE + 1];
-volatile static char currentDelim = '\0';
-volatile static uint8_t commandWriteIndex = 0, respWriteIndex = 0, respReadIndex = 0, respCount = 0;
-volatile static bool readReady = false, processingMessage = false, cmdOccurred = false;
-
-//NOT modified or accessed by ISRs
-static char commandResponseBuffer[4];
-static uint8_t commandReadIndex = 0;
+volatile static bool processingMessage = false;
+static char cMemory[RN4870_RX_BUFFER_SIZE];
+static RingBuffer ringBuffer;
 
 //Utility Function - Converts input to uppercase
 char convertToUppercase(char in) { 
@@ -34,35 +28,31 @@ char convertToUppercase(char in) {
 void RN4870RX_init(void)
 {
     //Protective Terminator
-    statusCommandBuffer[RN4870_RX_BUFFER_SIZE] = '\0';
-
-    //Reset Buffers
-    RN4870RX_clearBuffer();
+    ringBuffer_createBuffer(&ringBuffer, &cMemory[0], RN4870_RX_BUFFER_SIZE);
 }
 
 //Insert a character into the buffer
 void RN4870RX_loadCharacter(char input)
 {
+    //Do not allow insertions of the protected character
+    if (input == RN4870_DELIM_RING_BUFFER)
+    {
+        return;
+    }
+    
     if (processingMessage)
     {
         //Waiting for End of Status Marker
         
-        if ((input == currentDelim) || (input == '\r') || (input == '\n'))
+        if ((input == RN4870_DELIM_STATUS) || (input == RN4870_DELIM_USER) || (input == '\r') || (input == '\n'))
         {
-            statusCommandBuffer[respWriteIndex] = '\0';
+            ringBuffer_loadCharacter(&ringBuffer, RN4870_DELIM_RING_BUFFER);
             
             processingMessage = false;
-            respCount++;
-            
-            //Increment writeIndex for response
-            respWriteIndex++;
         }
         else if (input != ' ')
         {
-            statusCommandBuffer[respWriteIndex] = convertToUppercase(input);
-            
-            //Increment writeIndex for response
-            respWriteIndex++;
+            ringBuffer_loadCharacter(&ringBuffer, convertToUppercase(input));
         }
         
         return;
@@ -72,282 +62,83 @@ void RN4870RX_loadCharacter(char input)
         //Input is the deliminator of status
         if ((input == RN4870_DELIM_STATUS) || (input == RN4870_DELIM_USER))
         {
-            //Store the Deliminator
-            statusCommandBuffer[respWriteIndex] = input;
-            respWriteIndex++;
-            
-            currentDelim = input;
             processingMessage = true;
-            return;
         }
-        
-        if (input == RN4870_DELIM_RESP)
-        {
-            //If this is a deliminator for response messages "AOK", "ERR"
-            readReady = true;
-        }
+        ringBuffer_loadCharacter(&ringBuffer, input);
     }  
-    
-    //If one of the chars from "CMD> " has been detected
-    if (input == RN4870_MARKER_CMD)
-    {
-        cmdOccurred = true;
-    }
-    
-    generalTextBuffer[commandWriteIndex] = input;
-    commandWriteIndex++;
 }
 
 //Returns true if status / user commands are empty
 bool RN4870RX_isEmpty(void)
 {
-    return (respCount == 0);
+    //No Chars
+    if (ringBuffer_isEmpty(&ringBuffer))
+        return true;
+    
+    return false;
 }        
 
 //Returns true if a status message (%TEXT%) was received
 bool RN4870RX_isStatusRX(void)
 {  
-    if (respCount == 0)
-        return false;
-    
-    return (statusCommandBuffer[respReadIndex] == RN4870_DELIM_STATUS);
+    return (ringBuffer_peekChar(&ringBuffer) == RN4870_DELIM_STATUS);
 }
 
 //Returns true if a user command (!TEXT!) was received
 bool RN4870RX_isUserRX(void)
-{
-    if (respCount == 0)
-        return false;
-    
-    return (statusCommandBuffer[respReadIndex] == RN4870_DELIM_USER);
+{   
+    return (ringBuffer_peekChar(&ringBuffer) == RN4870_DELIM_USER);
 }
 
 void RN4870RX_clearStatusRX(void)
 {
-    respCount = 0;
-    respReadIndex = 0;
-    respWriteIndex = 0;
-}
-
-//Returns the text immediately following the comparison
-volatile char* RN4870RX_search(const char* comp)
-{
-    if ((comp[0] == '\0') || (respCount == 0))
-        return NULL;
-    
-    //Compare strings
-    uint8_t tIndex = respReadIndex;
-    uint8_t compIndex = 0;
-    
-    while (statusCommandBuffer[tIndex] != '\0')
-    {
-        if (comp[compIndex] == statusCommandBuffer[tIndex])
-        {
-            compIndex++;
-        }
-        else
-        {
-            compIndex = 0;
-        }
-        
-        tIndex++;
-        
-        if (comp[compIndex] == '\0')
-        {
-            //End of String
-            return &statusCommandBuffer[tIndex];
-        }
-    }
-    
-    return NULL;
+    ringBuffer_flushReadBuffer(&ringBuffer);
 }
 
 //Returns true if status matches COMP string
 bool RN4870RX_find(const char* comp)
 {  
-    return (RN4870RX_search(comp) != NULL);   
+    return ringBuffer_find(&ringBuffer, comp);
 }
 
 //Advances to the next status / command in the buffer, if available.
 void RN4870RX_advanceMessage(void)
 {
-    //No new responses
-    if (respCount == 0)
-        return;
-        
-    //Decrement Counter
-    respCount--;
-    
-    if (respCount == 0)
-    {
-        //If everything is 0, then flush the buffers
-        RN4870RX_clearStatusRX();
-    }
-    else
-    {
-        //Find the start of the next message
-        
-        //Move to the end of the message (NULL)
-        do
-        {
-            respReadIndex++;
-        }
-        while ((statusCommandBuffer[respReadIndex] != RN4870_DELIM_RESP) && (statusCommandBuffer[respReadIndex] != RN4870_DELIM_USER));
-    }
+    ringBuffer_advanceToString(&ringBuffer, "#");
 }
 
 //Fills a buffer with a copy of the current message
 void RN4870RX_copyMessage(char* buffer, uint8_t size)
 {
     //If nothing to copy
-    if ((size == 0) || (respCount == 0))
-    {
-        return;
-    }
-    
-    uint8_t bPos = 0, rPos = respReadIndex;
-    
-    while ((bPos < size) && (statusCommandBuffer[rPos] != '\0'))
-    {
-        buffer[bPos] = statusCommandBuffer[rPos];
-        
-        rPos++;
-        bPos++;
-    }
-    
-    if (bPos < size)
-    {
-        //Under buffer limit
-        buffer[bPos] = '\0';
-    }
-    else
-    {
-        //At the buffer limit
-        buffer[size - 1] = '\0';
-    }
+    ringBuffer_copyBufferUntil(&ringBuffer, buffer, RN4870_DELIM_RING_BUFFER, size);
 }
 
 //Copies the parameter of the command.
 //Returns false if no parameter is present
 bool RN4870RX_copyMessageParameter(char* buffer, uint8_t size)
 {
-    if ((respCount == 0) || (size == 0))
+    if (RN4870RX_isEmpty())
         return false;
     
-    //Compare strings
-    uint8_t tIndex = respReadIndex;
-    
-    bool found = false;
-    uint8_t cIndex = 0;
-    
-    while ((statusCommandBuffer[tIndex] != '\0') && (cIndex < size))
-    {
-        if (statusCommandBuffer[tIndex] == ',')
-        {
-            //Comma Found!
-            found = true;
-        }
-        else if (found)
-        {
-            //Comma was found, begin copy
-            
-            buffer[cIndex] = statusCommandBuffer[tIndex];
-            cIndex++;
-        }
-        
-        tIndex++;
-    }
-    
-    //No Parameter Found
-    if (!found)
-    {
-        return NULL;
-    }
-    
-    //Out of room in dest. buffer, last char will be cutoff
-    if (cIndex == size)
-    {
-        cIndex -= 1;
-    }
-    
-    //Add Terminator to Buffer
-    buffer[cIndex] = '\0';
+    //Copy upto the next message
+    if (ringBuffer_copyAndChop(&ringBuffer, buffer, ',', RN4870_DELIM_RING_BUFFER, size) == 1)
+        return false;
     
     return true;
-}
-
-void RN4870RX_clearCMDFlag(void)
-{
-    cmdOccurred = false;
 }
 
 //Returns true if RESP_DELIM was the last character received.
 bool RN4870RX_isResponseComplete(void)
 {
-    return readReady;
-}
-
-bool RN4870RX_isCMDPresent(void)
-{
-    return cmdOccurred;
-}
-
-//Clears the response buffer
-void RN4870RX_clearResponseBuffer(void)
-{
-    //Clear Response Buffer
-    commandResponseBuffer[3] = '\0';
-    commandResponseBuffer[2] = '\0';
-    commandResponseBuffer[1] = '\0';
-    commandResponseBuffer[0] = '\0';
-}
-
-//Load response buffer with the last 3 bytes received
-void RN4870RX_loadResponseBuffer(void)
-{
-    //Clear Response Buffer
-    RN4870RX_clearResponseBuffer();
-    
-    //Clear flag
-    readReady = false;
-    
-    while ((generalTextBuffer[commandReadIndex] != RN4870_DELIM_RESP) && (commandReadIndex != commandWriteIndex))
-    {
-        commandResponseBuffer[2] = commandResponseBuffer[1];
-        commandResponseBuffer[1] = commandResponseBuffer[0];
-        commandResponseBuffer[0] = generalTextBuffer[commandReadIndex];
-        commandReadIndex++;
-    }
-    
-    //If we stopped because \r is the current char, clear the \r
-    if (generalTextBuffer[commandReadIndex] == RN4870_DELIM_RESP)
-    {
-        generalTextBuffer[commandReadIndex] = '\0';
-    }
-    
-    
+    return processingMessage;
 }
 
 //Discards the buffer
 void RN4870RX_clearBuffer(void)
 {
-    RN4870RX_clearResponseBuffer();
-        
-    //Main Buffer
-    for (uint16_t i = 0; i < RN4870_RX_BUFFER_SIZE; i++)
-    {
-        generalTextBuffer[i] = '\0';
-    }
-    
-    //Indexes
-    respWriteIndex = 0;
-    commandWriteIndex = 0;
-    commandReadIndex = 0;
-    
-    //Statuses
-    readReady = false;
+    ringBuffer_flushReadBuffer(&ringBuffer);
     processingMessage = false;
-    cmdOccurred = false;
 }
 
 //Waits for a message to be received and checks to see if it matches string.
@@ -355,21 +146,13 @@ void RN4870RX_clearBuffer(void)
 bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
 {
     uint16_t timeCycles = 0;
+    ringBuffer_flushReadBuffer(&ringBuffer);
     
     do
     {
-        if (RN4870RX_isResponseComplete())
-        {
-            //Load Response Buffer
-            RN4870RX_loadResponseBuffer();
-            
-            //Compare strings
-            if (strstr(&commandResponseBuffer[0], compare) != 0)
-            {
-                return true;
-            }
-            
-            return false;
+        if (ringBuffer_find(&ringBuffer, compare))
+        {                       
+            return true;
         }
         
         if (!TCB0_isRunning())
@@ -380,20 +163,22 @@ bool RN4870RX_waitForResponseRX(uint16_t timeout, const char* compare)
         
     } while (timeout > timeCycles);
     
+    asm("NOP");
     return false;
 }
 
 bool RN4870RX_waitForCommandRX(uint16_t timeout)
 {
     uint16_t timeCycles = 0;
+    ringBuffer_flushReadBuffer(&ringBuffer);
     
     do
     {
-        if (RN4870RX_isCMDPresent())
+        if (ringBuffer_charsToRead(&ringBuffer) >= 5)
         {
-            //Load Response Buffer
-            RN4870RX_clearCMDFlag();
-            return true;
+            //Advance to the next element, if possible
+            //Returns false if not present
+            return ringBuffer_advanceToString(&ringBuffer, "> ");
         }
         
         if (!TCB0_isRunning())
