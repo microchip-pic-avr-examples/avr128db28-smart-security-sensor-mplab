@@ -9,7 +9,7 @@ extern "C" {
 #include <stdbool.h>
     
 //Size of String Buffer for General Purpose RX
-#define RN4870_RX_BUFFER_SIZE 256
+#define RN4870_RX_BUFFER_SIZE 255
     
 //Size of Response Buffer (%TEXT%)
 #define RN4870_RX_STATUS_BUFFER_SIZE 32
@@ -17,8 +17,7 @@ extern "C" {
 //Delimiters
 #define RN4870_DELIM_USER '!'
 #define RN4870_DELIM_STATUS '%'
-#define RN4870_DELIM_RESP '\r'   
-#define RN4870_MARKER_CMD '>'
+#define RN4870_DELIM_RING_BUFFER '#'
     
     //Initializes the RX Engine for the RN4870
     void RN4870RX_init(void);
@@ -41,9 +40,6 @@ extern "C" {
     //Returns true if status matches COMP string
     bool RN4870RX_find(const char* comp);
     
-    //Returns the text immediately following the comparison
-    volatile char* RN4870RX_search(const char* comp);
-    
     //Advances to the next status / command in the buffer, if available.
     void RN4870RX_advanceMessage(void);
     
@@ -56,18 +52,6 @@ extern "C" {
     
     //Returns true if a deliminater was received.
     bool RN4870RX_isResponseComplete(void);
-    
-    //Returns true if one of the chars from CMD has been received.
-    bool RN4870RX_isCMDPresent(void);
-    
-    //Clears the flag set if one of the chars from CMD has been received
-    void RN4870RX_clearCMDFlag(void);
-    
-    //Clears the response buffer
-    void RN4870RX_clearResponseBuffer(void);
-    
-    //Refreshes the response buffer with the last 3 chars prior to deliminater
-    void RN4870RX_loadResponseBuffer(void);
     
     //Discards the buffer
     void RN4870RX_clearBuffer(void);

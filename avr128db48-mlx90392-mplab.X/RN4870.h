@@ -7,10 +7,7 @@ extern "C" {
     
 #include <stdint.h>
 #include <stdbool.h>
-    
-//Flipped version of AOK... saves some computation time
-#define RN4870_AOK "KOA"
-  
+      
 //If set, BLE module is expected to be powered up on init.
 //#define RN4870_NO_POWER_GATE_TEST 
         

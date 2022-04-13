@@ -362,7 +362,7 @@ bool RN4870_enterCommandMode(void)
 void RN4870_exitCommandMode(void)
 {
     //Exit CMD Mode
-    BLE_printCommandString("---", RN4870_DELIM_RESP);
+    BLE_printCommandString("---", '\r');
     
     //Clear buffers... anything received is from CMD mode
     RN4870RX_clearBuffer();
@@ -373,7 +373,7 @@ bool RN4870_isConnected(uint8_t timeout)
 {
     return false;
     
-    BLE_printCommandString("GK", RN4870_DELIM_RESP);
+    BLE_printCommandString("GK", '\r');
     
     if (RN4870RX_waitForResponseRX(timeout, "non"))
     {
@@ -389,7 +389,7 @@ bool RN4870_sendCommand(const char* string, uint8_t timeout)
     asm("WDR");
     
     BLE_sendString(string);
-    return RN4870RX_waitForResponseRX(timeout, RN4870_AOK);
+    return RN4870RX_waitForResponseRX(timeout, "AOK");
 }
 
 void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
@@ -403,8 +403,8 @@ void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
     USB_sendString("\"...");
     
     //Print Command to BLE
-    BLE_printCommandString(string, RN4870_DELIM_RESP);
-    bool status = RN4870RX_waitForResponseRX(timeout, RN4870_AOK);
+    BLE_printCommandString(string, '\r');
+    bool status = RN4870RX_waitForResponseRX(timeout, "AOK");
     
     if (status)
     {
