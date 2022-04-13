@@ -751,11 +751,13 @@ void windowAlarm_printResults(void)
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {
         LED_turnOnRed();
-        RN4870_sendStringToUser("Alarm BAD\n");
+        LED_turnOffGreen();
+        RN4870_sendStringToUser("Alarm Trip\n");
     }
     else
     {
         LED_turnOffRed();
+        LED_turnOnGreen();
         RN4870_sendStringToUser("Alarm OK\n");
     }
 }
