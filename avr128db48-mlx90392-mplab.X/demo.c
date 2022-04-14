@@ -216,12 +216,27 @@ bool DEMO_handleUserCommands(void)
         
         ok = true;
     }
-    else if (RN4870RX_find("PWDWN"))
+    else if ((RN4870RX_find("PWDWN")) || (RN4870RX_find("PWRDWN")))
     {
         //Power down
-        RN4870_powerDown();
         
-        ok = true;
+        //If calibration is OK and alarm is inactive
+        if ((windowAlarm_isCalGood()) && (windowAlarm_isAlarmOK()))
+        {
+            RN4870_powerDown();
+            ok = true;
+        }
+        else
+        {
+            if (!windowAlarm_isCalGood())
+            {
+                RN4870_sendStringToUser("Please calibrate the window alarm before power down.\r\n");
+            }
+            else
+            {
+                RN4870_sendStringToUser("Node cannot be powered down if alarm is active.\r\n");
+            }
+        }
     }
     
     return ok;

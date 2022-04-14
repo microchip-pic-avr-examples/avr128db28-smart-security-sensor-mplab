@@ -131,8 +131,8 @@ void RTC_setCompare(uint16_t comp)
 //Set the period of the PIT
 void RTC_setPIT(uint8_t period)
 {
-    RTC.PITCTRLA &= ~(RTC_PERIOD_gm);
-    RTC.PITCTRLA |= period;
+    while (RTC.PITSTATUS & RTC_CTRLABUSY_bm);
+    RTC.PITCTRLA = period | RTC_RTCEN_bm;
 }
 
 //Returns true if PIT was triggered

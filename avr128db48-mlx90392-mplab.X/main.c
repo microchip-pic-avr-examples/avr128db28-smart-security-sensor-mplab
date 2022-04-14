@@ -171,10 +171,19 @@ int main(void)
             //Update LED states, if applicable
             lowPowerLEDPrint();
             
-            //If the alarm was triggered out of sequence...
-            //E.g.: It tripped while in sleep...
-            
-            asm("SLEEP");
+            if (windowAlarm_isAlarmOK())
+            {
+                //Alarm OK - continue sleep
+                asm("SLEEP");
+            }
+            else
+            {
+                //Alarm tripped - wake-up
+                RN4870_powerUp();
+                
+                //Disable Wake Button
+                WAKE_DisableIOC();
+            }         
         }
         else
         {
