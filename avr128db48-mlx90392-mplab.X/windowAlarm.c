@@ -744,6 +744,12 @@ bool windowAlarm_getResultStatus(void)
 //Prints the state of the alarm
 void windowAlarm_printResults(void)
 {
+    //Calibration is not good
+    if (calState != CAL_GOOD)
+    {
+        return;
+    }
+    
     //Clear Flag
     alarmResultsReady = false;
     
@@ -752,7 +758,7 @@ void windowAlarm_printResults(void)
     {
         LED_turnOnRed();
         LED_turnOffGreen();
-        RN4870_sendStringToUser("Alarm Trip\n");
+        RN4870_sendStringToUser("Alarm BAD\n");
     }
     else
     {

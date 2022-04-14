@@ -39,7 +39,7 @@ extern "C" {
 #define MAGNETOMETER_ALARM_TRIGGER 10
     
 //Defines the highest range for the alarm
-#define MAGNETOMETER_ALARM_TRIGGER_MAX 100
+#define MAGNETOMETER_ALARM_TRIGGER_MAX 20
 
 //Defines the number of cycles to run between printing alarm status. Ignored at trigger thrshold
 #define MAGNETOMETER_ALARM_PRINT_RATE 20

@@ -13,6 +13,8 @@
 #include "TCA0.h"
 #include "windowAlarm.h"
 #include "LEDcontrol.h"
+#include "RTC.h"
+#include "demo.h"
 
 #include <avr/interrupt.h>
 
@@ -290,6 +292,8 @@ void RN4870_powerUp(void)
         return;
     }
     
+    RTC_setPIT(RTC_PERIOD_CYC128_gc);
+    
     //Switch LEDs to PWM Control
     LED_switchToActive();
     
@@ -313,9 +317,9 @@ void RN4870_powerDown(void)
 {    
     //Update State
     stateRN4870 = RN4870_POWER_OFF;
-    
-    //Turn off the Blue LED
-    LED_turnOffBlue();
+        
+    //Reduce PIT Sampling Rate
+    RTC_setPIT(RTC_PERIOD_CYC1024_gc);
     
     //Hold in nRESET
     BTLE_AssertReset();
@@ -330,8 +334,14 @@ void RN4870_powerDown(void)
     //Enable WAKE Pin to resume communication
     WAKE_EnableIOC();
     
-    //Swap any other LEDs to IO Control
-    LED_switchToSleep();
+    //Turn off the LEDs
+    LED_turnOffRed();
+    LED_turnOffGreen();
+    LED_turnOffBlue();
+    
+    //Clear RTC flags
+    RTC_clearCMPTrigger();
+    RTC_clearOVFTrigger();
 }
 
 bool RN4870_enterCommandMode(void)
