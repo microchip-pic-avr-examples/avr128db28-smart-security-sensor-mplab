@@ -65,16 +65,16 @@ bool RN4870_startupInit(void)
         return false;
     }
     
-    if (RN4870_isConnected(255))
-    {
-        //Already Connected
-        stateRN4870 = RN4870_READY;
-        return true;
-    }
-    else
-    {
-        
-    }
+//    if (RN4870_isConnected(255))
+//    {
+//        //Already Connected
+//        stateRN4870 = RN4870_READY;
+//        return true;
+//    }
+//    else
+//    {
+//        
+//    }
                 
     //Enable UART Transparent Service
     RN4870_sendCommandAndPrint("SS,40", 255);    
@@ -83,7 +83,7 @@ bool RN4870_startupInit(void)
     RN4870_sendCommandAndPrint("S-,MCHP-MLX", 255);     
     
     //Reboot!
-    RN4870_sendCommandAndPrint("R,1", 0);
+    RN4870_reboot();
     
     return true;
 }
@@ -138,22 +138,27 @@ RN4870_EVENT RN4870_getStatusEvent(void)
         
         if (RN4870RX_find("REBOOT"))
         {
+            USB_sendString("Processed as REBOOT\r\n");
             return RN4870_EVENT_REBOOT;
         }
         else if (RN4870RX_find("DISCONNECT"))
         {
+            USB_sendString("Processed as DISCONNECt\r\n");
             return RN4870_EVENT_DISCONNECT;
         }
         else if (RN4870RX_find("CONNECT"))
         {
+            USB_sendString("Processed as CONNECt\r\n");
             return RN4870_EVENT_CONNECT;
         }
         else if (RN4870RX_find("STREAM_OPEN"))
         {
+            USB_sendString("Processed as STREAM_OPEN\r\n");
             return RN4870_EVENT_STREAM_OPEN;
         }
         else if (RN4870RX_find("CONN_PARAM"))
         {
+            USB_sendString("Processed as CONN_PARAM\r\n");
             return RN4870_EVENT_CONN_PARAM;
         }
         else
@@ -229,17 +234,13 @@ void RN4870_processStatusMessages(void)
             if (event == RN4870_EVENT_REBOOT)
             {              
                 //Init is done, try to reconnect
-                RN4870_sendCommandAndPrint("C", 50);
-
                 stateRN4870 = RN4870_PAIR;
             }
-            else if (event == RN4870_EVENT_CONNECT)
-            {
-                //Enable UART Service
-                RN4870_sendCommandAndPrint("I", 25);
-                                
-                stateRN4870 = RN4870_READY;
-            }
+//            else if (event == RN4870_EVENT_CONNECT)
+//            {
+//                //Enable UART Service
+//                stateRN4870 = RN4870_READY;
+//            }
             break;
         }
         case RN4870_PAIR:
@@ -249,9 +250,6 @@ void RN4870_processStatusMessages(void)
             //If we already connected, leave this state
             if (event == RN4870_EVENT_STREAM_OPEN)
             {
-                //Bond to the connected device
-                //RN4870_sendCommandAndPrint("B", 100);
-                
                 LED_turnOnBlue();
                 stateRN4870 = RN4870_READY;
             }
@@ -392,6 +390,34 @@ bool RN4870_isConnected(uint8_t timeout)
     return true;
 }
 
+//Reboots the RN4870
+bool RN4870_reboot(void)
+{
+    //Clear the Watchdog Timer
+    asm("WDR");
+    
+    //Debug Print
+    USB_sendString("Executing Command: \"");
+    USB_sendString("R,1");
+    USB_sendString("\"...");
+    
+    //Print Command to BLE
+    BLE_printCommandString("R,1", '\r');
+    bool status = true;
+    
+    status = RN4870RX_waitForResponseRX(100, "Rebooting");
+    
+    if (status)
+    {
+        USB_sendString("OK\r\n");
+    }
+    else
+    {
+        USB_sendString("FAILED\r\n");
+    }
+    
+    return true;
+}
 
 bool RN4870_sendCommand(const char* string, uint8_t timeout)
 {
@@ -414,7 +440,10 @@ void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
     
     //Print Command to BLE
     BLE_printCommandString(string, '\r');
-    bool status = RN4870RX_waitForResponseRX(timeout, "AOK");
+    bool status = true;
+    
+    if (timeout != 0)
+        status = RN4870RX_waitForResponseRX(timeout, "AOK");
     
     if (status)
     {

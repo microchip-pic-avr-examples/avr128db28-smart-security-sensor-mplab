@@ -13,6 +13,9 @@ void ADC_init(void)
     //Single Ended Mode, 10-bit Resolution
     ADC0.CTRLA = ADC_CONVMODE_SINGLEENDED_gc | ADC_RESSEL_10BIT_gc;
     
+    //VDD Reference
+    VREF.ADC0REF = VREF_REFSEL_VDD_gc;
+    
     //Divide the Peripheral Clock is 128 (4 MHz / 128 = 31.25 kHz)
     ADC0.CTRLC = ADC_PRESC_DIV128_gc;
     
@@ -50,7 +53,11 @@ float ADC_getResultAsFloat(uint8_t channel)
     uint16_t val = ADC_getValue(channel);
     
     //Convert to Float
-    float result = 3 * (val / 1024.0);
+    //3.3 /  1024 = Vbits
+    //Vbits * val = voltage / 2
+    
+    //(3.3 * 2) / 1024 = 0.006445mV per bit
+    float result = 0.006445 * val;
     
     return result;
 }
