@@ -11,7 +11,7 @@
 #include "GPIO.h"
 #include "ringBuffer.h"
 
-volatile static bool processingMessage = false;
+volatile static bool processingMessage = false, isMessageComplete = false;
 static char cMemory[RN4870_RX_BUFFER_SIZE];
 static RingBuffer ringBuffer;
 
@@ -48,6 +48,7 @@ void RN4870RX_loadCharacter(char input)
         {
             ringBuffer_loadCharacter(&ringBuffer, RN4870_DELIM_RING_BUFFER);
             
+            isMessageComplete = true;
             processingMessage = false;
         }
         else if (input != ' ')
@@ -75,7 +76,12 @@ bool RN4870RX_isEmpty(void)
     if (ringBuffer_isEmpty(&ringBuffer))
         return true;
     
-    return false;
+    if (isMessageComplete)
+    {
+        return false;
+    }
+    
+    return true;
 }        
 
 //Returns true if a status message (%TEXT%) was received
@@ -105,6 +111,12 @@ bool RN4870RX_find(const char* comp)
 void RN4870RX_advanceMessage(void)
 {
     ringBuffer_advanceToString(&ringBuffer, "#");
+    
+    //No other messages
+    if (ringBuffer_isEmpty(&ringBuffer))
+    {
+        isMessageComplete = false;
+    }
 }
 
 //Fills a buffer with a copy of the current message
@@ -131,7 +143,7 @@ bool RN4870RX_copyMessageParameter(char* buffer, uint8_t size)
 //Returns true if RESP_DELIM was the last character received.
 bool RN4870RX_isResponseComplete(void)
 {
-    return processingMessage;
+    return isMessageComplete;
 }
 
 //Discards the buffer
@@ -139,6 +151,7 @@ void RN4870RX_clearBuffer(void)
 {
     ringBuffer_flushReadBuffer(&ringBuffer);
     processingMessage = false;
+    isMessageComplete = false;
 }
 
 //Waits for a message to be received and checks to see if it matches string.

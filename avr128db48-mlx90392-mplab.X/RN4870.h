@@ -55,6 +55,9 @@ extern "C" {
     //Returns true if connected
     bool RN4870_isConnected(uint8_t timeout);
     
+    //Reboots the RN4870
+    bool RN4870_reboot(void);
+    
     //Sends a Command to the RN4870
     bool RN4870_sendCommand(const char* string, uint8_t timeout);
     

@@ -182,7 +182,6 @@ bool DEMO_handleUserCommands(void)
     }
     else if (RN4870RX_find("VBAT"))
     {
-        //Print Battery Voltage
         sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
         RN4870_printBufferedString();
         
