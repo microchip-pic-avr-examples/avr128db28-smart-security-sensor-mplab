@@ -315,7 +315,7 @@ void RN4870_powerDown(void)
 {    
     //Update State
     stateRN4870 = RN4870_POWER_OFF;
-        
+    
     //Reduce PIT Sampling Rate
     RTC_setPIT(RTC_PERIOD_CYC1024_gc);
     

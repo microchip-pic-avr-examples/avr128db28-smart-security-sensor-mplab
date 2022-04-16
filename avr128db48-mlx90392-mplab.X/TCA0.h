@@ -39,12 +39,12 @@ extern "C" {
 
     //Returns true if the HCMP is enabled (ie: PWM is ON)
     bool TCA0_getHCMP0EN(void);
-    bool TCA1_getHCMP1EN(void);
-    bool TCA2_getHCMP2EN(void);
+    bool TCA0_getHCMP1EN(void);
+    bool TCA0_getHCMP2EN(void);
     
 #define TCA0_getLEDR TCA0_getHCMP0EN
-#define TCA0_getLEDG TCA1_getHCMP1EN
-#define TCA0_getLEDB TCA2_getHCMP2EN
+#define TCA0_getLEDG TCA0_getHCMP1EN
+#define TCA0_getLEDB TCA0_getHCMP2EN
     
 #ifdef	__cplusplus
 }

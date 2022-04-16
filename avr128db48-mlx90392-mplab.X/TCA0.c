@@ -65,12 +65,12 @@ bool TCA0_getHCMP0EN(void)
     return (TCA0.SPLIT.CTRLB & TCA_SPLIT_HCMP0EN_bm);
 }
 
-bool TCA1_getHCMP1EN(void)
+bool TCA0_getHCMP1EN(void)
 {
     return (TCA0.SPLIT.CTRLB & TCA_SPLIT_HCMP1EN_bm);
 }
 
-bool TCA2_getHCMP2EN(void)
+bool TCA0_getHCMP2EN(void)
 {
     return (TCA0.SPLIT.CTRLB & TCA_SPLIT_HCMP2EN_bm);
 }
