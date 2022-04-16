@@ -29,6 +29,18 @@ This application was co-developed with Melexis, a global supplier of microelectr
 
 Please consult the Bill of Materials (BOM) in the documentation.
 
+## Power Consumption
+
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode | ??? &micro;A
+| Active Mode | ??? mA
+| Calibration Mode | ??? mA
+
+Note: **These values are provided for reference only.**
+
+ Values were captured with the system powered from a DC power supply through a precision digital multimeter (with a sampling rate of 100 ksps). All equipment is in calibration.
+
 ## Table of Contents
 
 - [Window Alarm Sensing](#window-alarm-sensing)
@@ -175,13 +187,15 @@ Command Examples:
 | STWL | STWL,\<TEMP\> | STWL,10.0 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
 | RST   | RST   | RST   | Resets the microcontroller. Communications will be reset.
-| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. See [Low Power Mode](#low-power-mode) for more information.
+| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. Calibration must be valid and alarm is inactive to enter this state. See [Low Power Mode](#low-power-mode) for more information. Also aliased as PWRDWN
 
 ### LED Status Indicator
 
 The RGB LED on the board is used to indicate the following statuses:
 
-**<TODO: Add this section>**
+Red LED - Alarm Tripped
+Green LED - Alarm Good
+Blue LED - Connected (and able to send) UART to the Smartphone
 
 ### Calibration Mode
 
@@ -191,9 +205,9 @@ To enter calibration mode, press the Cal. button when NOT in Low Power mode or b
 
 ### Low Power Mode
 
-For longer battery life, the demo can be placed into Low Power Mode. In this mode, the Bluetooth radio is electrically disconnected from the power-supply. Periodically, the microcontroller will reapply power to the radio, attempt to pair to the last bonded device, send system status, and then disconnect again. In this mode, commands from the user are not accepted. **On startup, the device does NOT start in Low Power Mode.**
+For longer battery life, the demo can be placed into Low Power Mode. In this mode, the Bluetooth radio is electrically disconnected from the power-supply. If the alarm is triggered in low power mode, the microcontroller will restart the Bluetooth module and wake-up. While in low power mode, commands from the user are not accepted. **On startup, the device does NOT start in Low Power Mode.**
 
-To enter Low Power Mode, send the "PWDWN" command.   
+To enter Low Power Mode, send the "PWDWN" command while the calibration is valid and the alarm is inactive.   
 To exit Low Power Mode, press the Cal. button on the demo.
 
 Note: Debug UART will remain active in Low Power Mode.
