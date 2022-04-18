@@ -26,6 +26,9 @@ extern "C" {
     //Returns the compare of the RTC
     uint16_t RTC_getCompare(void);
     
+    //Returns the count of the RTC
+    uint16_t RTC_getCount(void);
+    
     //Sets the period of the RTC
     void RTC_setPeriod(uint16_t period);
     

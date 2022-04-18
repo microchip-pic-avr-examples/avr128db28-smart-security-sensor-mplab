@@ -16,6 +16,7 @@
 #include "EEPROM_Locations.h"
 #include "DEFAULTS.h"
 #include "ADC.h"
+#include "Bluetooth_Timeout_Timer.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -42,6 +43,7 @@ void DEMO_init(bool safeStart)
 //If reset = true, will load defaults
 void DEMO_loadSettings(bool nReset)
 {
+    BLE_SW_Timer_loadSettings(nReset);
     if (!nReset)
     {
         //Write Default Value
@@ -138,7 +140,7 @@ bool DEMO_handleUserCommands(void)
         //STSR - Set Temperature Sampling Rate
         USB_sendString("Running STSR Command\r\n");
         
-        if (param != NULL)
+        if (RN4870RX_find(","))
         {
             if (RN4870RX_find("FAST"))
             {
@@ -237,6 +239,38 @@ bool DEMO_handleUserCommands(void)
             }
         }
     }
+    else if (RN4870RX_find("BTIDLEOFF"))
+    {
+        //Bluetooth Idle Off
+        
+        if (RN4870RX_find(","))
+        {
+            //Parameter found
+            if (RN4870RX_find("TRUE"))
+            {
+                BLE_SW_Timer_saveSettings(DEFAULT_BLUETOOTH_IDLE_PERIOD);
+                ok = true;
+            }
+            else if (RN4870RX_find("FALSE"))
+            {
+                //Turn off period
+                BLE_SW_Timer_saveSettings(0);
+                ok = true;
+            }
+            else
+            {
+                USB_sendString("[ERR] Improper parameter found in BTIDLEOFF command.\r\n");
+            }
+        }
+        else
+        {
+            USB_sendString("[ERR] No parameter found in BTIDLEOFF command.\r\n");
+        }
+    }
+    else
+    {
+        RN4870_sendStringToUser("Command not found. For help, please type HELP.\r\n");
+    }
     
     return ok;
 }
@@ -281,4 +315,11 @@ void DEMO_setSystemUpdateRateRAM(uint16_t rate)
     
     //Update Temp Trigger Timing
     tempMonitor_updateSampleRate(rate);
+}
+
+//Handles timeout event if bluetooth is idle
+//If cal is OK, nothing happens for a long time, and alarm is OK, system will transition to low-power mode
+void DEMO_handleBluetoothTimeout(void)
+{
+    
 }

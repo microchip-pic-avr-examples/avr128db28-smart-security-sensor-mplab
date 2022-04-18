@@ -16,6 +16,7 @@
 #include "RN4870.h"
 #include "TWI0_host.h"
 #include "LEDcontrol.h"
+#include "Bluetooth_Timeout_Timer.h"
 
 //Enumeration for the Measurement State Machine
 typedef enum {
@@ -175,6 +176,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (MLX90392_setOperatingMode(MAGNETOMETER_CAL_SAMPLE_RATE))
             {                
                 calState = CAL_OPEN_WAIT;
+                alarmResultsReady = true;
             }
             else
             {
@@ -186,6 +188,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         {
             if (buttonPressed)
             {
+                USB_sendString("Starting open window calibration.\r\n");
                 RN4870_sendStringToUser("Beginning open window calibration.\r\n");
                 calState = CAL_OPEN;
                 sampleCount = 0;
@@ -220,7 +223,8 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         case CAL_CLOSED_WAIT:
         {
             if (buttonPressed)
-            {                
+            {             
+                USB_sendString("Starting closed window calibration.\r\n");
                 RN4870_sendStringToUser("Beginning closed window calibration.\r\n");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
@@ -284,6 +288,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             }
             else if (buttonPressed)
             {
+                USB_sendString("Starting window threshold calibration.\r\n");
                 RN4870_sendStringToUser("Beginning window threshold calibration.\r\n");
                 
                 //Init Variables
@@ -404,8 +409,8 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                         minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ);
                 USB_sendBufferedString();
 #endif
-                
-                RN4870_sendStringToUser("Calibration Completed.\r\n");
+                USB_sendString("Calibration complete.\r\n");
+                RN4870_sendStringToUser("Calibration Complete.\r\n");
                 calState = CAL_DEINIT;
                 
                 //Clear the blink counter
@@ -424,6 +429,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (MLX90392_setOperatingMode(MAGNETOMETER_ACTIVE_SAMPLE_RATE))
             {
                 calState = CAL_GOOD;
+                BLE_SW_Timer_reset();
             }
             else
             {
@@ -747,6 +753,8 @@ void windowAlarm_printResults(void)
     //Calibration is not good
     if (calState != CAL_GOOD)
     {
+        LED_turnOnRed();
+        LED_turnOnGreen();
         return;
     }
     
@@ -756,6 +764,7 @@ void windowAlarm_printResults(void)
     //Print Results
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {
+        BLE_SW_Timer_reset();
         LED_turnOnRed();
         LED_turnOffGreen();
         RN4870_sendStringToUser("Alarm BAD\n");

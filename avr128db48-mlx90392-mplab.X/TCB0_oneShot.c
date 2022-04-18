@@ -5,6 +5,9 @@
 
 void TCB0_init(void)
 {
+    //TCB0 uses channel 0
+    EVSYS.USERTCB0CAPT = EVSYS_USER_CHANNEL0_gc;
+    
     //Enable Debug Mode Operation
     TCB0.DBGCTRL = TCB_DBGRUN_bm;
     

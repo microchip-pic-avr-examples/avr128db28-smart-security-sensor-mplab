@@ -11,6 +11,9 @@ extern "C" {
 //Default Time in the RTC Period to Start
 #define DEFAULT_RTC_COMPARE 0x0DC0
     
+//Default Bluetooth Idle Time (30s)
+#define DEFAULT_BLUETOOTH_IDLE_PERIOD 0x1E00
+    
 //Default Temp Unit
 #define DEFAULT_TEMP_UNIT 'C'
     
