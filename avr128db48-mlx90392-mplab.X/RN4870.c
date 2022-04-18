@@ -15,6 +15,7 @@
 #include "LEDcontrol.h"
 #include "RTC.h"
 #include "demo.h"
+#include "Bluetooth_Timeout_Timer.h"
 
 #include <avr/interrupt.h>
 
@@ -117,6 +118,9 @@ void RN4870_processEvents(void)
     
     while (!RN4870RX_isEmpty())
     {
+        //Reset Timeout Timer
+        BLE_SW_Timer_reset();
+        
         //Process the message (both functions check type before running)
         RN4870_runUserCommands();
         RN4870_processStatusMessages();
@@ -340,6 +344,9 @@ void RN4870_powerDown(void)
     //Clear RTC flags
     RTC_clearCMPTrigger();
     RTC_clearOVFTrigger();
+    
+    //Reset Timeout Timer
+    BLE_SW_Timer_reset();
 }
 
 bool RN4870_enterCommandMode(void)
@@ -377,17 +384,9 @@ void RN4870_exitCommandMode(void)
 }
 
 //Returns true if connected
-bool RN4870_isConnected(uint8_t timeout)
+bool RN4870_isConnected(void)
 {
-    return false;
-    
-    BLE_printCommandString("GK", '\r');
-    
-    if (RN4870RX_waitForResponseRX(timeout, "non"))
-    {
-        return false;
-    }
-    return true;
+    return (stateRN4870 == RN4870_READY);
 }
 
 //Reboots the RN4870

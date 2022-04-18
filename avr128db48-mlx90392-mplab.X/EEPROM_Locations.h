@@ -71,6 +71,9 @@ extern "C" {
     
 //Update Rate for Full System
 #define SYSTEM_UPDATE_PERIOD (1 + SYSTEM_GOOD_MARKER)   //0x143C
+
+//How many RTC pulses the Bluetooth is allowed to be idle (and unconnected) for     
+#define SYSTEM_BLUETOOTH_IDLE_PERIOD (2 + SYSTEM_UPDATE_PERIOD)
     
 //If angles are not used, EEPROM ends at 0x1450
     

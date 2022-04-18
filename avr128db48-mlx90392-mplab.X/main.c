@@ -58,6 +58,7 @@
 #include "demo.h"
 #include "TCA0.h"
 #include "LEDcontrol.h"
+#include "Bluetooth_Timeout_Timer.h"
 
 //Prints results when not in low-power mode
 void normalPrint(void)
@@ -91,15 +92,17 @@ void lowPowerLEDPrint(void)
         RTC_clearCMPTrigger();
         windowAlarm_printResults();
     }
-    
-    if (RTC_isOVFTriggered())
+    else
     {
-        RTC_clearOVFTrigger();
-        
         //Shutoff LEDs
         LED_turnOffBlue();
         LED_turnOffGreen();
         LED_turnOffRed();
+    }
+    
+    if (RTC_isOVFTriggered())
+    {
+        RTC_clearOVFTrigger();
     }
 }
 
@@ -119,10 +122,10 @@ int main(void)
     
     //Setup ISR Callback for RTC
     RTC_setCMPCallback(&tempMonitor_requestConversion);
-                
+    
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = WAKE_GetValue();
-    
+        
     //Init User Settings
     DEMO_init(safeStart);
     
@@ -135,7 +138,9 @@ int main(void)
         
     //Configure RN4870
     RN4870_init();
-        
+    
+    BLE_SW_Timer_setCurrentTime();
+    
     while(1)
     {        
         //Clear the Watchdog Timer
@@ -189,6 +194,17 @@ int main(void)
         {
             //Can't enter sleep, print normally
             normalPrint();
+            
+            //Add RTC Changes
+            BLE_SW_Timer_addTime();
+            
+            //If Timer triggered
+            if ((BLE_SW_Timer_hasTriggered()) && (windowAlarm_isAlarmOK()) &&
+                    (windowAlarm_isCalGood()) && (!RN4870_isConnected()))
+            {
+                USB_sendString("Bluetooth Idle timeout has occurred. Switching to low power mode.\r\n");
+                RN4870_powerDown();
+            }
         }
     }    
 }

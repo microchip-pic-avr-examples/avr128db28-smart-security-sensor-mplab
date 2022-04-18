@@ -40,18 +40,16 @@ void System_initDevice(void)
 
 //Inits peripherals
 void System_initPeripherals(void)
-{
-    //Init EVSYS
-    
-    //TCB0 uses channel 0
-    EVSYS.USERTCB0CAPT = EVSYS_USER_CHANNEL0_gc;
-    
+{    
     //Init GPIO
     GPIO_init();
     
     //Init MVIO
     MVIO_init();
-        
+    
+    //Init EVSYS
+    //TCB0 Uses Channel 0 (TCB sets up events)
+    
     //Configure TWI0 (MVIO)
     TWI0_initPins();
     TWI0_initHost();

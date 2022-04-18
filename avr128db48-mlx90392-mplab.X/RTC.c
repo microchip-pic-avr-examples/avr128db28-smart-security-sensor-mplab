@@ -81,6 +81,15 @@ uint16_t RTC_getCompare(void)
     return RTC.CMP;
 }
 
+//Returns the count of the RTC
+uint16_t RTC_getCount(void)
+{
+    uint16_t t = RTC.CNTL;
+    t |= (RTC.CNTH << 8);
+    
+    return t;
+}
+
 void RTC_setPeriod(uint16_t period)
 {
     while (RTC.STATUS & RTC_CTRLABUSY_bm);

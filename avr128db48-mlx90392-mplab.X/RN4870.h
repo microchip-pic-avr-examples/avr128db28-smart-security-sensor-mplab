@@ -53,7 +53,7 @@ extern "C" {
     void RN4870_exitCommandMode(void);
     
     //Returns true if connected
-    bool RN4870_isConnected(uint8_t timeout);
+    bool RN4870_isConnected(void);
     
     //Reboots the RN4870
     bool RN4870_reboot(void);

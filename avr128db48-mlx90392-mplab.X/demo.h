@@ -37,6 +37,10 @@ extern "C" {
     //Does NOT write to EEPROM
     void DEMO_setSystemUpdateRateRAM(uint16_t rate);
     
+    //Handles timeout event if bluetooth is idle
+    //If cal is OK, nothing happens for a long time, and alarm is OK, system will transition to low-power mode
+    void DEMO_handleBluetoothTimeout(void);
+    
 #ifdef	__cplusplus
 }
 #endif
