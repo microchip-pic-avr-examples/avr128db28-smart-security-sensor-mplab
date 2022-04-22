@@ -60,6 +60,9 @@ extern "C" {
     //Converts raw results into a normalized compressed value
     void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results);
     
+    //Returns true if a magnetic overflow has occurred
+    bool windowAlarm_isMagneticOverflow(MLX90392_RawResult16* raw);
+    
     //Saves current thresholds.
     bool windowAlarm_saveThresholds(void);
     
