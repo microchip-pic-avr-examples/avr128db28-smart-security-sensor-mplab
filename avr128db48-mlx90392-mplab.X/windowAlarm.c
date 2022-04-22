@@ -129,17 +129,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
 {
     static MagnetometerCalibrationState oldState = CAL_BAD;
     static uint16_t sampleCount = 0, instructionCount = 0;
-    static uint8_t blinkCount = 0, weightedAlarmState = 0;
-    
-    //Digital Counter to blink the LED
-    if (blinkCount >= MAGNETOMETER_CAL_BLINK_PERIOD)
-    {
-        blinkCount = 0;
-    }
-    else
-    {
-        blinkCount++;
-    }
+    static uint8_t weightedAlarmState = 0;
     
     //Update Angle Max and Min
 #ifdef MAGNETOMETER_ANGLE_CHECK
@@ -197,6 +187,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         }
         case CAL_OPEN:
         {
+            if (windowAlarm_isMagneticOverflow(rawResult))
+            {
+                RN4870_sendStringToUser("[ERR] Magnetic Field is too strong. Please retry.");
+                calState = CAL_OPEN_WAIT;
+            }
+            
             sampleCount++;
             
             //Accumulate Results
@@ -232,7 +228,13 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             break;
         }
         case CAL_CLOSED:
-        {                        
+        {                    
+            if (windowAlarm_isMagneticOverflow(rawResult))
+            {
+                RN4870_sendStringToUser("[ERR] Magnetic Field is too strong. Please retry.");
+                calState = CAL_CLOSED_WAIT;
+            }
+
             sampleCount++;
             
             //Accumulate results
@@ -286,6 +288,11 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 USB_sendStringWithEndline("[ERR] Sensor value is below noise margin, please close the window and press the button to retry.");
                 calState = CAL_CRACKED_ERR;
             }
+            else if (windowAlarm_isMagneticOverflow(rawResult))
+            {
+                RN4870_sendStringToUser("[ERR] Magnetic Field is too strong. Please retry.");
+                calState = CAL_CRACKED_ERR;
+            }
             else if (buttonPressed)
             {
                 USB_sendStringWithEndline("Starting window threshold calibration.");
@@ -322,6 +329,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         }
         case CAL_CRACKED:
         {   
+            if (windowAlarm_isMagneticOverflow(rawResult))
+            {
+                RN4870_sendStringToUser("[ERR] Magnetic Field is too strong. Please retry.");
+                calState = CAL_CRACKED_ERR;
+            }
+            
             //Increment Counter
             sampleCount++;
             
@@ -412,9 +425,6 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 USB_sendStringWithEndline("Calibration complete.");
                 RN4870_sendStringToUser("Calibration Complete.");
                 calState = CAL_DEINIT;
-                
-                //Clear the blink counter
-                blinkCount = 0;
                 
                 //Save values to EEPROM
                 windowAlarm_saveThresholds();
@@ -563,9 +573,33 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
     return false;
 }
 
+//Returns true if a magnetic overflow has occurred
+bool windowAlarm_isMagneticOverflow(MLX90392_RawResult16* raw)
+{
+    uint8_t status2 = raw->status2.status2_byte;
+    if (status2 & MLX90392_STAT2_HOVF_bm)
+    {
+        //Overflow!
+        return true;
+    }
+    return false;
+}
+
 //Converts raw results into a normalized compressed value
 void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results)
 {
+    if (windowAlarm_isMagneticOverflow(raw))
+    {
+        USB_sendStringWithEndline("[ERR] Magnetic Overflow detected while normalizing data.");
+
+        //Set values to max
+        results->x = 0xFF;
+        results->y = 0xFF;
+        results->z = 0xFF;
+        results->r2 = 0xFFFFFFFF;
+        return;
+    }
+    
     int16_t x, y, z;
     
     //Remove offsets from measurements
@@ -650,7 +684,7 @@ void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_Nor
 
 //Checks to see if the alarm should be triggered or not
 bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
-{
+{    
     if ((normResults->r2 >= crackedV) && (normResults->r2 <= maxV))
     {
         //Within Expected Intensity

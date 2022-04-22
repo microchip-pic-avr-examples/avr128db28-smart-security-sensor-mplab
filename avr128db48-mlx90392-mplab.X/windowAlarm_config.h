@@ -29,9 +29,6 @@ extern "C" {
 //How many cycles of the PIT to run before reprinting magnetometer error
 #define MAGNETOMETER_ERROR_DELAY 1250
 
-//Calibration state machine runs per LED blink
-#define MAGNETOMETER_CAL_BLINK_PERIOD 25
-
 //How many samples to use for MAX / MIN comparisons
 #define MAGNETOMETER_CALIBRATION_SAMPLES 1000
         
