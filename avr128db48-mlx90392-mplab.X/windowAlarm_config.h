@@ -30,7 +30,10 @@ extern "C" {
 #define MAGNETOMETER_ERROR_DELAY 1250
 
 //How many samples to use for MAX / MIN comparisons
-#define MAGNETOMETER_CALIBRATION_SAMPLES 1000
+#define MAGNETOMETER_CALIBRATION_SAMPLES 1024
+    
+//How many right-shifts for the acquired average
+#define MAGNETOMETER_RSHIFT_SAMPLE_COUNT 10
         
 //Defines the number of events to trigger the alarm
 #define MAGNETOMETER_ALARM_TRIGGER 10
