@@ -203,9 +203,9 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
                 //Compute Average Offset
-                offsetX = round(averageX / MAGNETOMETER_CALIBRATION_SAMPLES);
-                offsetY = round(averageY / MAGNETOMETER_CALIBRATION_SAMPLES);
-                offsetZ = round(averageZ / MAGNETOMETER_CALIBRATION_SAMPLES);
+                offsetX = averageX >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
+                offsetY = averageY >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
+                offsetZ = averageZ >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
                 
                 //Print Debug Info
                 sprintf(USB_getCharBuffer(), "Zeroing Complete. X_off = %d, Y_off = %d, Z_off= %d\r\n", offsetX, offsetY, offsetZ);
@@ -245,9 +245,9 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
                 //Compute Average
-                averageX = round(averageX / MAGNETOMETER_CALIBRATION_SAMPLES);
-                averageY = round(averageY / MAGNETOMETER_CALIBRATION_SAMPLES);
-                averageZ = round(averageZ / MAGNETOMETER_CALIBRATION_SAMPLES);
+                averageX = averageX >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
+                averageY = averageY >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
+                averageZ = averageZ >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
                 
                 //Compute Scaling Factor
                 scaleX = _windowAlarm_computeScalingFactor(averageX);
@@ -344,7 +344,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
                 //Set Cracked Threshold
-                crackedV = round(averageR2 / MAGNETOMETER_CALIBRATION_SAMPLES);
+                crackedV = averageR2 >> MAGNETOMETER_RSHIFT_SAMPLE_COUNT;
 
                 //Warning for Low Noise Margin
                 if (crackedV < MAGNETOMETER_NOISE_MARGIN)
