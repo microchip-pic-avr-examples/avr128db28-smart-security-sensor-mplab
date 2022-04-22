@@ -179,7 +179,7 @@ bool DEMO_handleUserCommands(void)
         //Demo / Info
         RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
                 "Developed by Microchip Technology Inc. with assistance from Melexis\r\n"
-                "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab\r\n");
+                "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab");
         ok = true;
     }
     else if (RN4870RX_find("VBAT"))
@@ -192,7 +192,7 @@ bool DEMO_handleUserCommands(void)
     else if (RN4870RX_find("STATUS"))
     {
         //Print Current Results
-        RN4870_sendStringToUser("Current System State: \r\n");
+        RN4870_sendStringToUser("Current System State:");
         
         windowAlarm_printResults();
         tempMonitor_printLastResults();
@@ -213,7 +213,7 @@ bool DEMO_handleUserCommands(void)
         tempMonitor_loadSettings(false);
         DEMO_loadSettings(false);
         
-        RN4870_sendStringToUser("Settings were reset.\r\n");
+        RN4870_sendStringToUser("Settings were reset.");
         
         ok = true;
     }
@@ -231,11 +231,11 @@ bool DEMO_handleUserCommands(void)
         {
             if (!windowAlarm_isCalGood())
             {
-                RN4870_sendStringToUser("Please calibrate the window alarm before power down.\r\n");
+                RN4870_sendStringToUser("Please calibrate the window alarm before power down.");
             }
             else
             {
-                RN4870_sendStringToUser("Node cannot be powered down if alarm is active.\r\n");
+                RN4870_sendStringToUser("Node cannot be powered down if alarm is active.");
             }
         }
     }
@@ -301,7 +301,7 @@ bool DEMO_handleUserCommands(void)
     }
     else
     {
-        RN4870_sendStringToUser("Command not found. For help, please type HELP.\r\n");
+        RN4870_sendStringToUser("Command not found. For help, please type HELP.");
     }
     
     return ok;

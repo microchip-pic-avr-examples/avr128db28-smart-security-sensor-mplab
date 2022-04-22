@@ -190,11 +190,11 @@ void RN4870_runUserCommands(void)
         {
             if (onUserEvent())
             {
-                RN4870_sendStringToUser("<CMD OK>\r\n");
+                RN4870_sendStringToUser("<CMD OK>");
             }
             else
             {
-                RN4870_sendStringToUser("<CMD BAD>\r\n");
+                RN4870_sendStringToUser("<CMD BAD>");
             }
         }    
     }
@@ -346,7 +346,7 @@ bool RN4870_enterCommandMode(void)
     asm("WDR");
     
     //Enter Command Mode
-    BLE_sendString("$$$");
+    BLE_sendStringRaw("$$$");
     
     USB_sendStringRaw("RN4870 Entering Command Mode...");
     
@@ -414,7 +414,7 @@ bool RN4870_sendCommand(const char* string, uint8_t timeout)
     //Clear the Watchdog Timer
     asm("WDR");
     
-    BLE_sendString(string);
+    BLE_sendStringRaw(string);
     return RN4870RX_waitForResponseRX(timeout, "AOK");
 }
 
@@ -460,7 +460,12 @@ void RN4870_sendStringToUser(const char* str)
         return;
     }
     
-    BLE_sendString(str);
+    if ((str == NULL) || (str[0] == '\0'))
+    {
+        return;
+    }
+    
+    BLE_sendStringWithEndline(str);
 }
 
 //Returns the char buffer associated with the BLE

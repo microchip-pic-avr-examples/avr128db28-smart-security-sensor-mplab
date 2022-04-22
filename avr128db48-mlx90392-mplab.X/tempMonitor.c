@@ -169,14 +169,14 @@ bool tempMonitor_isTempNormal(void)
     if (objTemp >= tempWarningH)
     {
         //High Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature High\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature High");
         USB_sendStringWithEndline("[WARN] Room Temperature High");
         return false;
     }
     else if (objTemp <= tempWarningL)
     {
         //Low Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature Low\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature Low");
         USB_sendStringWithEndline("[WARN] Room Temperature Low");
         return false;
     }
@@ -262,7 +262,7 @@ void tempMonitor_FSM(void)
         default:
         {
             //Sensor Error has Occurred
-            RN4870_sendStringToUser("Error - Temperature sensor communication failure. Reboot device\r\n");
+            RN4870_sendStringToUser("Error - Temperature sensor communication failure. Reboot device");
             tempState = TEMP_ERROR_WAIT;
         }
     }
@@ -297,7 +297,7 @@ void tempMonitor_printResults(void)
         USB_sendBufferedString();
 
         //Send String
-        RN4870_sendStringToUser("Temperature results are not ready.\r\n");
+        RN4870_sendStringToUser("Temperature results are not ready.");
         
         return;
     }
@@ -318,13 +318,13 @@ void tempMonitor_printLastResults(void)
     if (objTemp >= tempWarningH)
     {
         //High Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature High\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature High");
         USB_sendStringWithEndline("[WARN] Room Temperature High");
     }
     else if (objTemp <= tempWarningL)
     {
         //Low Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature Low\r\n");
+        RN4870_sendStringToUser("[WARN] Room Temperature Low");
         USB_sendStringWithEndline("[WARN] Room Temperature Low");
     }
     

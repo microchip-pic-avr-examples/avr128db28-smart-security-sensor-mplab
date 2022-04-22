@@ -189,7 +189,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (buttonPressed)
             {
                 USB_sendStringWithEndline("Starting open window calibration.");
-                RN4870_sendStringToUser("Beginning open window calibration.\r\n");
+                RN4870_sendStringToUser("Beginning open window calibration.");
                 calState = CAL_OPEN;
                 sampleCount = 0;
             }
@@ -225,7 +225,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (buttonPressed)
             {             
                 USB_sendStringWithEndline("Starting closed window calibration.");
-                RN4870_sendStringToUser("Beginning closed window calibration.\r\n");
+                RN4870_sendStringToUser("Beginning closed window calibration.");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
             }
@@ -289,7 +289,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             else if (buttonPressed)
             {
                 USB_sendStringWithEndline("Starting window threshold calibration.");
-                RN4870_sendStringToUser("Beginning window threshold calibration.\r\n");
+                RN4870_sendStringToUser("Beginning window threshold calibration.");
                 
                 //Init Variables
                 sampleCount = 0;
@@ -382,7 +382,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             if (weightedAlarmState >= MAGNETOMETER_ALARM_TRIGGER)
             {
                 //Alarm went off, calibration failed
-                RN4870_sendStringToUser("[ERROR] Alarm Calibration Failed, please retry.\r\n");
+                RN4870_sendStringToUser("[ERROR] Alarm Calibration Failed, please retry.");
                 
                 //Return to step 1
                 calState = CAL_OPEN_WAIT;
@@ -410,7 +410,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 USB_sendBufferedString();
 #endif
                 USB_sendStringWithEndline("Calibration complete.");
-                RN4870_sendStringToUser("Calibration Complete.\r\n");
+                RN4870_sendStringToUser("Calibration Complete.");
                 calState = CAL_DEINIT;
                 
                 //Clear the blink counter
@@ -433,7 +433,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             }
             else
             {
-                USB_sendStringWithEndline("[ERR] Failed to change MLX90392 operating mode.\r\n");
+                USB_sendStringWithEndline("[ERR] Failed to change MLX90392 operating mode.");
             }
             break;
         }
@@ -767,13 +767,13 @@ void windowAlarm_printResults(void)
         BLE_SW_Timer_reset();
         LED_turnOnRed();
         LED_turnOffGreen();
-        RN4870_sendStringToUser("Alarm BAD\n");
+        RN4870_sendStringToUser("Alarm BAD");
     }
     else
     {
         LED_turnOffRed();
         LED_turnOnGreen();
-        RN4870_sendStringToUser("Alarm OK\n");
+        RN4870_sendStringToUser("Alarm OK");
     }
 }
 
@@ -985,7 +985,7 @@ void windowAlarm_FSM(void)
             //Simple delay to keep this error from filling the UART.
 //            if (magCounter >= MAGNETOMETER_ERROR_DELAY)
 //            {
-//                RN4870_sendStringToUser("Magnetometer Sensor Error - Reboot Device\r\n");
+//                RN4870_sendStringToUser("Magnetometer Sensor Error - Reboot Device");
 //                magCounter = 1;
 //            }
 //            else
