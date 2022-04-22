@@ -22,7 +22,7 @@
 //Power States of RN4870
 typedef enum {
     RN4870_POWER_OFF = 0, RN4870_POWERING_UP_INIT, RN4870_POWERING_UP, RN4870_PAIR, 
-            RN4870_READY, RN4870_POWERING_DOWN
+            RN4870_READY
 } RN4870_STATUS;
 
 static RN4870_STATUS stateRN4870 = RN4870_POWER_OFF;
@@ -55,7 +55,7 @@ void RN4870_init(void)
 //Setup on initial power-up
 bool RN4870_startupInit(void)
 {
-    USB_sendString("Beginning RN4870 Power-Up Config...\r\n");
+    USB_sendStringWithEndline("Beginning RN4870 Power-Up Config...");
     asm("WDR");
     
     bool status = RN4870_enterCommandMode();
@@ -135,39 +135,39 @@ RN4870_EVENT RN4870_getStatusEvent(void)
 {    
     if (RN4870RX_isStatusRX())
     {     
-        USB_sendString("Received Status Message: ");
+        USB_sendStringRaw("Received Status Message: ");
         RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
-        USB_sendString("\r\n");
+        USB_sendStringRaw("\r\n");
         
         if (RN4870RX_find("REBOOT"))
         {
-            USB_sendString("Processed as REBOOT\r\n");
+            USB_sendStringWithEndline("Processed as REBOOT");
             return RN4870_EVENT_REBOOT;
         }
         else if (RN4870RX_find("DISCONNECT"))
         {
-            USB_sendString("Processed as DISCONNECt\r\n");
+            USB_sendStringWithEndline("Processed as DISCONNECT");
             return RN4870_EVENT_DISCONNECT;
         }
         else if (RN4870RX_find("CONNECT"))
         {
-            USB_sendString("Processed as CONNECt\r\n");
+            USB_sendStringWithEndline("Processed as CONNECT");
             return RN4870_EVENT_CONNECT;
         }
         else if (RN4870RX_find("STREAM_OPEN"))
         {
-            USB_sendString("Processed as STREAM_OPEN\r\n");
+            USB_sendStringWithEndline("Processed as STREAM_OPEN");
             return RN4870_EVENT_STREAM_OPEN;
         }
         else if (RN4870RX_find("CONN_PARAM"))
         {
-            USB_sendString("Processed as CONN_PARAM\r\n");
+            USB_sendStringWithEndline("Processed as CONN_PARAM");
             return RN4870_EVENT_CONN_PARAM;
         }
         else
         {
-            USB_sendString("[ERR] Unable to match string to response.\r\n");
+            USB_sendStringWithEndline("[ERR] Unable to match string to response.");
         }
     }
     return RN4870_EVENT_NONE;
@@ -180,10 +180,10 @@ void RN4870_runUserCommands(void)
     //If a user command was received
     if (RN4870RX_isUserRX())
     {        
-        USB_sendString("Received User Command: ");
+        USB_sendStringRaw("Received User Command: ");
         RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
-        USB_sendString("\r\n");
+        USB_sendStringRaw("\r\n");
 
         //If set, call user event handler
         if (onUserEvent)
@@ -200,10 +200,10 @@ void RN4870_runUserCommands(void)
     }
     else
     {       
-        USB_sendString("Non-User Command: ");
+        USB_sendStringRaw("Non-User Command: ");
         RN4870RX_copyMessage(USB_getCharBuffer(), USB_getCharBufferSize());
         USB_sendBufferedString();
-        USB_sendString("\r\n");
+        USB_sendStringRaw("\r\n");
 
     }
 }
@@ -240,11 +240,11 @@ void RN4870_processStatusMessages(void)
                 //Init is done, try to reconnect
                 stateRN4870 = RN4870_PAIR;
             }
-//            else if (event == RN4870_EVENT_CONNECT)
-//            {
-//                //Enable UART Service
-//                stateRN4870 = RN4870_READY;
-//            }
+            else if (event == RN4870_EVENT_STREAM_OPEN)
+            {
+                LED_turnOnBlue();
+                stateRN4870 = RN4870_READY;
+            }
             break;
         }
         case RN4870_PAIR:
@@ -256,11 +256,6 @@ void RN4870_processStatusMessages(void)
             {
                 LED_turnOnBlue();
                 stateRN4870 = RN4870_READY;
-            }
-            else if (event == RN4870_EVENT_CONNECT)
-            {
-                //Enable UART Service
-                RN4870_sendCommandAndPrint("I", 25);
             }
 
             break;
@@ -275,13 +270,6 @@ void RN4870_processStatusMessages(void)
             }
             break;
         }
-        case RN4870_POWERING_DOWN:
-        {
-            //TODO: Implement Power Down
-            
-            stateRN4870 = RN4870_PAIR;
-            break;
-        }
     }
 }
 
@@ -293,6 +281,9 @@ void RN4870_powerUp(void)
     {
         return;
     }
+    
+    //Disable IOC 
+    WAKE_DisableIOC();
     
     RTC_setPIT(RTC_PERIOD_CYC128_gc);
     
@@ -357,18 +348,18 @@ bool RN4870_enterCommandMode(void)
     //Enter Command Mode
     BLE_sendString("$$$");
     
-    USB_sendString("RN4870 Entering Command Mode...");
+    USB_sendStringRaw("RN4870 Entering Command Mode...");
     
     //Wait for RN4870 to enter command mode
     bool status = RN4870RX_waitForCommandRX(100);
     
     if (status)
     {
-        USB_sendString("OK\r\n");
+        USB_sendStringRaw("OK\r\n");
     }
     else
     {
-        USB_sendString("FAILED\r\n");
+        USB_sendStringRaw("FAILED\r\n");
     }
     
     return status;
@@ -396,9 +387,9 @@ bool RN4870_reboot(void)
     asm("WDR");
     
     //Debug Print
-    USB_sendString("Executing Command: \"");
-    USB_sendString("R,1");
-    USB_sendString("\"...");
+    USB_sendStringRaw("Executing Command: \"");
+    USB_sendStringRaw("R,1");
+    USB_sendStringRaw("\"...");
     
     //Print Command to BLE
     BLE_printCommandString("R,1", '\r');
@@ -408,11 +399,11 @@ bool RN4870_reboot(void)
     
     if (status)
     {
-        USB_sendString("OK\r\n");
+        USB_sendStringWithEndline("OK");
     }
     else
     {
-        USB_sendString("FAILED\r\n");
+        USB_sendStringWithEndline("FAILED");
     }
     
     return true;
@@ -433,9 +424,9 @@ void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
     asm("WDR");
     
     //Debug Print
-    USB_sendString("Executing Command: \"");
-    USB_sendString(string);
-    USB_sendString("\"...");
+    USB_sendStringRaw("Executing Command: \"");
+    USB_sendStringRaw(string);
+    USB_sendStringRaw("\"...");
     
     //Print Command to BLE
     BLE_printCommandString(string, '\r');
@@ -446,11 +437,11 @@ void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout)
     
     if (status)
     {
-        USB_sendString("OK\r\n");
+        USB_sendStringWithEndline("OK");
     }
     else
     {
-        USB_sendString("FAILED\r\n");
+        USB_sendStringWithEndline("FAILED");
     }
 }
 

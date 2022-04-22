@@ -71,7 +71,7 @@ bool DEMO_handleUserCommands(void)
         //Copy Parameter
         paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
         
-        USB_sendString("Running STU Command\r\n");
+        USB_sendStringWithEndline("Running STU Command");
         //Sets the temp units to the user parameter
         
         if (paramOK)
@@ -84,7 +84,7 @@ bool DEMO_handleUserCommands(void)
         }
         else
         {
-            USB_sendString("[ERR] No parameter found in STU command.\r\n");
+            USB_sendStringWithEndline("[ERR] No parameter found in STU command.");
         }
     }
     else if (RN4870RX_find("STWL"))
@@ -94,7 +94,7 @@ bool DEMO_handleUserCommands(void)
         //Copy Parameter
         paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
         
-        USB_sendString("Running STWL Command\r\n");
+        USB_sendStringWithEndline("Running STWL Command");
         
         if (paramOK)
         {
@@ -108,7 +108,7 @@ bool DEMO_handleUserCommands(void)
         }
         else
         {
-            USB_sendString("[ERR] No parameter found in STWL command.\r\n");
+            USB_sendStringWithEndline("[ERR] No parameter found in STWL command.");
         }
     }
     else if (RN4870RX_find("STWH"))
@@ -118,7 +118,7 @@ bool DEMO_handleUserCommands(void)
         //Copy Parameter
         paramOK = RN4870RX_copyMessageParameter(&param[0], DEMO_PARAM_LENGTH);
         
-        USB_sendString("Running STWH Command\r\n");
+        USB_sendStringWithEndline("Running STWH Command");
         
         if (paramOK)
         {
@@ -132,13 +132,13 @@ bool DEMO_handleUserCommands(void)
         }
         else
         {
-            USB_sendString("[ERR] No parameter found in STWH command.\r\n");
+            USB_sendStringWithEndline("[ERR] No parameter found in STWH command.");
         }
     }
     else if (RN4870RX_find("STSR"))
     {
         //STSR - Set Temperature Sampling Rate
-        USB_sendString("Running STSR Command\r\n");
+        USB_sendStringWithEndline("Running STSR Command");
         
         if (RN4870RX_find(","))
         {
@@ -165,13 +165,13 @@ bool DEMO_handleUserCommands(void)
             }
             else
             {
-                USB_sendString("[ERR] Invalid parameter found in STSR command.\r\n");
+                USB_sendStringWithEndline("[ERR] Invalid parameter found in STSR command.");
                 return false;
             }
         }
         else
         {
-            USB_sendString("[ERR] No parameter found in STSR command.\r\n");
+            USB_sendStringWithEndline("[ERR] No parameter found in STSR command.");
         }
     }
     else if (RN4870RX_find("INFO") || RN4870RX_find("DEMO"))
@@ -239,7 +239,7 @@ bool DEMO_handleUserCommands(void)
             }
         }
     }
-    else if (RN4870RX_find("BTIDLEOFF"))
+    else if (RN4870RX_find("IDLEOFF"))
     {
         //Bluetooth Idle Off
         
@@ -259,13 +259,45 @@ bool DEMO_handleUserCommands(void)
             }
             else
             {
-                USB_sendString("[ERR] Improper parameter found in BTIDLEOFF command.\r\n");
+                USB_sendStringWithEndline("[ERR] Improper parameter found in IDLEOFF command.");
             }
         }
         else
         {
-            USB_sendString("[ERR] No parameter found in BTIDLEOFF command.\r\n");
+            USB_sendStringWithEndline("[ERR] No parameter found in IDLEOFF command.");
         }
+    }
+    else if (RN4870RX_find("TEMPSLEEP"))
+    {
+        //Temperature monitor in sleep
+        
+        //If set to true, the sensor monitors temperatures in sleep
+        //If set to false, the sensor is not monitoring for abnormal temps in sleep
+        
+        if (RN4870RX_find(","))
+        {
+            //Parameter found
+            if (RN4870RX_find("TRUE"))
+            {
+                tempMonitor_setRunInSleep(true);
+                ok = true;
+            }
+            else if (RN4870RX_find("FALSE"))
+            {
+                //Turn off period
+                tempMonitor_setRunInSleep(false);
+                ok = true;
+            }
+            else
+            {
+                USB_sendStringWithEndline("[ERR] Improper parameter found in TEMPSLEEP command.");
+            }
+        }
+        else
+        {
+            USB_sendStringWithEndline("[ERR] No parameter found in BTIDLEOFF command.");
+        }
+
     }
     else
     {
@@ -315,11 +347,4 @@ void DEMO_setSystemUpdateRateRAM(uint16_t rate)
     
     //Update Temp Trigger Timing
     tempMonitor_updateSampleRate(rate);
-}
-
-//Handles timeout event if bluetooth is idle
-//If cal is OK, nothing happens for a long time, and alarm is OK, system will transition to low-power mode
-void DEMO_handleBluetoothTimeout(void)
-{
-    
 }

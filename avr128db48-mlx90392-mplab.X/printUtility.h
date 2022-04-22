@@ -21,8 +21,11 @@ extern "C" {
     //Prints the string on the UART
     void USB_sendBufferedString(void);
     
-    //Prints a constant string to the UART
-    void USB_sendString(const char* text);
+    //Prints the literal text to the string
+    void USB_sendStringRaw(const char* text);
+    
+    //Prints a constant string to the UART, then appends \r\n
+    void USB_sendStringWithEndline(const char* text);
     
     //Returns the Address of the character buffer
     char* BLE_getCharBuffer(void);

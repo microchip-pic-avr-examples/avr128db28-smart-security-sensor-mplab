@@ -87,22 +87,32 @@ void normalPrint(void)
 //LEDs are on for ~1s 
 void lowPowerLEDPrint(void)
 {
-    if (RTC_isCMPTriggered())
+    if (RTC_isOVFTriggered())
     {
-        RTC_clearCMPTrigger();
-        windowAlarm_printResults();
+        RTC_clearOVFTrigger();
+        
+        //Check Alarm State
+        if (windowAlarm_isAlarmOK() ||tempMonitor_isTempNormal())
+        {
+            LED_turnOffRed();
+            LED_turnOnGreen();
+        }
+        else
+        {           
+            LED_turnOnRed();
+            LED_turnOffGreen();
+        }
     }
     else
     {
         //Shutoff LEDs
-        LED_turnOffBlue();
         LED_turnOffGreen();
         LED_turnOffRed();
     }
     
-    if (RTC_isOVFTriggered())
+    if (RTC_isCMPTriggered())
     {
-        RTC_clearOVFTrigger();
+        RTC_clearCMPTrigger();
     }
 }
 
@@ -139,6 +149,7 @@ int main(void)
     //Configure RN4870
     RN4870_init();
     
+    //Set Starting Time of BLE Auto-Off Timer
     BLE_SW_Timer_setCurrentTime();
     
     while(1)
@@ -158,9 +169,9 @@ int main(void)
             //Run the magnetometer state machine
             windowAlarm_FSM();
 
-            //If the calibration for the window alarm is OK
-            //And, not in sleep mode
-            if ((windowAlarm_isCalGood()) && (!RN4870_canSleep()))
+            //If the calibration for the window alarm is OK AND
+            //Not in sleep mode (or Run in Sleep is set)
+            if ((windowAlarm_isCalGood()) && ((!RN4870_canSleep()) || tempMonitor_getRunInSleep()))
             {
                 //Run the thermometer state machine
                 tempMonitor_FSM();
@@ -176,7 +187,7 @@ int main(void)
             //Update LED states, if applicable
             lowPowerLEDPrint();
             
-            if (windowAlarm_isAlarmOK())
+            if (windowAlarm_isAlarmOK() && tempMonitor_isTempNormal())
             {
                 //Alarm OK - continue sleep
                 asm("SLEEP");
@@ -184,10 +195,7 @@ int main(void)
             else
             {
                 //Alarm tripped - wake-up
-                RN4870_powerUp();
-                
-                //Disable Wake Button
-                WAKE_DisableIOC();
+                RN4870_powerUp();                
             }         
         }
         else
@@ -202,7 +210,7 @@ int main(void)
             if ((BLE_SW_Timer_hasTriggered()) && (windowAlarm_isAlarmOK()) &&
                     (windowAlarm_isCalGood()) && (!RN4870_isConnected()))
             {
-                USB_sendString("Bluetooth Idle timeout has occurred. Switching to low power mode.\r\n");
+                USB_sendStringWithEndline("Bluetooth Idle timeout has occurred. Switching to low power mode.");
                 RN4870_powerDown();
             }
         }

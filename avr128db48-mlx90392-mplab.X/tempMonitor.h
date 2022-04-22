@@ -21,6 +21,12 @@ extern "C" {
     //Updates the RTC's sample rate and stores it in EEPROM
     void tempMonitor_updateSampleRate(uint16_t sampleRate);
     
+    //Sets whether the sensor can run in sleep
+    void tempMonitor_setRunInSleep(bool enable);
+    
+    //Returns true if the sensor can run in sleep
+    bool tempMonitor_getRunInSleep(void);
+    
     //Run the Temp Monitor's Finite State Machine
     void tempMonitor_FSM(void);
     
@@ -32,6 +38,9 @@ extern "C" {
     
     //Call this function to print the temp results to the Bluetooth UART Interface
     void tempMonitor_printResults(void);
+    
+    //Returns true if the temp is abnormal
+    bool tempMonitor_isTempNormal(void);
     
     //Prints the last results to the Bluetooth Interface. Does NOT clear flags or check for new data
     void tempMonitor_printLastResults(void);

@@ -29,17 +29,19 @@ This application was co-developed with Melexis, a global supplier of microelectr
 
 Please consult the Bill of Materials (BOM) in the documentation.
 
-## Power Consumption
+## Estimated Power Consumption
 
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode | ??? &micro;A
-| Active Mode | ??? mA
-| Calibration Mode | ??? mA
+| Low-Power Mode | 461.89 &micro;A
+| Active Mode (paired) | 4.8859 mA
+| Calibration Mode | 6.1009 mA
+
+(Note: Includes battery circuit - TBR / Modified in future version)
 
 Note: **These values are provided for reference only.**
 
- Values were captured with the system powered from a DC power supply through a precision digital multimeter (with a sampling rate of 100 ksps). All equipment is in calibration.
+ Values were captured with the system powered from a DC power supply through a calibrated precision digital multimeter (with a sampling rate of 10 ksps).
 
 ## Table of Contents
 
@@ -188,6 +190,7 @@ Command Examples:
 | STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
 | RST   | RST   | RST   | Resets the microcontroller. Communications will be reset.
 | PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. Calibration must be valid and alarm is inactive to enter this state. See [Low Power Mode](#low-power-mode) for more information. Also aliased as PWRDWN
+| BTIDLEOFF | BTIDLEOFF,<false/true> | BTIDLEOFF,false | Enables (true) or disable (false) idle Bluetooth power-down. If enabled, after 30s where the system is not connected to a device, calibration is OK, and alarm is inactive, the system will auto-switch to [Low Power Mode](#low-power-mode).
 
 ### LED Status Indicator
 
