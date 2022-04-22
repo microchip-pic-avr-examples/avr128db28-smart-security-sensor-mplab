@@ -44,11 +44,14 @@ extern "C" {
     
 //Temperature Units
 #define TEMP_UNIT_LOCATION (4 + TEMP_WARNING_LOW_LOCATION)
+    
+//Sets whether the FIR sensor operates in sleep to monitor for abnormal temps.
+#define TEMP_MONITOR_SLEEP_ENABLE (1 + TEMP_UNIT_LOCATION)
 
 //Begin MLX90392 Fields
     
 //Device ID of the Magnetometer
-#define EEPROM_MLX90392_ID (1 + TEMP_UNIT_LOCATION)     //0x1444
+#define EEPROM_MLX90392_ID (1 + TEMP_MONITOR_SLEEP_ENABLE)     //0x1444
     
 //Cracked Window Threshold
 #define CRACKED_THRESHOLD_V (1 + EEPROM_MLX90392_ID)    //0x1445
@@ -74,7 +77,7 @@ extern "C" {
 
 //How many RTC pulses the Bluetooth is allowed to be idle (and unconnected) for     
 #define SYSTEM_BLUETOOTH_IDLE_PERIOD (2 + SYSTEM_UPDATE_PERIOD)
-    
+        
 //If angles are not used, EEPROM ends at 0x1450
     
 //Angle Ranges

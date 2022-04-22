@@ -25,7 +25,7 @@ typedef enum  {
 static TemperatureMeasState tempState = TEMP_SLEEP;
 
 //Set if results are ready to be printed
-static bool temperatureResultsReady = false;
+static bool temperatureResultsReady = false, runInSleep = false;
 
 //Temperature Warning Points
 static float tempWarningH = DEFAULT_TEMP_WARNING_H, tempWarningL = DEFAULT_TEMP_WARNING_L;
@@ -39,7 +39,7 @@ void tempMonitor_init(bool safeStart)
 {
     bool success;
     
-    USB_sendString("Initializing MLX90632 Temperature Sensor...");
+    USB_sendStringRaw("Initializing MLX90632 Temperature Sensor...");
     if (safeStart)
     {
         //Button is Held - Safe Mode
@@ -54,12 +54,12 @@ void tempMonitor_init(bool safeStart)
     //If Sensor EEPROM was successfully loaded...
     if (MLX90632_cacheOK())
     {
-        USB_sendString("\r\nLoaded cached constants and settings...");
+        USB_sendStringRaw("\r\nLoaded cached constants and settings...");
         tempMonitor_loadSettings(true);
     }
     else
     {
-        USB_sendString("\r\nLoaded constants from sensor and reset to defaults...");
+        USB_sendStringRaw("\r\nLoaded constants from sensor and reset to defaults...");
         tempMonitor_loadSettings(false);
                 
     }
@@ -67,11 +67,11 @@ void tempMonitor_init(bool safeStart)
     //Print Result
     if (success)
     {
-        USB_sendString("OK\r\n");
+        USB_sendStringWithEndline("OK");
     }
     else
     {
-        USB_sendString("FAILED\r\n");
+        USB_sendStringWithEndline("FAILED");
         tempState = TEMP_ERROR;
     }
 }
@@ -95,6 +95,9 @@ void tempMonitor_loadSettings(bool nReset)
         
         eeprom_write_byte((char*) TEMP_UNIT_LOCATION, DEFAULT_TEMP_UNIT);
         tempUnit = DEFAULT_TEMP_UNIT;
+        
+        eeprom_write_byte((bool*) TEMP_MONITOR_SLEEP_ENABLE, false);
+        runInSleep = false;
     }
     else
     {
@@ -107,6 +110,7 @@ void tempMonitor_loadSettings(bool nReset)
         tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
         tempWarningL = eeprom_read_float((float*) TEMP_WARNING_LOW_LOCATION);
         tempUnit = eeprom_read_byte((char*) TEMP_UNIT_LOCATION);
+        runInSleep = eeprom_read_byte((bool*) TEMP_MONITOR_SLEEP_ENABLE);
     }
 }
 
@@ -128,9 +132,56 @@ void tempMonitor_updateSampleRate(uint16_t sampleRate)
     
     //Store new period
     eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, sampleRate);
+
+    //    sprintf(USB_getCharBuffer(), "New RTC Compare: 0x%x\r\n", sampleRate);
+    //    USB_sendBufferedString();
+}
+
+//Sets whether the sensor can run in sleep
+void tempMonitor_setRunInSleep(bool enable)
+{
+    runInSleep = enable;
+    eeprom_write_byte((bool*) TEMP_MONITOR_SLEEP_ENABLE, enable);
     
-    sprintf(USB_getCharBuffer(), "New RTC Compare: 0x%x\r\n", sampleRate);
-    USB_sendBufferedString();
+    if (runInSleep)
+        USB_sendStringWithEndline("Enabled Temp in Sleep");
+    else
+        USB_sendStringWithEndline("Disabled Temp in Sleep");
+}
+
+//Returns true if the sensor can run in sleep
+bool tempMonitor_getRunInSleep(void)
+{
+    return runInSleep;
+}
+
+//Returns true if the temp is abnormal
+bool tempMonitor_isTempNormal(void)
+{
+    //If in sleep AND not enabled...
+    if ((RN4870_canSleep()) && (!tempMonitor_getRunInSleep()))
+    {
+        return true;
+    }
+    
+    float objTemp = MLX90632_getObjectTemp();
+    
+    if (objTemp >= tempWarningH)
+    {
+        //High Room Temp
+        RN4870_sendStringToUser("[WARN] Room Temperature High\r\n");
+        USB_sendStringWithEndline("[WARN] Room Temperature High");
+        return false;
+    }
+    else if (objTemp <= tempWarningL)
+    {
+        //Low Room Temp
+        RN4870_sendStringToUser("[WARN] Room Temperature Low\r\n");
+        USB_sendStringWithEndline("[WARN] Room Temperature Low");
+        return false;
+    }
+    
+    return true;
 }
 
 //Run the Temp Monitor's Finite State Machine
@@ -152,12 +203,12 @@ void tempMonitor_FSM(void)
             //Move to the next state
             if (!success)
             {               
-                USB_sendString("[ERR] Failed to start temp conversion in TEMP_START\r\n");
+                USB_sendStringWithEndline("[ERR] Failed to start temp conversion in TEMP_START");
                 tempState = TEMP_ERROR;
             }
             else
             {
-                USB_sendString("Started new temp conversion in TEMP_START\r\n");
+                USB_sendStringWithEndline("Started new temp conversion in TEMP_START");
                 tempState = TEMP_WAIT;
             }
 
@@ -173,7 +224,7 @@ void tempMonitor_FSM(void)
                 //Move to the next state
                 if (!success)
                 {
-                    USB_sendString("[ERR] Failed to get temp data from MLX90632_getResults()\r\n");
+                    USB_sendStringWithEndline("[ERR] Failed to get temp data from MLX90632_getResults()");
                     tempState = TEMP_ERROR;
                 }
                 else
@@ -196,7 +247,7 @@ void tempMonitor_FSM(void)
             }
             else
             {
-                USB_sendString("[ERR] Failed to compute temp from MLX90632_computeTemperature()\r\n");
+                USB_sendStringWithEndline("[ERR] Failed to compute temp from MLX90632_computeTemperature()");
                 tempState = TEMP_ERROR;
             }
             
@@ -237,22 +288,23 @@ bool tempMonitor_getResultStatus(void)
 }
 
 void tempMonitor_printResults(void)
-{
+{   
     //If results aren't ready...
     if (!temperatureResultsReady)
     {
-        USB_sendString("[ERR] Temperature results not ready for printing.\r\n");
+        USB_sendStringWithEndline("[ERR] Temperature results not ready for printing.");
         sprintf(USB_getCharBuffer(), "RTC.CMP = 0x%x\r\n, RTC.PER = 0x%x\r\n", RTC_getCompare(), RTC_getPeriod());
         USB_sendBufferedString();
-        
+
+        //Send String
         RN4870_sendStringToUser("Temperature results are not ready.\r\n");
+        
         return;
     }
-    
     //Clear Flag
     temperatureResultsReady = false;
     
-    //Print Results
+    //Normal Mode, Print to String
     tempMonitor_printLastResults();
 }
 
@@ -267,11 +319,13 @@ void tempMonitor_printLastResults(void)
     {
         //High Room Temp
         RN4870_sendStringToUser("[WARN] Room Temperature High\r\n");
+        USB_sendStringWithEndline("[WARN] Room Temperature High");
     }
     else if (objTemp <= tempWarningL)
     {
         //Low Room Temp
         RN4870_sendStringToUser("[WARN] Room Temperature Low\r\n");
+        USB_sendStringWithEndline("[WARN] Room Temperature Low");
     }
     
     if (tempUnit == 'F')
@@ -291,7 +345,7 @@ void tempMonitor_printLastResults(void)
         //Invalid Units
         
         //Print Constant String
-        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        USB_sendStringRaw("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
         sprintf(USB_getCharBuffer(), "%c\r\n", tempUnit);
@@ -325,7 +379,7 @@ void tempMonitor_setTempWarningHigh(float temp)
         //Invalid Units
         
         //Print Constant String
-        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        USB_sendStringRaw("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
         sprintf(USB_getCharBuffer(),"%c\r\n", tempUnit);
@@ -358,7 +412,7 @@ void tempMonitor_setTempWarningLow(float temp)
         //Invalid Units
         
         //Print Constant String
-        USB_sendString("[WARN] Invalid Unit Specifier for Temperature: ");
+        USB_sendStringRaw("[WARN] Invalid Unit Specifier for Temperature: ");
         
         //Then call sprintf to print the value
         sprintf(USB_getCharBuffer(), "%c\r\n", tempUnit);

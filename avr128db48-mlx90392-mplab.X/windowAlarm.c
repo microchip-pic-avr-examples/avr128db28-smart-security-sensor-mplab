@@ -180,7 +180,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             }
             else
             {
-                USB_sendString("[ERR] Failed to change MLX90392 operating mode.\r\n");
+                USB_sendStringWithEndline("[ERR] Failed to change MLX90392 operating mode.");
             }
             break;
         }
@@ -188,7 +188,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         {
             if (buttonPressed)
             {
-                USB_sendString("Starting open window calibration.\r\n");
+                USB_sendStringWithEndline("Starting open window calibration.");
                 RN4870_sendStringToUser("Beginning open window calibration.\r\n");
                 calState = CAL_OPEN;
                 sampleCount = 0;
@@ -224,7 +224,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         {
             if (buttonPressed)
             {             
-                USB_sendString("Starting closed window calibration.\r\n");
+                USB_sendStringWithEndline("Starting closed window calibration.");
                 RN4870_sendStringToUser("Beginning closed window calibration.\r\n");
                 calState = CAL_CLOSED;
                 sampleCount = 0;
@@ -283,12 +283,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
         {                        
             if (normResults->r2 <= MAGNETOMETER_NOISE_MARGIN)
             {
-                USB_sendString("[ERR] Sensor value is below noise margin, please close the window and press the button to retry.\r\n");
+                USB_sendStringWithEndline("[ERR] Sensor value is below noise margin, please close the window and press the button to retry.");
                 calState = CAL_CRACKED_ERR;
             }
             else if (buttonPressed)
             {
-                USB_sendString("Starting window threshold calibration.\r\n");
+                USB_sendStringWithEndline("Starting window threshold calibration.");
                 RN4870_sendStringToUser("Beginning window threshold calibration.\r\n");
                 
                 //Init Variables
@@ -336,7 +336,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 //Warning for Low Noise Margin
                 if (crackedV < MAGNETOMETER_NOISE_MARGIN)
                 {
-                    USB_sendString("[WARN] Threshold is below noise margin. Sensor may not operate correctly.\r\n");
+                    USB_sendStringWithEndline("[WARN] Threshold is below noise margin. Sensor may not operate correctly.");
                 }
                 
                 //Apply Tolerance, if set
@@ -409,7 +409,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                         minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ);
                 USB_sendBufferedString();
 #endif
-                USB_sendString("Calibration complete.\r\n");
+                USB_sendStringWithEndline("Calibration complete.");
                 RN4870_sendStringToUser("Calibration Complete.\r\n");
                 calState = CAL_DEINIT;
                 
@@ -433,7 +433,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             }
             else
             {
-                USB_sendString("[ERR] Failed to change MLX90392 operating mode.\r\n");
+                USB_sendStringWithEndline("[ERR] Failed to change MLX90392 operating mode.\r\n");
             }
             break;
         }
@@ -471,7 +471,7 @@ void windowAlarm_init(bool safeStart)
     lastButtonState = WAKE_GetValue();
     
     //Print Welcome
-    USB_sendString("Initializing MLX90392 Magnetometer Sensor...");
+    USB_sendStringRaw("Initializing MLX90392 Magnetometer Sensor...");
         
     //Init Sensor
     success = MLX90392_init();
@@ -479,7 +479,7 @@ void windowAlarm_init(bool safeStart)
     //If unable to init...
     if (!success)
     {
-        USB_sendString("FAILED\r\n");
+        USB_sendStringWithEndline("FAILED");
         magState = MAGNETOMETER_ERROR;
         return;
     }
@@ -488,11 +488,11 @@ void windowAlarm_init(bool safeStart)
     if (!windowAlarm_loadFromEEPROM(safeStart))
     {
         windowAlarm_loadSettings(false);
-        USB_sendString("CAL BAD\r\n");
+        USB_sendStringWithEndline("CAL BAD");
         return;
     }
     
-    USB_sendString("OK\r\n");
+    USB_sendStringWithEndline("OK");
 }
 
 //Loads settings for window alarm
@@ -664,7 +664,7 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
 #ifdef MAGNETOMETER_DEBUG_PRINT
             sprintf(USB_getCharBuffer(), "XY Range: %d < XY < %d, found %d\r\n", minXY, maxXY, normResults->xyAngle);
             USB_sendBufferedString();
-            USB_sendString("<XY Angle Error> - ");
+            USB_sendStringRaw("<XY Angle Error> - ");
 #endif 
         }
         else if ((normResults->xzAngle > maxXZ) || (normResults->xzAngle < minXZ))
@@ -673,7 +673,7 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
 #ifdef MAGNETOMETER_DEBUG_PRINT
             sprintf(USB_getCharBuffer(), "XZ Range: %d < XZ < %d, found %d\r\n", minXZ, maxXZ, normResults->xzAngle);
             USB_sendBufferedString();
-            USB_sendString("<XZ Angle Error> - ");
+            USB_sendStringRaw("<XZ Angle Error> - ");
 #endif 
         }
         else if ((normResults->xzAngle > maxXZ) || (normResults->xzAngle < minXZ))
@@ -682,7 +682,7 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
 #ifdef MAGNETOMETER_DEBUG_PRINT
             sprintf(USB_getCharBuffer(), "YZ Range: %d < YZ < %d, found %d\r\n", minYZ, maxYZ, normResults->yzAngle);
             USB_sendBufferedString();
-            USB_sendString("<YZ Angle Error> - ");
+            USB_sendStringRaw("<YZ Angle Error> - ");
 #endif 
         }
         else
@@ -698,7 +698,7 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
     else
     {
 #ifdef MAGNETOMETER_DEBUG_PRINT
-        USB_sendString("[ERROR] Alarm Compare Failed\r\n");
+        USB_sendStringWithEndline("[ERROR] Alarm Compare Failed");
         sprintf(USB_getCharBuffer(), "Max Magnitude Strength: %lu, Cracked Threshold: %lu, Current Value %lu\r\n", maxV, crackedV, normResults->r2);
         USB_sendBufferedString();
 #endif 
@@ -955,7 +955,7 @@ void windowAlarm_FSM(void)
             success = MLX90392_init();
             if (success)
             {
-                USB_sendString("Magnetometer Successfully Restarted\r\n");
+                USB_sendStringWithEndline("Magnetometer Successfully Restarted");
                 
                 prevResultState = INVALID;
                 

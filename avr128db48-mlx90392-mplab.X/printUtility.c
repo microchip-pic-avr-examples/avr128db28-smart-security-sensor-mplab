@@ -7,7 +7,7 @@
 #include "usart2.h"
 
 static char bufferUSB[PRINT_BUFFER_SIZE];
-static volatile char bufferBLE[PRINT_BUFFER_SIZE];
+static char bufferBLE[PRINT_BUFFER_SIZE];
 
 //Returns the Address of the character buffer
 char* USB_getCharBuffer(void)
@@ -46,7 +46,7 @@ void USB_sendBufferedString(void)
 }
 
 //Prints a constant string to the UART
-void USB_sendString(const char* text)
+void USB_sendStringRaw(const char* text)
 {
 #ifdef DISABLE_STRING_MESSAGES
     return;
@@ -70,6 +70,22 @@ void USB_sendString(const char* text)
     //Wait for completion of UART
     while (!USART2_canTransmit());
     while (USART2_isBusy());
+#endif
+}
+
+
+//Prints a constant string to the UART
+void USB_sendStringWithEndline(const char* text)
+{
+#ifdef DISABLE_STRING_MESSAGES
+    return;
+#else    
+    if (text[0] == '\0')
+        return;
+
+    USB_sendStringRaw(text);
+    USB_sendStringRaw("\r\n");
+    
 #endif
 }
 
