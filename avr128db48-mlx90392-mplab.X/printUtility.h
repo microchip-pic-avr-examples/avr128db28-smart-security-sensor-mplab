@@ -36,8 +36,13 @@ extern "C" {
     //Prints the string on the UART
     void BLE_sendBufferedString(void);
     
+    
     //Prints a constant string to the UART
-    void BLE_sendString(const char* text);
+    void BLE_sendStringRaw(const char* text);
+    
+    //Prints a constant string to the UART, then appends \r\n
+    void BLE_sendStringWithEndline(const char* text);
+
     
     //Prints a constant string to the UART, then appends DELIM
     void BLE_printCommandString(const char* text, const char delim);

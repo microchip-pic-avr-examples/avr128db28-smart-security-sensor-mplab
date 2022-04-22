@@ -126,7 +126,7 @@ void BLE_sendBufferedString(void)
 }
 
 //Prints a constant string to the UART
-void BLE_sendString(const char* text)
+void BLE_sendStringRaw(const char* text)
 {   
     if (text[0] == '\0')
         return;
@@ -147,6 +147,13 @@ void BLE_sendString(const char* text)
     //Wait for completion of UART
     while (!USART0_canTransmit());
     while (USART0_isBusy());
+}
+
+//Prints a constant string to the UART, then appends \r\n
+void BLE_sendStringWithEndline(const char* text)
+{
+    BLE_sendStringRaw(text);
+    BLE_sendStringRaw("\r\n");
 }
 
 void BLE_printCommandString(const char* text, const char delim)
