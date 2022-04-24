@@ -116,12 +116,41 @@ void tempMonitor_loadSettings(bool nReset)
 
 
 //Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
-void tempMonitor_setUnit(char unit)
+bool tempMonitor_setUnit(char unit)
 {
+    if (!((unit == 'F') || (unit == 'C') || (unit == 'K')))
+    {
+        RN4870_sendStringToUser("[ERR] Invalid Unit Specifier");
+        USB_sendStringWithEndline("[ERR] Invalid Unit Specifier");
+        return false;
+    }
+    
     tempUnit = unit;
     
     //Store New Value
     eeprom_write_byte((char*) TEMP_UNIT_LOCATION, tempUnit);
+    return true;
+}
+
+//Returns the current temperature unit
+void tempMonitor_printUserSettings(void)
+{
+    //Print User Settings
+    RN4870_sendRawStringToUser("Monitor Temperature in Sleep: ");
+    
+    if (runInSleep)
+    {
+        RN4870_sendStringToUser("Yes");
+    }
+    else
+    {
+        RN4870_sendStringToUser("No");
+    }
+    
+    sprintf(RN4870_getCharBuffer(), "Temperature Unit: %c\r\nTemp Alarm High: %2.1f%c\r\n"
+            "Temp Alarm Low: %2.1f%c\r\n", tempUnit, tempMonitor_getTempWarningHigh(), 
+            tempUnit, tempMonitor_getTempWarningLow(), tempUnit);
+    RN4870_printBufferedString();
 }
 
 //Updates the RTC's sample rate and stores it in EEPROM
@@ -393,6 +422,23 @@ void tempMonitor_setTempWarningHigh(float temp)
     eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningH);
 }
 
+//Returns the warning temp for low temperatures. Temp units are auto-converted from C to current
+float tempMonitor_getTempWarningHigh(void)
+{
+    float val = tempWarningH;
+    
+    if (tempUnit == 'F')
+    {
+        val = (tempWarningH * 1.8) + 32;
+    }
+    else if (tempUnit == 'K')
+    {
+        val += 273.15;
+    }
+    
+    return val;
+}
+
 //Sets the warning temp for low temperatures. Temp units are auto-converted from current set to C 
 void tempMonitor_setTempWarningLow(float temp)
 {
@@ -424,4 +470,22 @@ void tempMonitor_setTempWarningLow(float temp)
     
     //Write Value
     eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, tempWarningL);
+}
+
+//Returns the warning temp for low temperatures. Temp units are auto-converted from C to current
+float tempMonitor_getTempWarningLow(void)
+{
+    float val = tempWarningL;
+    
+    if (tempUnit == 'F')
+    {
+        val = (tempWarningL * 1.8) + 32;
+    }
+    else if (tempUnit == 'K')
+    {
+        val += 273.15;
+    }
+    
+    return val;
+
 }

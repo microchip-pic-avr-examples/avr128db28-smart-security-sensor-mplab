@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <avr/io.h>
 #include <avr/eeprom.h>
+#include <stdio.h>
 
 #include "RTC.h"
 #include "DEFAULTS.h"
 #include "EEPROM_Locations.h"
+#include "RN4870.h"
 
 //Last-time RTC was checked
 static uint16_t lTime = 0;
@@ -40,6 +42,19 @@ void BLE_SW_Timer_saveSettings(uint16_t period)
 {
     eeprom_write_word((uint16_t*) SYSTEM_BLUETOOTH_IDLE_PERIOD, period);
     BLE_SW_Timer_setPeriod(period);
+}
+
+void BLE_SW_Timer_printUserSettings(void)
+{
+    RN4870_sendRawStringToUser("Bluetooth Idle Off: ");
+    if (timeoutPeriod == 0)
+    {
+        RN4870_sendStringToUser("No");
+    }
+    else
+    {
+        RN4870_sendStringToUser("Yes");
+    }
 }
 
 //Set the number of cycles (from the RTC)

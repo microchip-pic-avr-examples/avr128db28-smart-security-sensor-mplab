@@ -6,13 +6,18 @@
 #include "usart0.h"
 #include "usart2.h"
 
-static char bufferUSB[PRINT_BUFFER_SIZE];
-static char bufferBLE[PRINT_BUFFER_SIZE];
+//static char bufferUSB[PRINT_BUFFER_SIZE];
+//static char bufferBLE[PRINT_BUFFER_SIZE];
+
+#define BUFFER_USB buffer
+#define BUFFER_BLE buffer
+
+static char buffer[PRINT_BUFFER_SIZE];
 
 //Returns the Address of the character buffer
 char* USB_getCharBuffer(void)
 {
-    return &bufferUSB[0];
+    return &BUFFER_USB[0];
 }
 
 //Returns the size of the char buffer
@@ -24,7 +29,7 @@ uint8_t USB_getCharBufferSize(void)
 //Prints the string on the UART
 void USB_sendBufferedString(void)
 {   
-    if (bufferUSB[0] == '\0')
+    if (BUFFER_USB[0] == '\0')
         return;
     
     uint8_t index = 0;
@@ -32,11 +37,11 @@ void USB_sendBufferedString(void)
     //Clear USART Done Flag
     USART2.STATUS |= USART_TXCIF_bm;
     
-    while ((bufferUSB[index] != '\0') && (index < PRINT_BUFFER_SIZE))
+    while ((BUFFER_USB[index] != '\0') && (index < PRINT_BUFFER_SIZE))
     {
         while (!USART2_canTransmit());
         
-        USART2_sendByte(bufferUSB[index]);
+        USART2_sendByte(BUFFER_USB[index]);
         index++;
     }
     
@@ -92,7 +97,7 @@ void USB_sendStringWithEndline(const char* text)
 //Returns the Address of the character buffer
 char* BLE_getCharBuffer(void)
 {
-    return &bufferBLE[0];
+    return &BUFFER_BLE[0];
 }
 
 //Returns the size of the char buffer
@@ -104,7 +109,7 @@ uint8_t BLE_getCharBufferSize(void)
 //Prints the string on the UART
 void BLE_sendBufferedString(void)
 {   
-    if (bufferBLE[0] == '\0')
+    if (BUFFER_BLE[0] == '\0')
         return;
     
     uint8_t index = 0;
@@ -112,11 +117,11 @@ void BLE_sendBufferedString(void)
     //Clear USART Done Flag
     USART0.STATUS |= USART_TXCIF_bm;
     
-    while ((bufferBLE[index] != '\0') && (index < PRINT_BUFFER_SIZE))
+    while ((BUFFER_BLE[index] != '\0') && (index < PRINT_BUFFER_SIZE))
     {
         while (!USART0_canTransmit());
         
-        USART0_sendByte(bufferBLE[index]);
+        USART0_sendByte(BUFFER_BLE[index]);
         index++;
     }
     

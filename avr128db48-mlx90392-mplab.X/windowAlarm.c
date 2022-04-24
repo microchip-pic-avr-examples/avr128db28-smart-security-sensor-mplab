@@ -54,11 +54,8 @@ static uint8_t scaleX = 1, scaleY = 1, scaleZ = 1;
 static int16_t minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ;
 #endif
 
-//Debouncing
-static volatile bool buttonPressed = false, lastButtonState = false;
-
-//Result Print
-static volatile bool alarmResultsReady = false;
+//Result Print, Current Button State, Last Button State
+static bool alarmResultsReady = false, buttonPressed = false, lastButtonState = false;
 
 //ID of Magnetometer
 static uint8_t sensorID = 0x00;
@@ -809,6 +806,16 @@ void windowAlarm_printResults(void)
         LED_turnOnGreen();
         RN4870_sendStringToUser("Alarm OK");
     }
+}
+
+//Prints calibration constants to UART
+void windowAlarm_printCalibration(void)
+{
+    sprintf(RN4870_getCharBuffer(), "Offset X: %d, Offset Y: %d, Offset Z: %d\r\n"
+            "Scaling X: %d, Scaling Y: %d, Scaling Z: %d\r\n"
+            "Cracked Threshold: %lu\r\nMax Magnitude: %lu\r\n",
+            offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ, crackedV, maxV);
+    RN4870_printBufferedString();
 }
 
 //Saves current calibration parameters
