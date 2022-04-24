@@ -16,6 +16,7 @@
 #include "RTC.h"
 #include "demo.h"
 #include "Bluetooth_Timeout_Timer.h"
+#include "Welcome_Timer.h"
 
 #include <avr/interrupt.h>
 
@@ -241,9 +242,11 @@ void RN4870_processStatusMessages(void)
                 stateRN4870 = RN4870_PAIR;
             }
             else if (event == RN4870_EVENT_STREAM_OPEN)
-            {
+            {                
                 LED_turnOnBlue();
                 stateRN4870 = RN4870_READY;
+                
+                welcomeTimer_start();
             }
             break;
         }
@@ -256,6 +259,8 @@ void RN4870_processStatusMessages(void)
             {
                 LED_turnOnBlue();
                 stateRN4870 = RN4870_READY;
+                
+                welcomeTimer_start();
             }
 
             break;

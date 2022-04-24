@@ -59,10 +59,29 @@
 #include "TCA0.h"
 #include "LEDcontrol.h"
 #include "Bluetooth_Timeout_Timer.h"
+#include "Welcome_Timer.h"
 
 //Prints results when not in low-power mode
 void normalPrint(void)
-{
+{   
+    //Update LED State
+    DEMO_setAlarmLEDs();
+    
+    //Check to see if the welcome message should be sent
+    if (welcomeTimer_hasTriggered())
+    {
+        RN4870_sendStringToUser("Welcome to the Microchip Smart Window Security Sensor"
+                " with Room Temperature Monitoring Demo!\r\n");
+               
+        //Disable Welcome Timer
+        welcomeTimer_stop();
+    }
+    else if ((welcomeTimer_isRunning()) || (!RN4870_isConnected()))
+    {
+        //If waiting for welcome or Bluetooth is not connected...
+        return;
+    }
+    
     if ((windowAlarm_getResultStatus()) || (RTC_isOVFTriggered()))
     {
         windowAlarm_printResults();
@@ -91,28 +110,14 @@ void lowPowerLEDPrint(void)
     {
         RTC_clearOVFTrigger();
         
-        //Check Alarm State
-        if (windowAlarm_isAlarmOK() ||tempMonitor_isTempNormal())
-        {
-            LED_turnOffRed();
-            LED_turnOnGreen();
-        }
-        else
-        {           
-            LED_turnOnRed();
-            LED_turnOffGreen();
-        }
+        //Update LED states
+        DEMO_setAlarmLEDs();
     }
     else
     {
         //Shutoff LEDs
         LED_turnOffGreen();
         LED_turnOffRed();
-    }
-    
-    if (RTC_isCMPTriggered())
-    {
-        RTC_clearCMPTrigger();
     }
 }
 
@@ -159,7 +164,7 @@ int main(void)
                                                 
         //Check for Events
         RN4870_processEvents();
-        
+                
         //If in sleep, always run the FSM loops
         //If not, then only run them once per PIT trigger
         if ((RN4870_canSleep()) || ((!RN4870_canSleep()) && (RTC_isPITTriggered())))
@@ -203,8 +208,9 @@ int main(void)
             //Can't enter sleep, print normally
             normalPrint();
             
-            //Add RTC Changes
+            //Add RTC Changes to SW Timers
             BLE_SW_Timer_addTime();
+            welcomeTimer_addTime();
             
             //If Timer triggered
             if ((BLE_SW_Timer_hasTriggered()) && (windowAlarm_isAlarmOK()) &&

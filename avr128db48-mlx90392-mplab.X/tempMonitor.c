@@ -330,6 +330,7 @@ void tempMonitor_printResults(void)
         
         return;
     }
+    
     //Clear Flag
     temperatureResultsReady = false;
     

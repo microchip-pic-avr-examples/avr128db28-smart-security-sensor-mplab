@@ -17,6 +17,7 @@
 #include "DEFAULTS.h"
 #include "ADC.h"
 #include "Bluetooth_Timeout_Timer.h"
+#include "LEDcontrol.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -262,10 +263,21 @@ bool DEMO_handleUserCommands(void)
     }
     else if (RN4870RX_find("GETCAL"))
     {
+        //Prints Calibration Parameters
+        
         RN4870_sendStringToUser("--Start Calibration Parameters--");
         windowAlarm_printCalibration();
         RN4870_sendStringToUser("--End Calibration Parameters--");
         
+        ok = true;
+    }
+    else if (RN4870RX_find("MAGRAW"))
+    {
+        //Request Raw Data from Magnetometer
+        
+        windowAlarm_requestRawPrint();
+        
+        RN4870_sendStringToUser("Next measurement will be printed.");
         ok = true;
     }
     else if (RN4870RX_find("RESET"))
@@ -278,6 +290,14 @@ bool DEMO_handleUserCommands(void)
         RN4870_sendStringToUser("Settings were reset.");
         
         ok = true;
+    }
+    else if (RN4870RX_find("REBOOT"))
+    {
+        RN4870_powerDown();
+        while (1)
+        { 
+            //Will force the WDT to trigger a restart
+        }
     }
     else if ((RN4870RX_find("PWDWN")) || (RN4870RX_find("PWRDWN")))
     {
@@ -409,4 +429,30 @@ void DEMO_setSystemUpdateRateRAM(uint16_t rate)
     
     //Update Temp Trigger Timing
     tempMonitor_updateSampleRate(rate);
+}
+
+//Sets the Red/Green LEDs according to the current state
+void DEMO_setAlarmLEDs(void)
+{
+    if (!windowAlarm_isCalGood())
+    {
+        //Cal Mode
+        BLE_SW_Timer_reset();
+        LED_turnOnGreen();
+        LED_turnOnRed();
+    }
+    else if (windowAlarm_isAlarmOK() && tempMonitor_isTempNormal())
+    {
+        //No Alarm
+        LED_turnOffRed();
+        LED_turnOnGreen();
+    }
+    else
+    {        
+        
+        //Alarm
+        BLE_SW_Timer_reset();
+        LED_turnOnRed();
+        LED_turnOffGreen();
+    }
 }

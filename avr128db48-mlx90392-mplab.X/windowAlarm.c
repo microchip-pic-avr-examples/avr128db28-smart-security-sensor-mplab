@@ -49,6 +49,9 @@ static uint32_t crackedV, maxV;
 static int16_t offsetX = 0, offsetY = 0, offsetZ = 0;
 static uint8_t scaleX = 1, scaleY = 1, scaleZ = 1;
 
+//If set, the next data will be printed to the RN4870
+static bool requestPrint = false;
+
 //Angle Ranges
 #ifdef MAGNETOMETER_ANGLE_CHECK
 static int16_t minXY, maxXY, minXZ, maxXZ, minYZ, maxYZ;
@@ -740,7 +743,6 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
 
 void windowAlarm_compareAndProcessResults(MLX90392_NormalizedResults8* normResults)
 {
-    static uint8_t counter = 0;
     bool alarmOK = windowAlarm_compareResults(normResults);
     
     if (alarmOK)
@@ -758,17 +760,10 @@ void windowAlarm_compareAndProcessResults(MLX90392_NormalizedResults8* normResul
         }
     }
         
-    if ((counter == MAGNETOMETER_ALARM_PRINT_RATE) || (alarmState == MAGNETOMETER_ALARM_TRIGGER))
+    if ((alarmState == MAGNETOMETER_ALARM_TRIGGER))
     {
         //Set Print Flag
         alarmResultsReady = true;
-
-        //Clear Counter
-        counter = 0;
-    }
-    else
-    {
-        counter++;
     }
  }
 
@@ -784,8 +779,6 @@ void windowAlarm_printResults(void)
     //Calibration is not good
     if (calState != CAL_GOOD)
     {
-        LED_turnOnRed();
-        LED_turnOnGreen();
         return;
     }
     
@@ -795,15 +788,10 @@ void windowAlarm_printResults(void)
     //Print Results
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {
-        BLE_SW_Timer_reset();
-        LED_turnOnRed();
-        LED_turnOffGreen();
         RN4870_sendStringToUser("Alarm BAD");
     }
     else
     {
-        LED_turnOffRed();
-        LED_turnOnGreen();
         RN4870_sendStringToUser("Alarm OK");
     }
 }
@@ -811,11 +799,17 @@ void windowAlarm_printResults(void)
 //Prints calibration constants to UART
 void windowAlarm_printCalibration(void)
 {
-    sprintf(RN4870_getCharBuffer(), "Offset X: %d, Offset Y: %d, Offset Z: %d\r\n"
-            "Scaling X: %d, Scaling Y: %d, Scaling Z: %d\r\n"
+    sprintf(RN4870_getCharBuffer(), "Offset X,Y,Z: %d, %d, %d\r\n"
+            "Normalizing Right-Shifts X,Y,Z: %d, %d, %d\r\n"
             "Cracked Threshold: %lu\r\nMax Magnitude: %lu\r\n",
             offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ, crackedV, maxV);
     RN4870_printBufferedString();
+}
+
+//If called, the next data processed will be printed to the RN4870
+void windowAlarm_requestRawPrint(void)
+{
+    requestPrint = true;
 }
 
 //Saves current calibration parameters
@@ -947,6 +941,21 @@ void windowAlarm_FSM(void)
                 if (success)
                 {
                     windowAlarm_createNormalizedResults(&magResult, &normResult);
+                    
+                    if (requestPrint)
+                    {
+                        //Clear Flag
+                        requestPrint = false;
+                        
+                        RN4870_sendStringToUser("--Begin Magnetometer Data--");
+                        sprintf(RN4870_getCharBuffer(), "Raw X,Y,Z: %d, %d, %d\r\n"
+                                "Normalized X,Y,Z: %d, %d, %d\r\n"
+                                "Vector Strength: %lu\r\n",
+                                magResult.X_Meas, magResult.Y_Meas, magResult.Z_Meas,
+                                normResult.x, normResult.y, normResult.z, normResult.r2);
+                        RN4870_printBufferedString();
+                        RN4870_sendStringToUser("--End Magnetometer Data--");
+                    }
                     
                     //If set, print the raw values of the magnetometer
 #ifdef MAGNETOMETER_PRINT_CSV
