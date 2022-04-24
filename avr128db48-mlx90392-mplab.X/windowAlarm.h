@@ -60,6 +60,9 @@ extern "C" {
     //Prints calibration constants to UART
     void windowAlarm_printCalibration(void);
     
+    //If called, the next data processed will be printed to the RN4870
+    void windowAlarm_requestRawPrint(void);
+    
     //Converts raw results into a normalized compressed value
     void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results);
     

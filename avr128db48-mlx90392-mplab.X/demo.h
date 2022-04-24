@@ -37,6 +37,10 @@ extern "C" {
     //Does NOT write to EEPROM
     void DEMO_setSystemUpdateRateRAM(uint16_t rate);
     
+    //Sets the Red/Green LEDs according to the current state
+    //Also, resets the BLE Timer, if Alarm / Cal is Active
+    void DEMO_setAlarmLEDs(void);
+    
 #ifdef	__cplusplus
 }
 #endif
