@@ -468,6 +468,23 @@ void RN4870_sendStringToUser(const char* str)
     BLE_sendStringWithEndline(str);
 }
 
+//Prints the literal string to the user, if powered up
+void RN4870_sendRawStringToUser(const char* str)
+{
+    if (stateRN4870 != RN4870_READY)
+    {
+        //Not Ready to Send Data...
+        return;
+    }
+    
+    if ((str == NULL) || (str[0] == '\0'))
+    {
+        return;
+    }
+    
+    BLE_sendStringRaw(str);
+}
+
 //Returns the char buffer associated with the BLE
 char* RN4870_getCharBuffer(void)
 {

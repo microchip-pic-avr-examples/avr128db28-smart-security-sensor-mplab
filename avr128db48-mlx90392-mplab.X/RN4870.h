@@ -69,6 +69,9 @@ extern "C" {
     
     //Sends a string to the user, if powered up.
     void RN4870_sendStringToUser(const char* str);
+    
+    //Prints the literal string to the user, if powered up
+    void RN4870_sendRawStringToUser(const char* str);
 
     //Returns the char buffer associated with the BLE
     char* RN4870_getCharBuffer(void);

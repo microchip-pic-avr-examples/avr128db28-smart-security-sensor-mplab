@@ -16,7 +16,10 @@ extern "C" {
     void tempMonitor_loadSettings(bool nReset);
     
     //Sets the temperature unit for the demo. C - Celsius (default), F - Fahrenheit, K - Kelvin
-    void tempMonitor_setUnit(char unit);
+    bool tempMonitor_setUnit(char unit);
+    
+    //Returns the current temperature unit
+    void tempMonitor_printUserSettings(void);
     
     //Updates the RTC's sample rate and stores it in EEPROM
     void tempMonitor_updateSampleRate(uint16_t sampleRate);
@@ -41,15 +44,21 @@ extern "C" {
     
     //Returns true if the temp is abnormal
     bool tempMonitor_isTempNormal(void);
-    
+        
     //Prints the last results to the Bluetooth Interface. Does NOT clear flags or check for new data
     void tempMonitor_printLastResults(void);
-    
+        
     //Sets the warning temp for high temperatures. Temp units are auto-converted from current set to C 
     void tempMonitor_setTempWarningHigh(float temp);
     
+    //Returns the warning temp for low temperatures. Temp units are auto-converted from C to current
+    float tempMonitor_getTempWarningHigh(void);
+    
     //Sets the warning temp for low temperatures. Temp units are auto-converted from current set to C 
     void tempMonitor_setTempWarningLow(float temp);
+    
+    //Returns the warning temp for low temperatures. Temp units are auto-converted from C to current
+    float tempMonitor_getTempWarningLow(void);
     
 #ifdef	__cplusplus
 }

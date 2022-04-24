@@ -57,6 +57,9 @@ extern "C" {
     //Prints the state of the alarm
     void windowAlarm_printResults(void);
     
+    //Prints calibration constants to UART
+    void windowAlarm_printCalibration(void);
+    
     //Converts raw results into a normalized compressed value
     void windowAlarm_createNormalizedResults(MLX90392_RawResult16* raw, MLX90392_NormalizedResults8* results);
     

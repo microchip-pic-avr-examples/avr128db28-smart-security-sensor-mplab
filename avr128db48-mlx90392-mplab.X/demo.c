@@ -77,10 +77,7 @@ bool DEMO_handleUserCommands(void)
         if (paramOK)
         {
             //Execute Command
-            tempMonitor_setUnit(param[0]);
-            
-            //Update Success
-            ok = true;
+            ok = tempMonitor_setUnit(param[0]);
         }
         else
         {
@@ -199,10 +196,75 @@ bool DEMO_handleUserCommands(void)
         
         ok = true;
     }
+    else if (RN4870RX_find("USER"))
+    {
+        //Print User Settings
+        
+        //Auto Off
+        //Temp Unit
+        //Temp High, Temp Low
+        //Temp in Sleep
+        //Calibration State (Good / Bad)
+        
+        RN4870_sendStringToUser("--Start User Settings--");
+        
+        //Print Auto Off Status
+        BLE_SW_Timer_printUserSettings();
+        
+        //Print Reporting Rate
+        RN4870_sendRawStringToUser("Reporting Rate: ");
+        
+        uint16_t rtcPeriod = RTC_getPeriod();
+        
+        if (rtcPeriod == DEMO_SAMPLE_RATE_FAST)
+        {
+            RN4870_sendStringToUser("Fast (3s)");
+        }
+        else if (rtcPeriod == DEMO_SAMPLE_RATE_NORM)
+        {
+            RN4870_sendStringToUser("Normal (15s)");
+        }
+        else if (rtcPeriod == DEMO_SAMPLE_RATE_SLOW)
+        {
+            RN4870_sendStringToUser("Slow (30s)");
+        }
+        else
+        {
+            sprintf(RN4870_getCharBuffer(), "Other (0x%x)\r\n", rtcPeriod);
+            RN4870_printBufferedString();
+        }
+        
+        //Print Magnetometer Calibration
+        RN4870_sendRawStringToUser("Magnetometer Calibrated: ");
+        
+        if (windowAlarm_isCalGood())
+        {
+            RN4870_sendStringToUser("Yes");
+        }
+        else
+        {
+            RN4870_sendStringToUser("No");
+        }
+
+        //Print Temp Monitor Settings
+        tempMonitor_printUserSettings();
+                
+        RN4870_sendStringToUser("--End User Settings--");
+        
+        ok = true;
+    }
     else if (RN4870RX_find("RECAL"))
     {
         //Set Window Alarm in Calibration Mode
         windowAlarm_requestCalibration();
+        
+        ok = true;
+    }
+    else if (RN4870RX_find("GETCAL"))
+    {
+        RN4870_sendStringToUser("--Start Calibration Parameters--");
+        windowAlarm_printCalibration();
+        RN4870_sendStringToUser("--End Calibration Parameters--");
         
         ok = true;
     }

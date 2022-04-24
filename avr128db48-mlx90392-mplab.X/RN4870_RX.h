@@ -39,7 +39,7 @@ extern "C" {
     
     //Returns true if status matches COMP string
     bool RN4870RX_find(const char* comp);
-    
+        
     //Advances to the next status / command in the buffer, if available.
     void RN4870RX_advanceMessage(void);
     

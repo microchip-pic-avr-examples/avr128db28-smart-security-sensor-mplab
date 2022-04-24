@@ -15,6 +15,9 @@ extern "C" {
     //Sets and stores the current period to EEPROM
     void BLE_SW_Timer_saveSettings(uint16_t period);
     
+    //Prints user settings to UART
+    void BLE_SW_Timer_printUserSettings(void);
+    
     //Set the number of cycles (from the RTC)
     void BLE_SW_Timer_setPeriod(uint16_t period);
 
