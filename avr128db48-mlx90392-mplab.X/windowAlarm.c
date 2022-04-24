@@ -128,7 +128,7 @@ void windowAlarm_requestCalibration(void)
 void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_NormalizedResults8* normResults)
 {
     static MagnetometerCalibrationState oldState = CAL_BAD;
-    static uint16_t sampleCount = 0, instructionCount = 0;
+    static uint16_t sampleCount = 0;
     static uint8_t weightedAlarmState = 0;
     
     //Update Angle Max and Min
@@ -456,20 +456,12 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
     }
     
     //Instruction Printing State Machine
-    if ((oldState != calState) || (instructionCount >= INSTR_REPEAT_ITERATIONS))
+    if (oldState != calState)
     {
-        //Print Instructions
-        RN4870_sendStringToUser(calInstructions[calState]);
+        alarmResultsReady = true;
         
         //Update old state
         oldState = calState;
-        
-        //Reset Timer
-        instructionCount = 0;
-    }
-    else
-    {
-        instructionCount++;
     }
 }
 
@@ -776,15 +768,17 @@ bool windowAlarm_getResultStatus(void)
 //Prints the state of the alarm
 void windowAlarm_printResults(void)
 {
-    //Calibration is not good
-    if (calState != CAL_GOOD)
-    {
-        return;
-    }
-    
     //Clear Flag
     alarmResultsReady = false;
     
+    //Calibration is not good
+    if (calState != CAL_GOOD)
+    {
+        //Print Instructions
+        RN4870_sendStringToUser(calInstructions[calState]);
+        return;
+    }
+        
     //Print Results
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {
