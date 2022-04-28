@@ -772,7 +772,11 @@ void windowAlarm_printResults(void)
     alarmResultsReady = false;
     
     //Calibration is not good
-    if (calState != CAL_GOOD)
+    if (magState == MAGNETOMETER_ERROR)
+    {
+        RN4870_sendStringToUser("[ERR] Communication error with magnetometer. Power cycle device.");
+    }
+    else if (calState != CAL_GOOD)
     {
         //Print Instructions
         RN4870_sendStringToUser(calInstructions[calState]);
@@ -849,6 +853,12 @@ bool windowAlarm_isCalGood(void)
 //Returns true if the alarm is OK, false if the alarm was tripped
 bool windowAlarm_isAlarmOK(void)
 {   
+    //If unable to boot magnetometer
+    if (magState == MAGNETOMETER_ERROR)
+    {
+        return false;
+    }
+    
     //Print Results
     if (alarmState >= MAGNETOMETER_ALARM_TRIGGER)
     {

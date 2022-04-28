@@ -21,7 +21,9 @@ void ADC_init(void)
     
     //Extra Clock Cycles to Hold
     //~800us for 5k from the divider
-    ADC0.SAMPCTRL = 23;
+    //~120us for turn on time
+    //Total: ~920us
+    ADC0.SAMPCTRL = 29;
             
     //Setup Sampling Channels
     ADC0.MUXPOS = ADC_MUXPOS_AIN6_gc;

@@ -7,14 +7,18 @@
 void GPIO_init(void)
 {    
     //PA0 - SW0 Input (Wake / Calibrate)
-    //PA1 - BTLE_STS (Input)
-    
+    //PA1 - BTLE_STS (Input)    
     //PA4, PA4 - MCU_TXD/MCU_RXD (For Bluetooth)
+    //PA6 - Voltage Divider Enable
+
     //IO Set by USART initializer
     
     //Disable Inputs of Pins (PORTA)
     PORTA.PINCONFIG = PORT_ISC_INPUT_DISABLE_gc;
     PORTA.PINCTRLSET = PIN2_bm | PIN3_bm | PIN4_bm | PIN6_bm | PIN7_bm;
+    
+    //Pin 6 is an Output
+    PORTA.DIRSET |= PIN6_bm;
     
     //PC2, PC3 - MVIO I2C
     //IO Set by TWI Initializers

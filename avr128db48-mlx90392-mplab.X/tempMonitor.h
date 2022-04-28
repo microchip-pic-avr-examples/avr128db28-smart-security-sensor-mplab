@@ -20,10 +20,7 @@ extern "C" {
     
     //Returns the current temperature unit
     void tempMonitor_printUserSettings(void);
-    
-    //Updates the RTC's sample rate and stores it in EEPROM
-    void tempMonitor_updateSampleRate(uint16_t sampleRate);
-    
+        
     //Sets whether the sensor can run in sleep
     void tempMonitor_setRunInSleep(bool enable);
     

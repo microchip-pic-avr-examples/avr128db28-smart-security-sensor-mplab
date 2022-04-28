@@ -31,17 +31,37 @@ Please consult the Bill of Materials (BOM) in the documentation.
 
 ## Estimated Power Consumption
 
+Important: **These values are provided for reference only.**
+
+ Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
+
+Update rates determine how often new temperature measurements are collected and how often system status reported (either via Bluetooth or the flashed LED, depending on the operating mode).
+
+Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used. 
+
+### Slow (30s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode | 461.89 &micro;A
-| Active Mode (paired) | 4.8859 mA
-| Calibration Mode | 6.1009 mA
+| Low-Power Mode (Temp not Monitored)| ??? &micro;A
+| Low-Power Mode (Temp Monitored)| ??? &micro;A
+| Active Mode (paired) | ??? mA
+| Calibration Mode | ??? mA
 
-(Note: Includes battery circuit - TBR / Modified in future version)
+### Normal (15s) Update Rate
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode (Temp not Monitored)| ??? &micro;A
+| Low-Power Mode (Temp Monitored)| ??? &micro;A
+| Active Mode (paired) | ??? mA
+| Calibration Mode | ??? mA
 
-Note: **These values are provided for reference only.**
-
- Values were captured with the system powered from a DC power supply through a calibrated precision digital multimeter (with a sampling rate of 10 ksps).
+### Fast (3s) Update Rate
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode (Temp not Monitored)| ??? &micro;A
+| Low-Power Mode (Temp Monitored)| ??? &micro;A
+| Active Mode (paired) | ??? mA
+| Calibration Mode | ??? mA
 
 ## Table of Contents
 
@@ -152,7 +172,7 @@ In safe mode, the application ignores stored values in EEPROM and resets all use
 
 ## Operating the Demo
 
-For ease of demonstrability, an [RN4870 Bluetooth module](https://www.microchip.com/en-us/product/RN4870) was used for wireless communication. In a production setting, we'd recommend switching to a different wireless protocol, like [Zigbee&reg;](https://www.microchip.com/en-us/products/wireless-connectivity/zigbee).
+For ease of demonstrability, an [RN4870 Bluetooth module](https://www.microchip.com/en-us/product/RN4870) was used for wireless communication. In a production setting, we'd recommend switching to a different wireless communication method, like [Sub-GHz Radio](https://www.microchip.com/en-us/products/wireless-connectivity/sub-ghz).
 
 ### Pairing
 
@@ -180,17 +200,21 @@ Command Examples:
 | ------------ | ------ | ------- | ------------
 | HELP | HELP | HELP | Get help with this demo.
 | DEMO | DEMO | DEMO | Prints information about this demo.
+| USER | USER | USER | Prints current user-defined settings
+| CAL | CAL | CAL | Prints current calibration constants (for developers only)
+| MAGRAW | MAGRAW | MAGRAW | Requests the next magnetometer result to be displayed on the screen. This usually occurs immediately after sending this command.
 | VBAT  | VBAT  | VBAT | Prints current battery voltage.
 | RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
 | STATUS | STATUS | STATUS | Prints the current system status.
 | RESET | RESET | RESET | Resets in RAM and EEPROM user settings. The demo will be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.
+| REBOOT | REBOOT | REBOOT | Reboots the microcontroller, but does NOT reset the settings.
 | STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin).
 | STWH | STWH,\<TEMP\> | STWH,40.1 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STWL | STWL,\<TEMP\> | STWL,10.0 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
-| RST   | RST   | RST   | Resets the microcontroller. Communications will be reset.
 | PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. Calibration must be valid and alarm is inactive to enter this state. See [Low Power Mode](#low-power-mode) for more information. Also aliased as PWRDWN
-| BTIDLEOFF | BTIDLEOFF,<false/true> | BTIDLEOFF,false | Enables (true) or disable (false) idle Bluetooth power-down. If enabled, after 30s where the system is not connected to a device, calibration is OK, and alarm is inactive, the system will auto-switch to [Low Power Mode](#low-power-mode).
+| BTIDLEOFF | BTIDLEOFF,\<TRUE/FALSE\> | BTIDLEOFF,false | Enables (true) or disable (false) idle Bluetooth power-down. If enabled, after 30s where the system is not connected to a device, calibration is OK, and alarm is inactive, the system will auto-switch to [Low Power Mode](#low-power-mode).
+| TEMPSLEEP | TEMPSLEEP,\<TRUE/FALSE\> | TEMPSLEEP, true | Enables temp monitoring while in sleep. If enabled, the system will measure the temperature via the FIR sensor. If the temperature is out of the expected ranges, the system will wake-up and restart the Bluetooth radio. **This mode will increase power consumption. It is recommended to use NORMAL or SLOW speed update rates to minimize power usage.**
 
 ### LED Status Indicator
 

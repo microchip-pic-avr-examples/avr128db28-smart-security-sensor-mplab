@@ -13,9 +13,6 @@ extern "C" {
 
 //Sets the sample rate when running normally
 #define MAGNETOMETER_ACTIVE_SAMPLE_RATE CONT_10HZ
-
-//How often should the instructions be repeated? (Measured in loop iterations)
-#define INSTR_REPEAT_ITERATIONS 800
     
 //If defined, this will print values in CSV format
 //#define MAGNETOMETER_PRINT_CSV
@@ -49,7 +46,7 @@ extern "C" {
     
 //Comment out this define to disable
 //Magnitude Tolerance for Alarm (1 + (% Value))
-#define MAGNETOMETER_VECTOR_TOLERANCE 0.1
+#define MAGNETOMETER_VECTOR_TOLERANCE 0.15
 
 //If defined, the angles of the magnetometer will be computed and used to monitor for tampering.
 //#define MAGNETOMETER_ANGLE_CHECK

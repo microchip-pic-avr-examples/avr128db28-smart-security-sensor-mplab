@@ -64,9 +64,6 @@ extern "C" {
     //Sends a Command to the RN4870, and prints a DBG log
     void RN4870_sendCommandAndPrint(const char* string, uint8_t timeout);
     
-    //Returns true if ready to send data
-    bool RN4870_isReady(void);
-    
     //Sends a string to the user, if powered up.
     void RN4870_sendStringToUser(const char* str);
     

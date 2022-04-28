@@ -18,6 +18,7 @@
 #include "ADC.h"
 #include "Bluetooth_Timeout_Timer.h"
 #include "LEDcontrol.h"
+#include "GPIO.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -182,7 +183,9 @@ bool DEMO_handleUserCommands(void)
     }
     else if (RN4870RX_find("VBAT"))
     {
+        IO_VDIV_TurnOn();
         sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
+        IO_VDIV_TurnOff();
         RN4870_printBufferedString();
         
         ok = true;
@@ -190,10 +193,12 @@ bool DEMO_handleUserCommands(void)
     else if (RN4870RX_find("STATUS"))
     {
         //Print Current Results
-        RN4870_sendStringToUser("Current System State:");
+        RN4870_sendStringToUser("--Start System Status--");
         
         windowAlarm_printResults();
         tempMonitor_printLastResults();
+        
+        RN4870_sendStringToUser("--End System Status--");
         
         ok = true;
     }
@@ -261,7 +266,7 @@ bool DEMO_handleUserCommands(void)
         
         ok = true;
     }
-    else if (RN4870RX_find("GETCAL"))
+    else if (RN4870RX_find("CAL"))
     {
         //Prints Calibration Parameters
         
@@ -381,6 +386,11 @@ bool DEMO_handleUserCommands(void)
         }
 
     }
+    else if (RN4870RX_find("HELP"))
+    {
+        RN4870_sendStringToUser("Documentation is available here: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab");
+        ok = true;
+    }
     else
     {
         RN4870_sendStringToUser("Command not found. For help, please type HELP.");
@@ -394,20 +404,6 @@ void DEMO_setSystemUpdateRateEEPROM(uint16_t rate)
 {    
     RTC_setPeriod(rate);
     eeprom_write_word((uint16_t*) SYSTEM_UPDATE_PERIOD, rate);
-    
-    //Calculate Temp Trigger Timing
-    if (rate <= DEMO_TEMP_DELAY_START)
-    {
-        //When RTC.CNT = 0
-        rate = 0;
-    }
-    else
-    {
-        rate -= DEMO_TEMP_DELAY_START;
-    }
-    
-    //Update Temp Trigger Timing
-    tempMonitor_updateSampleRate(rate);
 }
 
 //Sets the update rate of the demo
@@ -415,20 +411,6 @@ void DEMO_setSystemUpdateRateEEPROM(uint16_t rate)
 void DEMO_setSystemUpdateRateRAM(uint16_t rate)
 {    
     RTC_setPeriod(rate);
-    
-    //Calculate Temp Trigger Timing
-    if (rate <= DEMO_TEMP_DELAY_START)
-    {
-        //When RTC.CNT = 0
-        rate = 0;
-    }
-    else
-    {
-        rate -= DEMO_TEMP_DELAY_START;
-    }
-    
-    //Update Temp Trigger Timing
-    tempMonitor_updateSampleRate(rate);
 }
 
 //Sets the Red/Green LEDs according to the current state

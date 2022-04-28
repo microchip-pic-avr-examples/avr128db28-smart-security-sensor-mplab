@@ -391,7 +391,7 @@ bool MLX90632_isDataReady(void)
 
     }
     
-    return (status.regValue & MLX90632_STATUS_NEW_DATA_bm);
+    return ((status.regValue & (MLX90632_STATUS_NEW_DATA_bm)) && (!(status.regValue & MLX90632_STATUS_DEVICE_BUSY_bm)));
 }
 
 bool MLX90632_setRegister(MLX90632_Register reg, uint16_t data)
