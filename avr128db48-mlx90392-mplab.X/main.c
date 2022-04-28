@@ -75,6 +75,22 @@ void normalPrint(void)
                
         //Disable Welcome Timer
         welcomeTimer_stop();
+        RTC_clearOVFTrigger();
+        
+        //If ready to print results
+        if (windowAlarm_getResultStatus())
+        {
+            windowAlarm_printResults();
+        }
+        
+        if (tempMonitor_getResultStatus())
+        {
+            tempMonitor_printResults();
+        }
+        
+        //Reset the RTC to remove sampling glitch
+        RTC_reset();
+        return;
     }
     else if ((welcomeTimer_isRunning()) || (!RN4870_isConnected()))
     {

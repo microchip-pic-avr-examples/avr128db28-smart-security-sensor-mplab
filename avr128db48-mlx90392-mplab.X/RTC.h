@@ -11,6 +11,9 @@ extern "C" {
     //Configures the RTC and PIT
     void RTC_init(void);
     
+    //Resets the RTC count back to 0
+    void RTC_reset(void);
+    
     //Set the OVF Callback Function
     void RTC_setOVFCallback(void (*func)(void));
     

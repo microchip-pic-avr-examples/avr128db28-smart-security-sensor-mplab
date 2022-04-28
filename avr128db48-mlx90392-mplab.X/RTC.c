@@ -47,8 +47,29 @@ void RTC_init(void)
     //Enable PIT Interrupt
     RTC.PITINTCTRL = RTC_PI_bm;
         
+    while (RTC.PITSTATUS & RTC_CTRLABUSY_bm);
+    
     //Enable Clock Pre-scaler 128, Enable PIT
     RTC.PITCTRLA = RTC_PERIOD_CYC128_gc | RTC_PITEN_bm;
+}
+
+//Resets the RTC count back to 0
+void RTC_reset(void)
+{
+    while (RTC.STATUS & RTC_CTRLABUSY_bm);
+    
+    //Turn off the RTC
+    RTC.CTRLA &= ~(RTC_RTCEN_bm);
+    
+    while (RTC.STATUS & RTC_CNTBUSY_bm);
+    
+    //Clear Counter
+    RTC.CNT = 0x0000;
+ 
+    while (RTC.STATUS & RTC_CTRLABUSY_bm);
+    
+    //Reset the RTC
+    RTC.CTRLA |= RTC_RTCEN_bm;
 }
 
 //Set the OVF Callback Function
