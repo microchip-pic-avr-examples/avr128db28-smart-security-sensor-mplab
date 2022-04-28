@@ -32,12 +32,9 @@ extern "C" {
     
 //Memory Validation (2 bytes) - XOR of 16-bit Device IDs
 #define MEM_VALIDATE (4 + MEM_HB)               //0x143A
-    
-//Update Timing for Temp Sensor
-#define TEMP_TRIGGER_PERIOD (2 + MEM_VALIDATE)   //0x143C
-    
+        
 //High Temperature Warning
-#define TEMP_WARNING_HIGH_LOCATION (2 + TEMP_TRIGGER_PERIOD)  //0x143E
+#define TEMP_WARNING_HIGH_LOCATION (2 + MEM_VALIDATE)  //0x143E
     
 //High Temperature Warning
 #define TEMP_WARNING_LOW_LOCATION (4 + TEMP_WARNING_HIGH_LOCATION)    //0x1443

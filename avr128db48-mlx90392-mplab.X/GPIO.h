@@ -7,6 +7,9 @@ extern "C" {
     
 #include <avr/io.h>
         
+#define IO_VDIV_TurnOn() do { PORTA.OUTSET = PIN6_bm; } while (0)
+#define IO_VDIV_TurnOff() do { PORTA.OUTCLR = PIN6_bm; } while (0)
+    
 #define IO_LED0R_TurnOn() do { PORTD.OUTSET = PIN3_bm; } while(0)
 #define IO_LED0R_TurnOff() do { PORTD.OUTCLR = PIN3_bm; } while(0)
 #define IO_LED0R_Toggle() do { PORTD.OUTTGL = PIN3_bm; } while(0)

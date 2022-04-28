@@ -18,7 +18,7 @@
 
 //State Machine for the main program
 typedef enum  {
-    TEMP_SLEEP = 0, TEMP_START, TEMP_WAIT, TEMP_RESULTS, TEMP_ERROR_WAIT, TEMP_ERROR
+    TEMP_SLEEP = 0, TEMP_START, TEMP_WAIT, TEMP_RESULTS, TEMP_ERROR_RETRY, TEMP_ERROR
 } TemperatureMeasState;
 
 //Temperature Measurement State Machine
@@ -67,6 +67,7 @@ void tempMonitor_init(bool safeStart)
     //Print Result
     if (success)
     {
+        tempState = TEMP_START;
         USB_sendStringWithEndline("OK");
     }
     else
@@ -80,12 +81,10 @@ void tempMonitor_init(bool safeStart)
 //If nReset = false, defaults will be loaded
 void tempMonitor_loadSettings(bool nReset)
 {
+    RTC_setCompare(0);
     if (!nReset)
     {
         //Reset to Defaults
-        
-        eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, DEFAULT_RTC_COMPARE);
-        RTC_setCompare(DEFAULT_RTC_COMPARE);
         
         eeprom_write_float((float*) TEMP_WARNING_HIGH_LOCATION, DEFAULT_TEMP_WARNING_H);
         tempWarningH = DEFAULT_TEMP_WARNING_H;
@@ -102,9 +101,6 @@ void tempMonitor_loadSettings(bool nReset)
     else
     {
         //Load Settings
-        
-        //Update RTC Timer
-        RTC_setCompare(eeprom_read_word((uint16_t*) TEMP_TRIGGER_PERIOD));
         
         //Load Stored Values
         tempWarningH = eeprom_read_float((float*) TEMP_WARNING_HIGH_LOCATION);
@@ -151,19 +147,6 @@ void tempMonitor_printUserSettings(void)
             "Temp Alarm Low: %2.1f%c\r\n", tempUnit, tempMonitor_getTempWarningHigh(), 
             tempUnit, tempMonitor_getTempWarningLow(), tempUnit);
     RN4870_printBufferedString();
-}
-
-//Updates the RTC's sample rate and stores it in EEPROM
-void tempMonitor_updateSampleRate(uint16_t sampleRate)
-{
-    //Update RTC Compare
-    RTC_setCompare(sampleRate);
-    
-    //Store new period
-    eeprom_write_word((uint16_t*) TEMP_TRIGGER_PERIOD, sampleRate);
-
-    //    sprintf(USB_getCharBuffer(), "New RTC Compare: 0x%x\r\n", sampleRate);
-    //    USB_sendBufferedString();
 }
 
 //Sets whether the sensor can run in sleep
@@ -276,23 +259,36 @@ void tempMonitor_FSM(void)
             }
             else
             {
-                USB_sendStringWithEndline("[ERR] Failed to compute temp from MLX90632_computeTemperature()");
-                tempState = TEMP_ERROR;
+                USB_sendStringWithEndline("[ERR] Failed to compute temp from MLX90632_computeTemperature(). Starting new conversion");
+                tempState = TEMP_START;
             }
             
             break;
         }
-        case TEMP_ERROR_WAIT:
+        case TEMP_ERROR_RETRY:
         {
-            //Wait...
+            //Attempt Restart
+            bool success = MLX90632_initDevice(false);
+            
+            if (success)
+            {
+                USB_sendStringWithEndline("Temperature sensor restarted.");
+                
+                //Immediately Start a Temp Conversion
+                tempState = TEMP_START;
+            }
+            else
+            {
+                USB_sendStringWithEndline("Unable to restart temp sensor");
+                tempState = TEMP_ERROR;
+            }
+
             break;
         }
         case TEMP_ERROR:
         default:
         {
             //Sensor Error has Occurred
-            RN4870_sendStringToUser("Error - Temperature sensor communication failure. Reboot device");
-            tempState = TEMP_ERROR_WAIT;
         }
     }
 }
@@ -304,9 +300,9 @@ void tempMonitor_requestConversion(void)
     {
         tempState = TEMP_START;
     }
-    if (tempState == TEMP_ERROR_WAIT)
+    if (tempState == TEMP_ERROR)
     {
-        tempState = TEMP_ERROR;
+        tempState = TEMP_ERROR_RETRY;
     }
 }
 
@@ -322,12 +318,11 @@ void tempMonitor_printResults(void)
     if (!temperatureResultsReady)
     {
         USB_sendStringWithEndline("[ERR] Temperature results not ready for printing.");
-        sprintf(USB_getCharBuffer(), "RTC.CMP = 0x%x\r\n, RTC.PER = 0x%x\r\n", RTC_getCompare(), RTC_getPeriod());
+        sprintf(USB_getCharBuffer(), "RTC.CMP = 0x%x\r\nRTC.PER = 0x%x\r\n", RTC_getCompare(), RTC_getPeriod());
         USB_sendBufferedString();
 
         //Send String
         RN4870_sendStringToUser("Temperature results are not ready.");
-        
         return;
     }
     
@@ -340,6 +335,11 @@ void tempMonitor_printResults(void)
 
 void tempMonitor_printLastResults(void)
 {
+    if ((tempState == TEMP_ERROR) || (tempState == TEMP_ERROR_RETRY))
+    {
+        RN4870_sendStringToUser("[ERR] An error has occurred in communicating with the temp sensor. Results be invalid.");
+    }
+    
     //Get temp (in Celsius)
     float sensorTemp, objTemp;
     sensorTemp = MLX90632_getSensorTemp();

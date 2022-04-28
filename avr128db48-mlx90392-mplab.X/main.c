@@ -71,7 +71,7 @@ void normalPrint(void)
     if (welcomeTimer_hasTriggered())
     {
         RN4870_sendStringToUser("Welcome to the Microchip Smart Window Security Sensor"
-                " with Room Temperature Monitoring Demo!\r\n");
+                " and Room Temperature Monitor Demo!\r\n");
                
         //Disable Welcome Timer
         welcomeTimer_stop();
@@ -82,22 +82,19 @@ void normalPrint(void)
         return;
     }
     
-    if ((windowAlarm_getResultStatus()) || (RTC_isOVFTriggered()))
+    if (windowAlarm_getResultStatus())
     {
         windowAlarm_printResults();
     }
-
-    if (RTC_isOVFTriggered())
+    else if (RTC_isOVFTriggered())
     {
         RTC_clearOVFTrigger();
-
-        if (RN4870_isReady())
+        
+        windowAlarm_printResults();
+        if (windowAlarm_isCalGood())
         {
-            if (windowAlarm_isCalGood())
-            {
-                //If not calibrating...
-                tempMonitor_printResults();
-            }
+            //If not calibrating...
+            tempMonitor_printResults();
         }
     }
 }
@@ -122,7 +119,7 @@ void lowPowerLEDPrint(void)
 }
 
 int main(void)
-{
+{    
     //Init System / Core Peripherals
     System_initDevice();
     
@@ -145,7 +142,7 @@ int main(void)
     DEMO_init(safeStart);
     
     //Init State Machines
-    windowAlarm_init(safeStart);
+    windowAlarm_init(safeStart);    
     tempMonitor_init(safeStart);
     
     //Start Interrupts
