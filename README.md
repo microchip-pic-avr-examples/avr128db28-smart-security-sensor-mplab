@@ -37,31 +37,33 @@ Important: **These values are provided for reference only.**
 
 Update rates determine how often new temperature measurements are collected and how often system status reported (either via Bluetooth or the flashed LED, depending on the operating mode).
 
-Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used. 
+Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
+
+**Values are for Rev 1 of the PCB - Data not finalized.**
 
 ### Slow (30s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| ??? &micro;A
-| Low-Power Mode (Temp Monitored)| ??? &micro;A
-| Active Mode (paired) | ??? mA
-| Calibration Mode | ??? mA
+| Low-Power Mode (Temp not Monitored)| 221.54 &micro;A
+| Low-Power Mode (Temp Monitored)| 268.16 &micro;A
+| Active Mode (paired) | 4.6630 mA
+| Calibration Mode | 5.9820 mA
 
 ### Normal (15s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| ??? &micro;A
-| Low-Power Mode (Temp Monitored)| ??? &micro;A
-| Active Mode (paired) | ??? mA
-| Calibration Mode | ??? mA
+| Low-Power Mode (Temp not Monitored)| 221.85 &micro;A
+| Low-Power Mode (Temp Monitored)| 291.01 &micro;A
+| Active Mode (paired) | 4.6332 mA
+| Calibration Mode | 5.9803 mA
 
 ### Fast (3s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| ??? &micro;A
-| Low-Power Mode (Temp Monitored)| ??? &micro;A
-| Active Mode (paired) | ??? mA
-| Calibration Mode | ??? mA
+| Low-Power Mode (Temp not Monitored)| 219.63 &micro;A
+| Low-Power Mode (Temp Monitored)| 600.39 &micro;A
+| Active Mode (paired) | 4.9408 mA
+| Calibration Mode | 5.9785 mA
 
 ## Table of Contents
 
