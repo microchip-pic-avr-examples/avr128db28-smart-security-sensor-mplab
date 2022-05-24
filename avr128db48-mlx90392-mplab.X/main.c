@@ -163,7 +163,7 @@ int main(void)
     
     //Start Interrupts
     sei();
-        
+    
     //Configure RN4870
     RN4870_init();
     

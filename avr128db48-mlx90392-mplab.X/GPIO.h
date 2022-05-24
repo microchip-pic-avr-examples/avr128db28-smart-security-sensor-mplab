@@ -30,8 +30,8 @@ extern "C" {
 #define WAKE_DisableIOC() do { PORTA.PIN0CTRL &= ~(PORT_ISC_gm); } while (0)
 #define WAKE_ClearFlag() do { VPORTA.INTFLAGS |= (PIN0_bm); } while (0)
 
-#define BTLE_EnablePower() do { PORTD.OUTCLR = PIN1_bm; } while (0)
-#define BTLE_DisablePower() do { PORTD.OUTSET = PIN1_bm; } while (0)
+#define BTLE_EnablePower() do { PORTD.OUTSET = PIN1_bm; } while (0)
+#define BTLE_DisablePower() do { PORTD.OUTCLR = PIN1_bm; } while (0)
     
 #define BTLE_AssertReset() do { PORTD.OUTCLR = PIN2_bm; } while (0)
 #define BTLE_ReleaseReset() do { PORTD.OUTSET = PIN2_bm; } while (0)
