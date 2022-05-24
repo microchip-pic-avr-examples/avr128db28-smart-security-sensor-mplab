@@ -31,7 +31,7 @@ Please consult the Bill of Materials (BOM) in the documentation.
 
 ## Estimated Power Consumption
 
-Important: **These values are provided for reference only.**
+Important: **These values are provided for reference only.** Data collected from 1 unit on the bench.
 
 Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
 
@@ -39,31 +39,33 @@ Update rates determine how often new temperature measurements are collected and 
 
 Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
 
-**Values are for Rev 1 of the PCB - Data not finalized.**
+Software Configuration: *XC8_Free*
+
+### Active Modes (Paired)
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Active Mode | 4.5741 mA
+| Calibration Mode | 5.9015 mA
+
+Power consumption in active mode is not expected to vary significantly.  
 
 ### Slow (30s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 221.54 &micro;A
-| Low-Power Mode (Temp Monitored)| 268.16 &micro;A
-| Active Mode (paired) | 4.6630 mA
-| Calibration Mode | 5.9820 mA
+| Low-Power Mode (Temp not Monitored)| 222.69 &micro;A
+| Low-Power Mode (Temp Monitored)| 264.59 &micro;A
 
 ### Normal (15s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 221.85 &micro;A
-| Low-Power Mode (Temp Monitored)| 291.01 &micro;A
-| Active Mode (paired) | 4.6332 mA
-| Calibration Mode | 5.9803 mA
+| Low-Power Mode (Temp not Monitored)| 223.10 &micro;A
+| Low-Power Mode (Temp Monitored)| 303.20 &micro;A
 
 ### Fast (3s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 219.63 &micro;A
-| Low-Power Mode (Temp Monitored)| 600.39 &micro;A
-| Active Mode (paired) | 4.9408 mA
-| Calibration Mode | 5.9785 mA
+| Low-Power Mode (Temp not Monitored)| 224.12 &micro;A
+| Low-Power Mode (Temp Monitored)| 591.91 &micro;A
 
 ## Table of Contents
 
@@ -226,7 +228,7 @@ Red LED - Alarm Tripped
 Green LED - Alarm Good
 Blue LED - Connected (and able to send) UART to the Smartphone
 
-If both Red and Green are active, the device is in calibration mode. 
+If both Red and Green are active, the device is in calibration mode.
 
 ### Calibration Mode
 
