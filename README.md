@@ -33,7 +33,7 @@ Please consult the Bill of Materials (BOM) in the documentation.
 
 Important: **These values are provided for reference only.**
 
- Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
+Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
 
 Update rates determine how often new temperature measurements are collected and how often system status reported (either via Bluetooth or the flashed LED, depending on the operating mode).
 
@@ -208,14 +208,14 @@ Command Examples:
 | VBAT  | VBAT  | VBAT | Prints current battery voltage.
 | RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
 | STATUS | STATUS | STATUS | Prints the current system status.
-| RESET | RESET | RESET | Resets in RAM and EEPROM user settings. The demo will be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.
+| RESET | RESET | RESET | Resets the user settings to the defaults. The demo will also be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.
 | REBOOT | REBOOT | REBOOT | Reboots the microcontroller, but does NOT reset the settings.
 | STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin).
 | STWH | STWH,\<TEMP\> | STWH,40.1 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STWL | STWL,\<TEMP\> | STWL,10.0 | Sets the High Temperature Alarm Point. Units are inherited from STU.
 | STSR | STSR, \<FAST/NORM/SLOW\> | STSR,FAST | Sets the sampling rate of the temp sensor to 3s, 15s, or 30s intervals.
-| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. Calibration must be valid and alarm is inactive to enter this state. See [Low Power Mode](#low-power-mode) for more information. Also aliased as PWRDWN
-| BTIDLEOFF | BTIDLEOFF,\<TRUE/FALSE\> | BTIDLEOFF,false | Enables (true) or disable (false) idle Bluetooth power-down. If enabled, after 30s where the system is not connected to a device, calibration is OK, and alarm is inactive, the system will auto-switch to [Low Power Mode](#low-power-mode).
+| PWDWN | PWDWN | PWDWN | Electrically disconnects the Bluetooth radio, stopping communications. Calibration must be valid and alarm is inactive to enter this state. See [Low Power Mode](#low-power-mode) for more information. Also aliased as PWRDWN.
+| BTIDLEOFF | BTIDLEOFF,\<TRUE/FALSE\> | BTIDLEOFF,false | Enables (true) or disables (false) idle Bluetooth power-down. If enabled, after 30s where the system is not connected to a device, calibration is OK, and alarm is inactive, the system will auto-switch to [Low Power Mode](#low-power-mode).
 | TEMPSLEEP | TEMPSLEEP,\<TRUE/FALSE\> | TEMPSLEEP, true | Enables temp monitoring while in sleep. If enabled, the system will measure the temperature via the FIR sensor. If the temperature is out of the expected ranges, the system will wake-up and restart the Bluetooth radio. **This mode will increase power consumption. It is recommended to use NORMAL or SLOW speed update rates to minimize power usage.**
 
 ### LED Status Indicator
@@ -225,6 +225,8 @@ The RGB LED on the board is used to indicate the following statuses:
 Red LED - Alarm Tripped
 Green LED - Alarm Good
 Blue LED - Connected (and able to send) UART to the Smartphone
+
+If both Red and Green are active, the device is in calibration mode. 
 
 ### Calibration Mode
 
