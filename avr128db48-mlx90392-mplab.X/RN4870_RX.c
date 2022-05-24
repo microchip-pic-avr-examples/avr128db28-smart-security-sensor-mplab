@@ -40,6 +40,10 @@ void RN4870RX_loadCharacter(char input)
         return;
     }
     
+    //If characters are invalid...
+    if ((input < ' ') || (input > '~'))
+        return;
+    
     if (processingMessage)
     {
         //Waiting for End of Status Marker
