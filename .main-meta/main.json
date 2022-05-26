@@ -3,10 +3,10 @@
     "category": "com.microchip.ide.project",
     "content": {
         "metaDataVersion": "1.3.0",
-        "name": "com.microchip.mcu8.mplabx.project.avr128db28-smart-window-mplab",
+        "name": "com.microchip.mcu8.mplabx.project.avr128db28-smart-security-sensor-mplab",
         "version": "1.0.0",
         "displayName": "Smart Security Sensor with AVR DB",
-        "projectName": "avr128db28-smart-window-mplab",
+        "projectName": "avr128db28-smart-security-sensor-mplab",
         "shortDescription": "Create a smart window security sensor with temperature monitoring using MVIO on the AVR DB family of MCUs.",
         "ide": {
             "name": "MPLAB X",
@@ -20,7 +20,7 @@
         ],
         "dfp": {
             "name": "AVR-Dx_DFP",
-            "semverRange": ">=2.0.151"
+            "semverRange": ">=2.1.152"
         },
         "device": {
             "metaDataVersion": "1.0.0",
