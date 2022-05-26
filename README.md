@@ -2,7 +2,7 @@
 
 [![MCHP](images/microchip.png)](https://www.microchip.com)
 
-# Window Security Sensor and Room Temperature Monitor with AVR&reg; DB,  MLX90632 and MLX90392
+# Window Security Sensor with AVR&reg; DB,  MLX90632 and MLX90392
 
 The objective of this application is to create a window security sensor with room temperature monitoring for a compact smart home solution. The AVR&reg; DB microcontroller was selected for this application in order to use [Multi-Voltage I/O (MVIO) peripheral](#) to communicate with the sensors. To implement this solution, an [MLX90632](https://www.melexis.com/en/product/MLX90632) and an [MLX90392 sensor](https://www.melexis.com/en/product/MLX90392) were used.
 
@@ -19,7 +19,7 @@ This application was co-developed with Melexis, a global supplier of microelectr
 ## Software Used
 
 - [MPLAB&reg; X IDE v6.0.0 or newer](#)
-- [MPLAB XC8 v2.35 or newer](#)
+- [MPLAB XC8 v2.36 or newer](#)
 - [AVR-Dx_DFP v2.0.151](#)  
 - Bluetooth&reg; Smart Data App by Microchip
   - [For iOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
@@ -203,7 +203,7 @@ Command Examples:
 | User Command | Format | Example | Description
 | ------------ | ------ | ------- | ------------
 | HELP | HELP | HELP | Get help with this demo.
-| DEMO | DEMO | DEMO | Prints information about this demo.
+| DEMO | DEMO | DEMO | Prints information about this demo and the build date/time. Also aliased as INFO.
 | USER | USER | USER | Prints current user-defined settings
 | CAL | CAL | CAL | Prints current calibration constants (for developers only)
 | MAGRAW | MAGRAW | MAGRAW | Requests the next magnetometer result to be displayed on the screen. This usually occurs immediately after sending this command.
