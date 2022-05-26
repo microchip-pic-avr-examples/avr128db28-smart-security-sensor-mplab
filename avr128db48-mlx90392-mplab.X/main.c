@@ -70,8 +70,7 @@ void normalPrint(void)
     //Check to see if the welcome message should be sent
     if (welcomeTimer_hasTriggered())
     {
-        RN4870_sendStringToUser("Welcome to the Microchip Smart Window Security Sensor"
-                " and Room Temperature Monitor Demo!\r\n");
+        RN4870_sendStringToUser("Welcome to the Microchip Security Sensor Demo!\r\n");
                
         //Disable Welcome Timer
         welcomeTimer_stop();

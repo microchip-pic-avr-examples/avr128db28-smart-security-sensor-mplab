@@ -23,7 +23,7 @@ bool MLX90392_init(void)
     //Setup Temperature Correction + Z-Axis Filtering
     success = MLX90392_setRegister(MLX90392_CUST_CTRL, MLX90392_CUST_CTRL_DNC | MLX90392_CUST_CTRL_T_COMP_EN_bm |
             (5 << MLX90392_CUST_CTRL_DIG_FILT_HALL_Z_gp));
-
+    
     if (!success)
         return false;
     

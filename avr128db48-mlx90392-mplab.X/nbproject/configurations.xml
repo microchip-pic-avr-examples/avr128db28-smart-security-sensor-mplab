@@ -152,7 +152,7 @@
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
         <property key="programmerToGoFilePath"
-                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab.X/debug/XC8_free/avr128db48-mlx90392-mplab_ptg"/>
+                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/free/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
@@ -373,7 +373,7 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.0.151"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.1.152"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -431,7 +431,7 @@
         <property key="memories.programmemory.ranges" value="0-ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
         <property key="programmerToGoFilePath"
-                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab.X/debug/XC8_pro/avr128db48-mlx90392-mplab_ptg"/>
+                  value="C:/Users/C62081/Documents/GIT Repos/avr128db48-mlx90392-mplab-mcc/avr128db48-mlx90392-mplab-mcc.X/debug/pro/avr128db48-mlx90392-mplab-mcc_ptg"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
@@ -646,13 +646,13 @@
         <targetDevice>AVR128DB28</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>AtmelIceTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>AVR</languageToolchain>
         <languageToolchainVersion>5.4.0</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.0.151"/>
+        <pack name="AVR-Dx_DFP" vendor="Microchip" version="2.1.152"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
