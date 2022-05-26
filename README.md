@@ -207,7 +207,7 @@ Command Examples:
 | USER | USER | USER | Prints current user-defined settings
 | CAL | CAL | CAL | Prints current calibration constants (for developers only)
 | MAGRAW | MAGRAW | MAGRAW | Requests the next magnetometer result to be displayed on the screen. This usually occurs immediately after sending this command.
-| VBAT  | VBAT  | VBAT | Prints current battery voltage.
+| VBAT  | VBAT  | VBAT | Prints current battery voltage. This function will block for 50 ms to allow the voltage divider to stabilize before measurement.
 | RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
 | STATUS | STATUS | STATUS | Prints the current system status.
 | RESET | RESET | RESET | Resets the user settings to the defaults. The demo will also be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.

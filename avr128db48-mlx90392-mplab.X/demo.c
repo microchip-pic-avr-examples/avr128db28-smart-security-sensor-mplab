@@ -19,6 +19,7 @@
 #include "Bluetooth_Timeout_Timer.h"
 #include "LEDcontrol.h"
 #include "GPIO.h"
+#include "TCB0_oneShot.h"
 
 #define DEMO_GOOD_VALUE 0x7A
 
@@ -176,14 +177,32 @@ bool DEMO_handleUserCommands(void)
     else if (RN4870RX_find("INFO") || RN4870RX_find("DEMO"))
     {
         //Demo / Info
-        RN4870_sendStringToUser("Smart Window Security Sensor and Room Temperature Monitor\r\n"
+        RN4870_sendStringToUser("--Demo Information--\r\nSmart Security Sensor\r\n"
                 "Developed by Microchip Technology Inc. with assistance from Melexis\r\n"
                 "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab");
+        
+        //Build Information
+        RN4870_sendRawStringToUser("\r\nBuilt on: ");
+        RN4870_sendRawStringToUser(__DATE__);
+        RN4870_sendRawStringToUser(" at ");
+        RN4870_sendStringToUser(__TIME__);
+        
         ok = true;
     }
     else if (RN4870RX_find("VBAT"))
     {
+        //Measure Battery Voltage
+        
         IO_VDIV_TurnOn();
+        
+        //50 ms Delay
+        for (uint8_t i = 0; i < 50; i++)
+        {
+            asm("WDR");
+            TCB0_triggerTimer();
+            while (TCB0_isRunning());
+        }
+        
         sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
         IO_VDIV_TurnOff();
         RN4870_printBufferedString();
