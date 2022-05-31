@@ -2,9 +2,9 @@
 
 [![MCHP](images/microchip.png)](https://www.microchip.com)
 
-# Window Security Sensor with AVR&reg; DB,  MLX90632 and MLX90392
+# Window Security Sensor with an AVR&reg; DB Microcontroller,  MLX90632 and MLX90392
 
-The objective of this application is to create a window security sensor with room temperature monitoring for a compact smart home solution. The AVR&reg; DB microcontroller was selected for this application in order to use [Multi-Voltage I/O (MVIO) peripheral](#) to communicate with the sensors. To implement this solution, an [MLX90632](https://www.melexis.com/en/product/MLX90632) and an [MLX90392 sensor](https://www.melexis.com/en/product/MLX90392) were used.
+The objective of this application is to create a window security sensor with room temperature monitoring for a compact smart home solution. The AVR128DB28 microcontroller was selected for this application in order to use [Multi-Voltage I/O (MVIO) peripheral](#) to communicate with the sensors. To implement this solution, an [MLX90632](https://www.melexis.com/en/product/MLX90632) and an [MLX90392 sensor](https://www.melexis.com/en/product/MLX90392) were used.
 
 This application was co-developed with Melexis, a global supplier of microelectronic semiconductor solutions.
 
@@ -29,46 +29,15 @@ This application was co-developed with Melexis, a global supplier of microelectr
 
 Please consult the Bill of Materials (BOM) in the documentation.
 
-## Estimated Power Consumption
-
-Important: **These values are provided for reference only.** Data collected from 1 unit on the bench.
-
-Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
-
-Update rates determine how often new temperature measurements are collected and how often system status reported (either via Bluetooth or the flashed LED, depending on the operating mode).
-
-Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
-
-Software Configuration: *XC8_Free*
-
-### Active Modes (Paired)
-| Operating Mode | Average Current |
-| -------------- | -----------------
-| Active Mode | 4.5741 mA
-| Calibration Mode | 5.9015 mA
-
-Power consumption in active mode is not expected to vary significantly.  
-
-### Slow (30s) Update Rate
-| Operating Mode | Average Current |
-| -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 222.69 &micro;A
-| Low-Power Mode (Temp Monitored)| 264.59 &micro;A
-
-### Normal (15s) Update Rate
-| Operating Mode | Average Current |
-| -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 223.10 &micro;A
-| Low-Power Mode (Temp Monitored)| 303.20 &micro;A
-
-### Fast (3s) Update Rate
-| Operating Mode | Average Current |
-| -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 224.12 &micro;A
-| Low-Power Mode (Temp Monitored)| 591.91 &micro;A
+![Board Image](./images/boardImage.png)
 
 ## Table of Contents
 
+- [Estimated Power Consumption](#estimated-power-consumption)
+  - [Active Modes (Paired)](#active-modes--paired-)
+  - [Slow (30s) Update Rate](#slow--30s--update-rate)
+  - [Normal (15s) Update Rate](#normal--15s--update-rate)
+  - [Fast (3s) Update Rate](#fast--3s--update-rate)
 - [Window Alarm Sensing](#window-alarm-sensing)
   - [The Advantage of a Magnetometer](#the-advantage-of-a-magnetometer)
   - [Calibrating the Magnetometer](#calibrating-the-magnetometer)
@@ -83,6 +52,44 @@ Power consumption in active mode is not expected to vary significantly.
   - [Safe Mode](#safe-mode)
 - [Operating the Demo](#operating-the-demo)
 - [User Commands](#user-commands)
+
+## Estimated Power Consumption
+
+Important: **These values are provided for reference only.** Data collected from 1 unit on the bench. Values were rounded to the nearest &micro;A.
+
+Values were captured with the system powered from a DC power supply at 4.5V through a calibrated precision digital multimeter (with a sampling rate of 10 ksps - 1,000,000 samples per run).
+
+Update rates determine how often new temperature measurements are collected and how often system status reported (either via Bluetooth or the flashed LED, depending on the operating mode).
+
+Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
+
+Software Configuration: *XC8_Free*
+
+### Active Modes (Paired)
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Active Mode | 4.574 mA
+| Calibration Mode | 5.902 mA
+
+Power consumption in active mode is not expected to vary significantly with update rate.
+
+### Slow (30s) Update Rate
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode (Temp not Monitored)| 223 &micro;A
+| Low-Power Mode (Temp Monitored)| 265 &micro;A
+
+### Normal (15s) Update Rate
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode (Temp not Monitored)| 223 &micro;A
+| Low-Power Mode (Temp Monitored)| 303 &micro;A
+
+### Fast (3s) Update Rate
+| Operating Mode | Average Current |
+| -------------- | -----------------
+| Low-Power Mode (Temp not Monitored)| 224 &micro;A
+| Low-Power Mode (Temp Monitored)| 592 &micro;A
 
 ## Window Alarm Sensing
 
@@ -167,7 +174,7 @@ Constant Caching can be disabled by commenting out the macro `CACHE_CONSTANTS` i
 
 ### Safe Mode
 To enter safe mode:
-- Hold the "Cal" button
+- Hold the "Wake" button
 - Power-up the demo
 
 In safe mode, the application ignores stored values in EEPROM and resets all user settings to the compile-time defaults. Constants for the MLX90632 (temp. sensor) will be reacquired and cached and the magnetometer will need to be recalibrated before use.
@@ -232,7 +239,7 @@ If both Red and Green are active, the device is in calibration mode.
 
 ### Calibration Mode
 
-To enter calibration mode, press the Cal. button when NOT in Low Power mode or by sending the command "RECAL".
+To enter calibration mode, press the "Wake" button when NOT in Low Power mode or by sending the command "RECAL".
 
 **Note: If in calibration mode and the board is powered off before completed the calibration previous calibration settings will be used. (Calibration values in progress are NOT stored in EEPROM until the cycle has finished). If the stored values are invalid, the system will request calibration on power being restored.**
 
