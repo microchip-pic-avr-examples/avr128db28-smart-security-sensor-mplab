@@ -224,9 +224,9 @@ Command Examples:
 
 The RGB LED on the board is used to indicate the following statuses:
 
-Red LED - Alarm Tripped
-Green LED - Alarm Good
-Blue LED - Connected (and able to send) UART to the Smartphone
+Red LED - Alarm Tripped  
+Green LED - Alarm Good  
+Blue LED - Connected (and able to send) UART to the Smartphone  
 
 If both Red and Green are active, the device is in calibration mode.
 
