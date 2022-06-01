@@ -14,20 +14,21 @@ This application was co-developed with Melexis, a global supplier of microelectr
 - [MLX90632 (FIR Thermometer) Homepage](https://www.melexis.com/en/product/MLX90632/Miniature-SMD-Infrared-Thermometer-IC)
   - [MLX90632 Reference Software Library (from Melexis)](https://github.com/melexis/mlx90632-library)
 - [MLX90392 (3D Magnetometer) Homepage](https://www.melexis.com/en/product/MLX90392/3D-Magnetometer-micro-power-and-cost-conscious)
-- [MVIO Peripheral Homepage](#)
+- [MVIO Peripheral Homepage](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/8-bit-mcus/core-independent-and-analog-peripherals/system-flexibility/mvio?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_avrdb&utm_content=avrdb-smart-security-sensor-github)
+- [AVR128DB28 Device Homepage](https://www.microchip.com/wwwproducts/en/AVR128DB28?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_avrdb&utm_content=avrdb-smart-security-sensor-github)
 
 ## Software Used
 
-- [MPLAB&reg; X IDE v6.0.0 or newer](#)
-- [MPLAB XC8 v2.36 or newer](#)
-- [AVR-Dx_DFP v2.0.151](#)  
+- [MPLAB&reg; X IDE v6.0.0 or newer](https://www.microchip.com/en-us/tools-resources/develop/mplab-x-ide?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_avrdb&utm_content=avrdb-smart-security-sensor-github)
+- [MPLAB XC8 v2.36 or newer](https://www.microchip.com/en-us/tools-resources/develop/mplab-xc-compilers?utm_source=GitHub&utm_medium=TextLink&utm_campaign=MCU8_MMTCha_avrdb&utm_content=avrdb-smart-security-sensor-github)
+- [AVR-Dx_DFP v2.0.151](https://packs.download.microchip.com/)  
 - Bluetooth&reg; Smart Data App by Microchip
   - [For iOS](https://apps.apple.com/us/app/bluetooth-smart-data/id1004033562)
   - [For Android](https://play.google.com/store/apps/details?id=com.microchip.bluetooth.data&hl=en_US&gl=US)
 
 ## Hardware Used
 
-Please consult the Bill of Materials (BOM) in the documentation.
+Please consult the Bill of Materials (BOM) in the PCB documentation.
 
 ![Board Image](./images/boardImage.png)
 
