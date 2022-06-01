@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : PCB Document [mlx-brd1_091.PcbDoc]
+   Generated File[mlx-brd1_091.TXT]
+   Generated File[mlx-brd1_091.LDP]
+   Generated File[mlx-brd1_091.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 12:35:54 On 2022-04-25
