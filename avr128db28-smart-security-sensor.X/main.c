@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <avr/eeprom.h>
 
 #include "GPIO.h"
 
@@ -48,6 +49,7 @@
 #include "LEDcontrol.h"
 #include "Bluetooth_Timeout_Timer.h"
 #include "Welcome_Timer.h"
+#include "EEPROM_Locations.h"
 
 //Prints results when not in low-power mode
 void normalPrint(void)
@@ -141,6 +143,16 @@ int main(void)
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = WAKE_GetValue();
         
+    //If EEPROM versions don't match, clear all settings
+    if (EEPROM_LAYOUT_VERSION_ID != eeprom_read_byte(MEM_EEPROM_LAYOUT_VERSION_ID))
+    {   
+        //Force Safestart
+        safeStart = true;
+        
+        //Update Value
+        eeprom_write_byte((uint8_t*) MEM_EEPROM_LAYOUT_VERSION_ID, EEPROM_LAYOUT_VERSION_ID);
+    }
+    
     //Init User Settings
     DEMO_init(safeStart);
     

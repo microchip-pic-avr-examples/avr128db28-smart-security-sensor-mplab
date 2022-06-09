@@ -72,6 +72,9 @@ extern "C" {
 //If defined, the angles of the magnetometer will be computed and used to monitor for tampering.
 //#define MAGNETOMETER_ANGLE_CHECK
     
+//If defined, magnetometer will check to see if X, Y, and Z are within limits
+#define MAGNETOMETER_RANGE_CHECK 
+    
 //Pre-Scaler for Computing Angles (X/Y, X/Z, Y/Z)
 #define MAGNETOMETER_ANGLE_SCALE 100
     

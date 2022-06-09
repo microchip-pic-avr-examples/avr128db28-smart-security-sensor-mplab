@@ -179,7 +179,7 @@ bool DEMO_handleUserCommands(void)
         //Demo / Info
         RN4870_sendStringToUser("--Demo Information--\r\nSmart Security Sensor\r\n"
                 "Developed by Microchip Technology Inc. with assistance from Melexis\r\n"
-                "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db48-mlx90392-mplab");
+                "Source Code is available at: github.com/microchip-pic-avr-examples/avr128db28-smart-security-sensor-mplab");
         
         //Build Information
         RN4870_sendRawStringToUser("\r\nBuilt on: ");

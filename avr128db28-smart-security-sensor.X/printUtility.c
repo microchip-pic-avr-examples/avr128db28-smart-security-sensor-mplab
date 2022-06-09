@@ -29,6 +29,7 @@ uint8_t USB_getCharBufferSize(void)
 //Prints the string on the UART
 void USB_sendBufferedString(void)
 {   
+    return;
     if (BUFFER_USB[0] == '\0')
         return;
     
@@ -53,6 +54,7 @@ void USB_sendBufferedString(void)
 //Prints a constant string to the UART
 void USB_sendStringRaw(const char* text)
 {
+    return;
 #ifdef DISABLE_STRING_MESSAGES
     return;
 #else    
@@ -82,6 +84,7 @@ void USB_sendStringRaw(const char* text)
 //Prints a constant string to the UART
 void USB_sendStringWithEndline(const char* text)
 {
+    return;
 #ifdef DISABLE_STRING_MESSAGES
     return;
 #else    

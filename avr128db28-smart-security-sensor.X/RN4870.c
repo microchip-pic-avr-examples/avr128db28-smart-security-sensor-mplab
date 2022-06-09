@@ -17,6 +17,7 @@
 #include "demo.h"
 #include "Bluetooth_Timeout_Timer.h"
 #include "Welcome_Timer.h"
+#include "usart2.h"
 
 #include <avr/interrupt.h>
 
@@ -325,6 +326,9 @@ void RN4870_powerDown(void)
     //Disable USART
     USART0_disableTX();
     USART0_disableRX();
+    
+    //Disable Debug UART
+    USART2_disableTX();
     
     //Power-Down the module
     BTLE_DisablePower();

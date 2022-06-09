@@ -44,13 +44,18 @@ static MagnetometerResultState prevResultState = INVALID;
 static volatile MagentometerMeasState magState = MAGNETOMETER_START;
 //static volatile uint16_t magCounter = MAGNETOMETER_ERROR_DELAY;
 
+//If set, the next data will be printed to the RN4870
+static bool requestPrint = false;
+
 //Alarm Parameters
 static uint32_t crackedV, maxV;
 static int16_t offsetX = 0, offsetY = 0, offsetZ = 0;
 static uint8_t scaleX = 1, scaleY = 1, scaleZ = 1;
 
-//If set, the next data will be printed to the RN4870
-static bool requestPrint = false;
+#ifdef MAGNETOMETER_RANGE_CHECK
+static int8_t maxX, minX, maxY, minY, maxZ, minZ;
+#endif
+
 
 //Angle Ranges
 #ifdef MAGNETOMETER_ANGLE_CHECK
@@ -264,9 +269,25 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 //Reset maximum value
                 maxV = 0;
                 
-#ifdef MAGNETOMETER_ANGLE_CHECK
                 //Compute Normalized Results Immediately from New Values
                 windowAlarm_createNormalizedResults(rawResult, normResults);
+                
+                //Init Max and Min
+#ifdef MAGNETOMETER_RANGE_CHECK
+                //Max/Min X
+                maxX = normResults->x;
+                minX = normResults->x;
+                
+                //Max/Min Y
+                maxY = normResults->y;
+                minY = normResults->y;
+                
+                //Max/Min Z
+                maxZ = normResults->z;
+                minZ = normResults->z;
+#endif
+                
+#ifdef MAGNETOMETER_ANGLE_CHECK
                 
                 //Init Angles
                 minXY = normResults->xyAngle;
@@ -305,12 +326,61 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 //Update State
                 calState = CAL_CRACKED;
             }
+            else
+            {
+#ifdef MAGNETOMETER_RANGE_CHECK
+                //Update Max/Min X
+                if (normResults->x > maxX)
+                {
+                    maxX = normResults->x;
+                }
+                else if (normResults->x < minX)
+                {
+                    minX = normResults->x;
+                }
+                
+                //Update Max/Min Y
+                if (normResults->y > maxY)
+                {
+                    maxY = normResults->y;
+                }
+                else if (normResults->y < minY)
+                {
+                    minY = normResults->y;
+                }
+                
+                //Update Max/Min Z
+                if (normResults->z > maxZ)
+                {
+                    maxZ = normResults->z;
+                }
+                else if (normResults->z < minZ)
+                {
+                    minZ = normResults->z;
+                }
+#endif
+            }
             break;
         }
         case CAL_CRACKED_ERR:
         {
             if (buttonPressed)
-            {                
+            {          
+                
+#ifdef MAGNETOMETER_RANGE_CHECK
+                //Max/Min X
+                maxX = normResults->x;
+                minX = normResults->x;
+                
+                //Max/Min Y
+                maxY = normResults->y;
+                minY = normResults->y;
+                
+                //Max/Min Z
+                maxZ = normResults->z;
+                minZ = normResults->z;
+#endif
+                
 #ifdef MAGNETOMETER_ANGLE_CHECK
                 //Init Angles
                 minXY = normResults->xyAngle;
@@ -341,6 +411,40 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             //Accumulate Values
             averageR2 += normResults->r2;
             
+            //Update Max and Mins (if set)
+#ifdef MAGNETOMETER_RANGE_CHECK
+            
+                //Update Max/Min X
+                if (normResults->x > maxX)
+                {
+                    maxX = normResults->x;
+                }
+                else if (normResults->x < minX)
+                {
+                    minX = normResults->x;
+                }
+                
+                //Update Max/Min Y
+                if (normResults->y > maxY)
+                {
+                    maxY = normResults->y;
+                }
+                else if (normResults->y < minY)
+                {
+                    minY = normResults->y;
+                }
+                
+                //Update Max/Min Z
+                if (normResults->z > maxZ)
+                {
+                    maxZ = normResults->z;
+                }
+                else if (normResults->z < minZ)
+                {
+                    minZ = normResults->z;
+                }
+#endif
+            
             if (sampleCount >= MAGNETOMETER_CALIBRATION_SAMPLES)
             {
                 //Set Cracked Threshold
@@ -359,6 +463,70 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
                 
                 //For max magnitude, use a >1 multiplier
                 maxV = round(maxV * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                
+#ifdef MAGNETOMETER_RANGE_CHECK
+                
+                //Max/Min X
+                
+                if (maxX < 0)
+                {
+                    maxX = round(maxX * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    maxX = round(maxX * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                
+                if (minX < 0)
+                {
+                    minX = round(minX * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    minX = round(minX * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                
+                //Max/Min Y
+                
+                if (maxY < 0)
+                {
+                    maxY = round(maxY * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    maxY = round(maxY * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                
+                if (minY < 0)
+                {
+                    minY = round(minY * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    minY = round(minY * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+
+                //Max/Min Z
+                
+                if (maxZ < 0)
+                {
+                    maxZ = round(maxZ * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    maxZ = round(maxZ * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                
+                if (minZ < 0)
+                {
+                    minZ = round(minZ * (1.0 + MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+                else
+                {
+                    minZ = round(minZ * (1.0 - MAGNETOMETER_VECTOR_TOLERANCE));
+                }
+#endif
+                
 #endif
                 
                 //Print Threshold
@@ -403,6 +571,7 @@ void windowAlarm_runCalibration(MLX90392_RawResult16* rawResult, MLX90392_Normal
             
             else if (buttonPressed)
             {
+                
 #ifdef MAGNETOMETER_ANGLE_CHECK
                 
                 //If set, add tolerance to the angles
@@ -523,6 +692,21 @@ void windowAlarm_loadSettings(bool nReset)
         scaleY = eeprom_read_byte((uint8_t*) MAGNETOMETER_SCALER_Y);
         scaleZ = eeprom_read_byte((uint8_t*) MAGNETOMETER_SCALER_Z);
         
+#ifdef MAGNETOMETER_RANGE_CHECK
+        
+        //Max/Min X
+        maxX = eeprom_read_byte((int8_t*) MAGNETOMETER_MAX_X);
+        minX = eeprom_read_byte((int8_t*) MAGNETOMETER_MIN_X);
+        
+        //Max/Min Y
+        maxY = eeprom_read_byte((int8_t*) MAGNETOMETER_MAX_Y);
+        minY = eeprom_read_byte((int8_t*) MAGNETOMETER_MIN_Y);
+
+        //Max/Min Z
+        maxZ = eeprom_read_byte((int8_t*) MAGNETOMETER_MAX_Z);
+        minZ = eeprom_read_byte((int8_t*) MAGNETOMETER_MIN_Z);
+#endif
+        
 #ifdef MAGNETOMETER_ANGLE_CHECK
         
         //Angle Ranges
@@ -553,7 +737,7 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
     if (!success)
         return false;
     
-    uint8_t EEPROM_id_test = eeprom_read_byte((uint8_t*) EEPROM_MLX90392_ID);
+    uint8_t EEPROM_id_test = eeprom_read_byte((uint8_t*) MEM_MLX90392_ID);
     
     if ((!safeStart) && (EEPROM_id_test == _verify_sensorID))
     {       
@@ -680,8 +864,24 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
     if ((normResults->r2 >= crackedV) && (normResults->r2 <= maxV))
     {
         //Within Expected Intensity
+        bool alarmOK = true;
+        
+#ifdef MAGNETOMETER_RANGE_CHECK
+        if ((normResults->x > maxX) || (normResults->x < minX))
+        {
+            alarmOK = false;
+        }
+        else if ((normResults->y > maxY) || (normResults->y < minY))
+        {
+            alarmOK = false;
+        }
+        else if ((normResults->z > maxZ) || (normResults->z < minZ))
+        {
+            alarmOK = false;
+        }
+#endif
+        
 #ifdef MAGNETOMETER_ANGLE_CHECK   
-        bool alarmOK = false;
         
         //Check Angles
         if ((normResults->xyAngle > maxXY) || (normResults->xyAngle < minXY))
@@ -715,11 +915,8 @@ bool windowAlarm_compareResults(MLX90392_NormalizedResults8* normResults)
         {
             alarmOK = true;
         }
-        
-        return alarmOK;
-#else
-        return true;
 #endif
+        return alarmOK;
     }
     else
     {
@@ -802,6 +999,17 @@ void windowAlarm_printCalibration(void)
             "Cracked Threshold: %lu\r\nMax Magnitude: %lu\r\n",
             offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ, crackedV, maxV);
     RN4870_printBufferedString();
+    
+#ifdef MAGNETOMETER_RANGE_CHECK
+        sprintf(RN4870_getCharBuffer(), "Range Check: Enabled\r\n"
+                "X Range: %d <= X <= %d\r\n"
+                "Y Range: %d <= Y <= %d\r\n"
+                "Z Range: %d <= Z <= %d\r\n",
+                minX, maxX, minY, maxY, minZ, maxZ);
+        RN4870_printBufferedString();
+#else
+    RN4870_sendStringToUser("Range Check: Disabled");
+#endif
 }
 
 //If called, the next data processed will be printed to the RN4870
@@ -827,6 +1035,22 @@ bool windowAlarm_saveThresholds(void)
     eeprom_write_byte((uint8_t*) MAGNETOMETER_SCALER_Y, scaleY);
     eeprom_write_byte((uint8_t*) MAGNETOMETER_SCALER_Z, scaleZ);
     
+#ifdef MAGNETOMETER_RANGE_CHECK
+    
+    //Max/Min X
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MAX_X, maxX);
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MIN_X, minX);
+    
+    //Max/Min Y
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MAX_Y, maxY);
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MIN_Y, minY);
+    
+    //Max/Min Z
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MAX_Z, maxZ);
+    eeprom_write_byte((int8_t*) MAGNETOMETER_MIN_Z, minZ);
+    
+#endif
+    
 #ifdef MAGNETOMETER_ANGLE_CHECK
     
     eeprom_write_word((uint16_t*) MAGNETOMETER_MIN_XY, minXY);
@@ -839,7 +1063,7 @@ bool windowAlarm_saveThresholds(void)
 #endif
     
     //Write the ID of the sensor
-    eeprom_write_byte((uint8_t*) EEPROM_MLX90392_ID, sensorID);
+    eeprom_write_byte((uint8_t*) MEM_MLX90392_ID, sensorID);
 
     return true;
 }

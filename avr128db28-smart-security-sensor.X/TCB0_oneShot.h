@@ -31,6 +31,12 @@ extern "C" {
     //Configures TCB0 as a 1 shot timer with a period of 1 ms
     //Triggered by EVSYS A
     void TCB0_init(void);
+    
+    //Turn on TCB0
+    void TCB0_enable(void);
+    
+    //Turn off TCB1
+    void TCB0_disable(void);
 
     //Returns true if TCB is currently running
     bool TCB0_isRunning(void);

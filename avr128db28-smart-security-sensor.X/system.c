@@ -63,10 +63,11 @@ void System_initPeripherals(void)
     USART2_initIO();
     
     //Enable USART for USB (TX Only)
-    USART2_enableTX();
+    //USART2_enableTX();
     
     //Init TCB0 for 1-shot timing
     TCB0_init();
+    TCB0_enable();
     
     //Init RTC
     RTC_init();
