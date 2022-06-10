@@ -47,6 +47,21 @@ extern "C" {
     void TWI0_initPins(void);
     
     /**
+     * <b><FONT COLOR=BLUE>void</FONT> TWI0_enable(<FONT COLOR=BLUE>void</FONT>)</B>
+     * 
+     * This function enables the TWI peripheral and resets the I/O. 
+     * Init functions must be called before this function.
+     */
+    void TWI0_enable(void);
+    
+    /**
+     * <b><FONT COLOR=BLUE>void</FONT> TWI0_disable(<FONT COLOR=BLUE>void</FONT>)</B>
+     * 
+     * This function disables the TWI peripheral and sets the I/O to OUTPUT HIGH. 
+     */
+    void TWI0_disable(void);
+    
+    /**
      * <b><FONT COLOR=BLUE>void</FONT> TWI0_flush(<FONT COLOR=BLUE>void</FONT>)</B>
      * 
      * This function flushes and I2C buffers and resets the peripheral.

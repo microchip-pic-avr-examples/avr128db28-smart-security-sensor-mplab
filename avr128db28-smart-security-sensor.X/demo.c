@@ -193,7 +193,11 @@ bool DEMO_handleUserCommands(void)
     {
         //Measure Battery Voltage
         
+        //Enable Voltage Divider for VBAT Measurement
         IO_VDIV_TurnOn();
+        
+        //Enable ADC Peripheral
+        ADC_enable();
         
         //50 ms Delay
         for (uint8_t i = 0; i < 50; i++)
@@ -203,9 +207,15 @@ bool DEMO_handleUserCommands(void)
             while (TCB0_isRunning());
         }
         
-        sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
+        //Disable Voltage Divider
         IO_VDIV_TurnOff();
+        
+        //Print Message
+        sprintf(RN4870_getCharBuffer(), "Current Battery Voltage: %1.3fV\r\n", ADC_getResultAsFloat(ADC_MUXPOS_AIN6_gc));
         RN4870_printBufferedString();
+        
+        //Disable ADC Peripheral
+        ADC_disable();
         
         ok = true;
     }

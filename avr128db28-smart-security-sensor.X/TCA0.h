@@ -40,6 +40,12 @@ extern "C" {
     //Init TCA IO
     void TCA0_initIO(void);
     
+    //Enables TCA0
+    void TCA0_enable(void);
+    
+    //Disables TCA0
+    void TCA0_disable(void);
+    
     //Enable CMP Outputs
     void TCA0_enableHCMP0(void);
     void TCA0_enableHCMP1(void);

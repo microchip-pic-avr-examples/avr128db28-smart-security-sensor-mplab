@@ -60,6 +60,7 @@ void USART0_enableTX(void)
 //Disable TX
 void USART0_disableTX(void)
 {
+    PORTA.OUTCLR = PIN4_bm;
     USART0.CTRLB &= ~(USART_TXEN_bm);
 }
 

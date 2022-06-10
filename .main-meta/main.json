@@ -4,7 +4,7 @@
     "content": {
         "metaDataVersion": "1.3.0",
         "name": "com.microchip.mcu8.mplabx.project.avr128db28-smart-security-sensor-mplab",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "displayName": "Smart Security Sensor with an AVR DB Microcontroller",
         "projectName": "avr128db28-smart-security-sensor-mplab",
         "shortDescription": "Create a smart window security sensor with temperature monitoring using MVIO on the AVR DB family of MCUs.",

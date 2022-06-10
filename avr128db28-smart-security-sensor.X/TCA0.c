@@ -19,13 +19,25 @@ void TCA0_init(void)
     TCA0.SPLIT.HCMP2 = TCA_LEDB_ON_TIME;
     
     //Clock Divider 64, TCA Enabled
-    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV256_gc | TCA_SPLIT_ENABLE_bm;
+    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV256_gc;
 }
 
 //Init TCA IO
 void TCA0_initIO(void)
 {
     PORTMUX.TCAROUTEA = PORTMUX_TCA0_PORTD_gc;
+}
+
+//Enables TCA0
+void TCA0_enable(void)
+{
+    TCA0.SPLIT.CTRLA |= TCA_SPLIT_ENABLE_bm;
+}
+
+//Disables TCA0
+void TCA0_disable(void)
+{
+    TCA0.SPLIT.CTRLA &= ~TCA_SPLIT_ENABLE_bm;
 }
 
 //Enable CMP Outputs

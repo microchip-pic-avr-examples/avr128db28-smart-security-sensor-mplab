@@ -31,6 +31,12 @@ extern "C" {
     //Init the ADC
     void ADC_init(void);
     
+    //Enables the ADC
+    void ADC_enable(void);
+    
+    //Disables the ADC (to save power)
+    void ADC_disable(void);
+    
     //Trigger a conversion
     uint16_t ADC_getValue(uint8_t channel);
     

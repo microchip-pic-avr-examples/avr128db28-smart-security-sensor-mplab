@@ -96,11 +96,15 @@ void LED_switchToSleep(void)
     {
         IO_LED0B_TurnOff();
     }
+    
+    TCA0_disable();
 }
 
 //Switches from IO to PWM Control
 void LED_switchToActive(void)
 {
+    TCA0_enable();
+    
     //Red LED
     if (IO_LED0R_GetValue())
     {

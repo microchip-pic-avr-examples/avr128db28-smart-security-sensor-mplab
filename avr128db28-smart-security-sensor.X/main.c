@@ -51,6 +51,9 @@
 #include "Welcome_Timer.h"
 #include "EEPROM_Locations.h"
 
+#include "MLX90392.h"
+#include "MLX90632.h"
+
 //Prints results when not in low-power mode
 void normalPrint(void)
 {   
@@ -168,7 +171,7 @@ int main(void)
     
     //Set Starting Time of BLE Auto-Off Timer
     BLE_SW_Timer_setCurrentTime();
-    
+               
     while(1)
     {        
         //Clear the Watchdog Timer
@@ -205,9 +208,22 @@ int main(void)
             lowPowerLEDPrint();
             
             if (windowAlarm_isAlarmOK() && tempMonitor_isTempNormal())
-            {
+            {          
                 //Alarm OK - continue sleep
+                
+//                MLX90632_setRegister(MLX90632_REG_CONTROL, 0x02);
+//                MLX90392_setRegister(MLX90392_CTRL, 0x00);
+                               
+                TCB0.CTRLA &= ~TCB_ENABLE_bm;
+//                RTC.INTCTRL = 0x00;
+                TWI0_disable();
+//                RTC.PITINTCTRL = 0x00;
+                
                 asm("SLEEP");
+                asm("NOP");
+                                                
+                TCB0.CTRLA |= TCB_ENABLE_bm;
+                TWI0_enable();
             }
             else
             {

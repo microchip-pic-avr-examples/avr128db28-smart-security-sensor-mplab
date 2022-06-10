@@ -28,9 +28,21 @@ void ADC_init(void)
     //Setup Sampling Channels
     ADC0.MUXPOS = ADC_MUXPOS_AIN6_gc;
     ADC0.MUXNEG = ADC_MUXNEG_GND_gc;
-    
+}
+
+//Enables the ADC
+void ADC_enable(void)
+{
     //Enable the ADC
     ADC0.CTRLA |= ADC_ENABLE_bm;
+
+}
+
+//Disables the ADC (to save power)
+void ADC_disable(void)
+{
+    //Enable the ADC
+    ADC0.CTRLA &= ~ADC_ENABLE_bm;
 }
 
 //Trigger a conversion and print the value

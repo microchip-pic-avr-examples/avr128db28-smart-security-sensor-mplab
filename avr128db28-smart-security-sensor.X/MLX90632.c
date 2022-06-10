@@ -94,6 +94,17 @@ void _saveConstantsToEEPROM(void)
 //Initializes the sensor and the internal constants for calculations
 bool MLX90632_initDevice(bool bypass)
 {
+    //Activate Sleeping Step Mode
+    bool ok = MLX90632_setRegister(MLX90632_REG_CONTROL, (MLX90632_CONTROL_MODE_SLEEPING_STEP << MLX90632_CONTROL_MODE_gp));
+
+    //If in test mode, then we will skip checking the operation
+#ifndef TEST_MLX90632
+    if (!ok)
+    {
+        return false;  
+    }
+#endif
+    
     if (bypass || (!_MLX90632_loadConstantsFromEEPROM()))
     {
         if (!_MLX90632_loadConstantsFromDevice())

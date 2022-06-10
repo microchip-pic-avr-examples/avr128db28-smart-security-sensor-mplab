@@ -29,6 +29,11 @@ void System_initDevice(void)
     //Init CLKCTRL
     //Default is 4MHz, which is desired
     
+    _PROTECTED_WRITE(CLKCTRL.PLLCTRLA, 0x00);
+    
+    //Always Keep the 32kHz oscillator on
+    //_PROTECTED_WRITE(CLKCTRL.OSC32KCTRLA, CLKCTRL_RUNSTBY_bm);
+    
     //Init WDT
     
     
@@ -78,4 +83,5 @@ void System_initPeripherals(void)
     //Init TCA
     TCA0_init();
     TCA0_initIO();
+    TCA0_enable();
 }
