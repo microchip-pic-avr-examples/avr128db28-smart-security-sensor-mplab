@@ -181,15 +181,15 @@ bool tempMonitor_isTempNormal(void)
     if (objTemp >= tempWarningH)
     {
         //High Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature High");
-        USB_sendStringWithEndline("[WARN] Room Temperature High");
+//        RN4870_sendStringToUser("[WARN] Room Temperature High");
+//        USB_sendStringWithEndline("[WARN] Room Temperature High");
         return false;
     }
     else if (objTemp <= tempWarningL)
     {
         //Low Room Temp
-        RN4870_sendStringToUser("[WARN] Room Temperature Low");
-        USB_sendStringWithEndline("[WARN] Room Temperature Low");
+//        RN4870_sendStringToUser("[WARN] Room Temperature Low");
+//        USB_sendStringWithEndline("[WARN] Room Temperature Low");
         return false;
     }
     

@@ -673,6 +673,7 @@ void windowAlarm_loadSettings(bool nReset)
     if (!nReset)
     {
         calState = CAL_BAD;
+        windowAlarm_eraseCalibration();
     }
     else
     {
@@ -747,6 +748,12 @@ bool windowAlarm_loadFromEEPROM(bool safeStart)
         return true;
     }
     return false;
+}
+
+//When called - calibration will be marked as bad in EEPROM.
+void windowAlarm_eraseCalibration(void)
+{
+    eeprom_write_byte((uint8_t*) MEM_MLX90392_ID, 0xFF);
 }
 
 //Returns true if a magnetic overflow has occurred

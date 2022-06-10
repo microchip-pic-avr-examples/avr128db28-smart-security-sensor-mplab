@@ -53,6 +53,30 @@ void RTC_init(void)
     RTC.PITCTRLA = RTC_PERIOD_CYC128_gc | RTC_PITEN_bm;
 }
 
+//Enables CMP Interrupts
+void RTC_enableCMPInt(void)
+{
+    RTC.INTCTRL |= RTC_CMP_bm;
+}
+
+//Disables CMP Interrupts
+void RTC_disableCMPInt(void)
+{
+    RTC.INTCTRL &= ~RTC_CMP_bm;
+}
+
+//Enables OVF Interrupts
+void RTC_enableOVFInt(void)
+{
+    RTC.INTCTRL |= RTC_OVF_bm;
+}
+
+//Disables OVF Interrupts
+void RTC_disableOVFInt(void)
+{
+    RTC.INTCTRL &= ~RTC_OVF_bm;
+}
+
 //Resets the RTC count back to 0
 void RTC_reset(void)
 {

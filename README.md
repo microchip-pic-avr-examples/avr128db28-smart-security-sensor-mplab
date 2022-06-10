@@ -32,6 +32,23 @@ Please consult the Bill of Materials (BOM) in the PCB documentation.
 
 ![Board Image](./images/boardImage.png)
 
+## New in Version 1.1
+
+- Added Range Check
+  - Range check allows the demo to also verify the range of X, Y, and Z magnitudes to ensure the magnet is in the correct place. This feature increases the sensitivity of the monitoring. This feature can be disabled in *windowAlarm_config.h* by commenting out `MAGNETOMETER_RANGE_CHECK`.
+- Improved Power Efficiency
+  - Peripherals are switched off when not needed.
+  - Turned off a few missed I/O buffers.
+  - Disabled CMP Interrupt in low-power mode if Temperature Monitoring in Sleep is disabled.
+  - Magnetometer is now tied to the timing of the microcontroller, which guarantees no missed samples and allows the magnetometer to enter the idle state between cycles.
+  - Increased PIT cycle time to better match with magnetometer timing. *This increases the alarm response time of the demo by a small amount.*
+- EEPROM Improvements
+  - Byte 0 of the EEPROM is now a version ID. Upgrading to a new version of the demo should now automatically reset the EEPROM to defaults. (Note: It is still recommended to fully erase the EEPROM before upgrading.)
+  - Added max and min for X, Y, and Z vectors for range check.
+  - Using the command `RESET` will now clear the marker for the alarm calibration, forcing a recalibration to occur, **even if power cycled**.
+  - Added `EEPROM.md` as documentation about the structure of the EEPROM.
+- Bug Fixes
+
 ## Table of Contents
 
 - [Estimated Power Consumption](#estimated-power-consumption)
@@ -206,11 +223,13 @@ Command Examples:
 **!HELP!** - Prints Help  
 **!STU,F!** - Sets Temperature Units to Fahrenheit
 
+Commands are not case-sensitive. 
+
 ### User Command List
 
-| User Command | Format | Example | Description
+| User Command | Format | Example Use | Description
 | ------------ | ------ | ------- | ------------
-| HELP | HELP | HELP | Get help with this demo.
+| HELP | HELP | HELP | Get help with this demo. (Provides link to this document.)
 | DEMO | DEMO | DEMO | Prints information about this demo and the build date/time. Also aliased as INFO.
 | USER | USER | USER | Prints current user-defined settings
 | CAL | CAL | CAL | Prints current calibration constants (for developers only)
@@ -218,7 +237,7 @@ Command Examples:
 | VBAT  | VBAT  | VBAT | Prints current battery voltage. This function will block for 50 ms to allow the voltage divider to stabilize before measurement.
 | RECAL | RECAL | RECAL | Triggers a new calibration cycle of the demo.
 | STATUS | STATUS | STATUS | Prints the current system status.
-| RESET | RESET | RESET | Resets the user settings to the defaults. The demo will also be reset to calibration mode. If power is cycled before recalibration is completed, the old calibration values will be used on the next power-up.
+| RESET | RESET | RESET | Resets the user settings to the defaults. The demo will also be reset to calibration mode.
 | REBOOT | REBOOT | REBOOT | Reboots the microcontroller, but does NOT reset the settings.
 | STU  | STU,<C/F/K> | STU,F | Sets the Temperature Unit (Celsius (*default*), Fahrenheit, Kelvin).
 | STWH | STWH,\<TEMP\> | STWH,40.1 | Sets the High Temperature Alarm Point. Units are inherited from STU.

@@ -145,7 +145,7 @@ int main(void)
     
     //This boolean is used to determine if reset to defaults is required
     bool safeStart = WAKE_GetValue();
-        
+            
     //If EEPROM versions don't match, clear all settings
     if (EEPROM_LAYOUT_VERSION_ID != eeprom_read_byte(MEM_EEPROM_LAYOUT_VERSION_ID))
     {   
@@ -154,6 +154,9 @@ int main(void)
         
         //Update Value
         eeprom_write_byte((uint8_t*) MEM_EEPROM_LAYOUT_VERSION_ID, EEPROM_LAYOUT_VERSION_ID);
+        
+        //Erases the calibration for window alarm, forcing a recal to occur, even if power-cycled.
+        windowAlarm_eraseCalibration();
     }
     
     //Init User Settings
@@ -210,19 +213,23 @@ int main(void)
             if (windowAlarm_isAlarmOK() && tempMonitor_isTempNormal())
             {          
                 //Alarm OK - continue sleep
+
+                //Trigger next magnetometer sample
+                MLX90392_setOperatingMode(SINGLE);
                 
-//                MLX90632_setRegister(MLX90632_REG_CONTROL, 0x02);
-//                MLX90392_setRegister(MLX90392_CTRL, 0x00);
-                               
-                TCB0.CTRLA &= ~TCB_ENABLE_bm;
-//                RTC.INTCTRL = 0x00;
+                TCB0_disable();
                 TWI0_disable();
-//                RTC.PITINTCTRL = 0x00;
+                
+                //Disable Debug UART
+                USART2_disableTX();
                 
                 asm("SLEEP");
                 asm("NOP");
-                                                
-                TCB0.CTRLA |= TCB_ENABLE_bm;
+                
+                //Re-enable Debug UART
+                USART2_enableTX();
+                
+                TCB0_enable();
                 TWI0_enable();
             }
             else

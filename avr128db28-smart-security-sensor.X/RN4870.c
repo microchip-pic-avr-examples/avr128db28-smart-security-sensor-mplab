@@ -20,6 +20,8 @@
 #include "Welcome_Timer.h"
 #include "usart2.h"
 #include "MLX90632.h"
+#include "windowAlarm_config.h"
+#include "tempMonitor.h"
 
 #include <avr/interrupt.h>
 
@@ -293,6 +295,8 @@ void RN4870_powerUp(void)
     //Disable IOC
     WAKE_DisableIOC();
 
+    //Return to continuous mode
+    MLX90392_setOperatingMode(MAGNETOMETER_ACTIVE_SAMPLE_RATE);
     RTC_setPIT(RTC_PERIOD_CYC128_gc);
 
     //Switch LEDs to PWM Control
@@ -311,6 +315,12 @@ void RN4870_powerUp(void)
 
     //Update State
     stateRN4870 = RN4870_POWERING_UP_INIT;
+    
+    //If not set to run in sleep, turn ON CMP interrupt when waking up
+    if (!tempMonitor_getRunInSleep())
+    {
+        RTC_enableCMPInt();
+    }
 }
 
 //Powers down the RN4870. Non-Blocking
@@ -320,7 +330,7 @@ void RN4870_powerDown(void)
     stateRN4870 = RN4870_POWER_OFF;
 
     //Reduce PIT Sampling Rate
-    RTC_setPIT(RTC_PERIOD_CYC1024_gc);
+    RTC_setPIT(RTC_PERIOD_CYC4096_gc);
 
     //Hold in nRESET
     BTLE_AssertReset();
@@ -329,8 +339,8 @@ void RN4870_powerDown(void)
     USART0_disableTX();
     USART0_disableRX();
     
-    //Disable Debug UART
-    USART2_disableTX();
+//    //Disable Debug UART
+//    USART2_disableTX();
 
     //Power-Down the module
     BTLE_DisablePower();
@@ -352,6 +362,12 @@ void RN4870_powerDown(void)
 
     //Reset Timeout Timer
     BLE_SW_Timer_reset();
+    
+    //If not set to run in sleep, turn off CMP interrupt
+    if (!tempMonitor_getRunInSleep())
+    {
+        RTC_disableCMPInt();
+    }
 }
 
 bool RN4870_enterCommandMode(void)

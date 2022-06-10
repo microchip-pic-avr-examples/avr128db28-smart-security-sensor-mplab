@@ -32,6 +32,18 @@ extern "C" {
     //Configures the RTC and PIT
     void RTC_init(void);
     
+    //Enables CMP Interrupts
+    void RTC_enableCMPInt(void);
+    
+    //Disables CMP Interrupts
+    void RTC_disableCMPInt(void);
+    
+    //Enables OVF Interrupts
+    void RTC_enableOVFInt(void);
+    
+    //Disables OVF Interrupts
+    void RTC_disableOVFInt(void);
+        
     //Resets the RTC count back to 0
     void RTC_reset(void);
     

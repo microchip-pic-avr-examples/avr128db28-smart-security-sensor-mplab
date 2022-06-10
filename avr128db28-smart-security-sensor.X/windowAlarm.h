@@ -60,6 +60,9 @@ extern "C" {
     //Returns true if successful, or false if EEPROM is invalid
     bool windowAlarm_loadFromEEPROM(bool safeStart);
     
+    //When called - calibration will be marked as bad in EEPROM.
+    void windowAlarm_eraseCalibration(void);
+    
     //Starts a calibration sequence, but does NOT interrupt it.
     void windowAlarm_requestCalibration(void);
     

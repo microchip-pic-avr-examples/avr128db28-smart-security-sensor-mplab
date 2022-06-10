@@ -8,7 +8,7 @@ This file is a reference for the structure of the Microcontroller's EEPROM used 
 
 ## Memory Mapping
 
-Without Angle Ranges: 0x1400 to 0x1464
+Without Angle Ranges: 0x1400 to 0x1464  
 With Angle Range: 0x1400 to 0x1470
 
 | Address | Variable Name | Type | Length | Description

@@ -34,7 +34,7 @@ void TCB0_enable(void)
 //Turn off TCB1
 void TCB0_disable(void)
 {
-    TCB0.CTRLA &= ~(TCB_ENABLE_bm);
+    TCB0.CTRLA &= ~TCB_ENABLE_bm;
 }
 
 

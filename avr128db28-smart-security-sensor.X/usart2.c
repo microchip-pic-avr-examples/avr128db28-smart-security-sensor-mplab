@@ -55,6 +55,12 @@ void USART2_enableTX(void)
 void USART2_disableTX(void)
 {
     USART2.CTRLB &= ~(USART_TXEN_bm);
+    
+    //Default Value for output should be 1
+    PORTF.OUTSET = PIN0_bm;
+    
+    //Set PB0 as Output
+    PORTF.DIRSET = PIN0_bm;
 }
 
 //Enable RX
