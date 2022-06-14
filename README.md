@@ -81,33 +81,33 @@ Update rates determine how often new temperature measurements are collected and 
 
 Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
 
-Software Configuration: *XC8_Free*
+**Note: Characterized with U7 not populated. This is not expected to affect power consumption significantly.**  
 
 ### Active Modes (Paired)
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Active Mode | 4.574 mA
-| Calibration Mode | 5.902 mA
+| Active Mode | 3.928 mA
+| Calibration Mode | 5.253 mA
 
 Power consumption in active mode is not expected to vary significantly with update rate.
 
 ### Slow (30s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 223 &micro;A
-| Low-Power Mode (Temp Monitored)| 265 &micro;A
+| Low-Power Mode (Temp not Monitored)| 149 &micro;A
+| Low-Power Mode (Temp Monitored)| 189 &micro;A
 
 ### Normal (15s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 223 &micro;A
-| Low-Power Mode (Temp Monitored)| 303 &micro;A
+| Low-Power Mode (Temp not Monitored)| 151 &micro;A
+| Low-Power Mode (Temp Monitored)| 222 &micro;A
 
 ### Fast (3s) Update Rate
 | Operating Mode | Average Current |
 | -------------- | -----------------
-| Low-Power Mode (Temp not Monitored)| 224 &micro;A
-| Low-Power Mode (Temp Monitored)| 592 &micro;A
+| Low-Power Mode (Temp not Monitored)| 171 &micro;A
+| Low-Power Mode (Temp Monitored)| 505 &micro;A
 
 ## Window Alarm Sensing
 
@@ -120,6 +120,14 @@ One of the most common ways to detect whether a window or door has been opened/c
 While reed switches are simple and easy to use, they come with the drawback that they only have 2 binary states. If an external magnet is placed close to the switch, the field from the added magnet can hold the contacts in position while the window is opened.
 
 A magnetometer avoids this problem by measuring the intensity of the magnetic field. If the intensity changes beyond a set range, then the magnetometer can detect the attempt to bypass the alarm.
+
+### Magnet Selection and Performance
+
+We tried using a few different magnets during development. An inexpensive off-the-shelf security sensor magnet was used during the initial prototyping without issue, but we found that when mounted a real window, it was too sensitive for long-term use. We found that using a stronger magnet significantly improved performance on the real window. (Alternatively, using the more sensitive device variant of the magnetometer may improve performance with weak magnets.)
+
+We suspect the reason for this discrepancy is due to the increased distance between the magnet and the sensor due to mounting + the protective case. 
+
+Note: There is a finite magnetic field range that the sensor can measure. If the magnet is too strong for the sensor, the alarm will be triggered and an error code will occur during calibration.
 
 ### Calibrating the Magnetometer
 
@@ -150,6 +158,8 @@ The calibration algorithm in this step performs a similar action to the [Zero Ca
 | -80   | -1 | 80
 | -288  | -2 | 72
 
+At the conclusion of this step, the max/min normalized values for each axis starts to be monitored.
+
 **Note: Ideally the values would remain 7-bit, but depending on the placement of the magnetometer, it is possible for the maximum intensity to occur in a slightly different position. The program limits the maximum intensity to 127. For total magnitude, the full normalized value is used.**
 
 #### Step 3 - Threshold Set
@@ -161,6 +171,8 @@ In this step, the magnetometer is programmed to the threshold between open and c
 Magnitude<sup>2</sup> = X<sup>2</sup> + Y<sup>2</sup> + Z<sup>2</sup>
 
 The maximum magnitude is used to protect against attempts to tamper with the sensor with another magnet.
+
+When this step completes, the max/min normalized values for each axis will stop being monitored.
 
 #### Step 4 - Return to Closed
 
@@ -223,7 +235,7 @@ Command Examples:
 **!HELP!** - Prints Help  
 **!STU,F!** - Sets Temperature Units to Fahrenheit
 
-Commands are not case-sensitive. 
+Commands are not case-sensitive.
 
 ### User Command List
 
