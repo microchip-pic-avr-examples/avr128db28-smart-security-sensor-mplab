@@ -81,7 +81,7 @@ Update rates determine how often new temperature measurements are collected and 
 
 Magnetometer samples at a constant rate in all modes, except calibration mode. In calibration mode, a higher sampling rate is used.
 
-**Note: Characterized with U7 not populated. This is not expected to affect power consumption significantly.**  
+**Note: Characterized with U7 not populated (VBAT measurement switch). This is not expected to affect power consumption significantly.**  
 
 ### Active Modes (Paired)
 | Operating Mode | Average Current |
@@ -125,7 +125,7 @@ A magnetometer avoids this problem by measuring the intensity of the magnetic fi
 
 We tried using a few different magnets during development. An inexpensive off-the-shelf security sensor magnet was used during the initial prototyping without issue, but we found that when mounted a real window, it was too sensitive for long-term use. We found that using a stronger magnet significantly improved performance on the real window. (Alternatively, using the more sensitive device variant of the magnetometer may improve performance with weak magnets.)
 
-We suspect the reason for this discrepancy is due to the increased distance between the magnet and the sensor due to mounting + the protective case. 
+We suspect the reason for this discrepancy is due to the increased distance between the magnet and the sensor due to mounting + the protective case.
 
 Note: There is a finite magnetic field range that the sensor can measure. If the magnet is too strong for the sensor, the alarm will be triggered and an error code will occur during calibration.
 
